@@ -178,7 +178,7 @@ Cada chunk debe usar este contrato:
   "category_id": 516,
   "is_new": true,
   "chunk_type": "description",
-  "section": "description",
+  "section_name": "description",
   "title": "Robustel EG5100 - descripcion",
   "content": "Texto limpio del chunk...",
   "metadata": {
@@ -197,10 +197,17 @@ Cada chunk debe usar este contrato:
 
 `chunk_type` debe ser uno de:
 
+- `overview`
 - `description`
 - `features`
 - `specs`
+- `spec_section`
 - `software`
+- `compatibility`
+- `variants`
+
+Usa `section_name` para guardar la seccion interna del chunk. En el DDL esto
+mapea a `rag_chunks.section_name`.
 
 ---
 
@@ -222,7 +229,45 @@ Aplica estas reglas antes de crear chunks:
 
 ## Chunks por producto
 
-### 1. Chunk `description`
+### 1. Chunk `overview`
+
+Crear un chunk por producto con una tarjeta breve de identificacion.
+
+Fuente:
+
+- `name`
+- `brand`
+- `model`
+- `description`
+- `attributes`
+
+Contrato:
+
+```json
+{
+  "chunk_type": "overview",
+  "section_name": "overview",
+  "source_fields": ["name", "brand", "model", "description", "attributes"],
+  "retrieval_priority": 0.97,
+  "quality_score": 0.94
+}
+```
+
+Contenido recomendado:
+
+```txt
+Producto: Robustel EG5100
+Marca: Robustel
+Modelo: EG5100
+Categoria ID: 516
+Resumen: Gateway industrial...
+Atributos clave: pa_red-celular:5g; pa_wifi:si
+```
+
+Sirve para preguntas abiertas de identificacion y para recall inicial por
+producto.
+
+### 2. Chunk `description`
 
 Crear un chunk cuando `description` tenga texto util.
 
@@ -235,7 +280,7 @@ Contrato:
 ```json
 {
   "chunk_type": "description",
-  "section": "description",
+  "section_name": "description",
   "source_fields": ["description"],
   "retrieval_priority": 0.95,
   "quality_score": 0.95
@@ -258,7 +303,7 @@ Sirve para preguntas como:
 - dame un resumen;
 - que producto es el Robustel EG5100.
 
-### 2. Chunks `features`
+### 3. Chunks `features`
 
 Crear chunks desde `features_text`.
 
@@ -276,14 +321,14 @@ Reglas:
 - Conserva los bullets cuando sean claros.
 - Si hay secciones como compatibilidad u homologaciones dentro de
   `features_text`, mantenlas como `chunk_type = "features"` y usa
-  `section = "compatibility"` o `section = "homologaciones"` segun corresponda.
+  `section_name = "compatibility"` o `section_name = "homologaciones"` segun corresponda.
 
 Contrato:
 
 ```json
 {
   "chunk_type": "features",
-  "section": "caracteristicas_principales",
+  "section_name": "caracteristicas_principales",
   "source_fields": ["features_text"],
   "retrieval_priority": 0.9,
   "quality_score": 0.9
@@ -298,12 +343,12 @@ Sirve para preguntas como:
 - permite gestion remota;
 - soporta Docker, VPN, alarmas, telemetria o monitoreo.
 
-### 3. Chunks `specs`
+### 4. Chunks tecnicos
 
-Crear chunks tecnicos desde `specs`, `specs_text`, `table_specs`,
-`compatibility` y `variants`.
+Crear chunks tecnicos desde `specs`, `specs_text` y `table_specs`.
+`compatibility` y `variants` tienen `chunk_type` propio.
 
-#### 3.1 Specs estructuradas desde `specs`
+#### 4.1 Specs estructuradas desde `specs`
 
 Agrupa `specs[]` por `section`.
 
@@ -311,8 +356,8 @@ Para cada grupo, crea un chunk:
 
 ```json
 {
-  "chunk_type": "specs",
-  "section": "interfaz_celular",
+  "chunk_type": "spec_section",
+  "section_name": "interfaz_celular",
   "source_fields": ["specs"],
   "retrieval_priority": 1.0,
   "quality_score": 0.98
@@ -335,7 +380,7 @@ Si `items` existe, puedes representarlo asi:
 - Numero de antenas: Version 4G: 2; Version 5G: 4
 ```
 
-#### 3.2 Fallback desde `specs_text`
+#### 4.2 Fallback desde `specs_text`
 
 Usa `specs_text` como respaldo cuando:
 
@@ -346,19 +391,20 @@ Reglas:
 
 - Divide por encabezados Markdown si existen.
 - Mantiene `chunk_type = "specs"`.
+- Usa `section_name = "specs_text"` si no hay una seccion mas especifica.
 - Usa `source_fields = ["specs_text"]` o `["specs", "specs_text"]` si combinaste
   ambas fuentes.
 - Evita duplicar palabra por palabra el mismo contenido generado desde `specs`
   si ya quedo cubierto.
 
-#### 3.3 `table_specs`
+#### 4.3 `table_specs`
 
 Si `table_specs` trae datos, crea un chunk de specs con:
 
 ```json
 {
   "chunk_type": "specs",
-  "section": "table_specs",
+  "section_name": "table_specs",
   "source_fields": ["table_specs"],
   "retrieval_priority": 0.92,
   "quality_score": 0.9
@@ -372,14 +418,14 @@ Tabla tecnica adicional:
 - Elementos: 1 Arnes de conexion; 1 Parlante; 1 Microfono
 ```
 
-#### 3.4 `compatibility`
+#### 4.4 `compatibility`
 
-Si `compatibility` trae datos, crea un chunk de specs con:
+Si `compatibility` trae datos, crea un chunk propio con:
 
 ```json
 {
-  "chunk_type": "specs",
-  "section": "compatibility",
+  "chunk_type": "compatibility",
+  "section_name": "compatibility",
   "source_fields": ["compatibility"],
   "retrieval_priority": 0.94,
   "quality_score": 0.92
@@ -394,14 +440,14 @@ Compatibilidad:
 - DSC: Classic PC585 y Power Series PC1616, PC1832, PC1864
 ```
 
-#### 3.5 `variants`
+#### 4.5 `variants`
 
-Si `variants` trae datos, crea un chunk de specs con:
+Si `variants` trae datos, crea un chunk propio con:
 
 ```json
 {
-  "chunk_type": "specs",
-  "section": "variants",
+  "chunk_type": "variants",
+  "section_name": "variants",
   "source_fields": ["variants"],
   "retrieval_priority": 0.88,
   "quality_score": 0.85
@@ -457,7 +503,7 @@ Contrato de chunk de software:
   "category_id": null,
   "is_new": null,
   "chunk_type": "software",
-  "section": "software_management",
+  "section_name": "software_management",
   "title": "Robustel Cloud Manager Service",
   "content": "Texto limpio del software...",
   "metadata": {
@@ -597,13 +643,14 @@ Cada chunk de software debe incluir:
 
 | Fuente | `chunk_type` | Prioridad | Calidad |
 | --- | --- | ---: | ---: |
+| `name + brand + model + description + atributos` | `overview` | 0.97 | 0.94 |
 | `description` | `description` | 0.95 | 0.95 |
 | `features_text` | `features` | 0.90 | 0.90 |
-| `specs` | `specs` | 1.00 | 0.98 |
+| `specs` agrupadas por seccion | `spec_section` | 1.00 | 0.98 |
 | `specs_text` fallback | `specs` | 0.94 | 0.92 |
-| `compatibility` | `specs` | 0.94 | 0.92 |
 | `table_specs` | `specs` | 0.92 | 0.90 |
-| `variants` | `specs` | 0.88 | 0.85 |
+| `compatibility` | `compatibility` | 0.94 | 0.92 |
+| `variants` | `variants` | 0.88 | 0.85 |
 | `software_texto` canonico | `software` | 0.72 | 0.88 |
 
 La prioridad no reemplaza el score vectorial. Usala como boost o tie-breaker en
@@ -613,18 +660,18 @@ ranking final.
 
 ## Routing de retrieval recomendado
 
-Usa `chunk_type` y `section` para reducir ruido:
+Usa `chunk_type` y `section_name` para reducir ruido:
 
 | Pregunta | Donde buscar |
 | --- | --- |
-| "Que es X?" | `chunk_type = description` |
-| "Para que sirve X?" | `description`, `features` |
+| "Que es X?" | `overview`, `description` |
+| "Para que sirve X?" | `overview`, `description`, `features` |
 | "Caracteristicas de X" | `features` |
-| "Specs de X" | `specs` |
+| "Specs de X" | `specs`, `spec_section` |
 | "Tiene WiFi/4G/RS485/GPS?" | `specs`, con filtros por atributos si existen |
-| "Con que paneles es compatible?" | `specs` + `section = compatibility` |
+| "Con que paneles es compatible?" | `compatibility` |
 | "Que software usa X?" | `software`, filtrando por `applies_to_product_ids` |
-| "Productos con 5G y WiFi" | SQL/metadata primero; luego `description`, `features`, `specs` |
+| "Productos con 5G y WiFi" | SQL/metadata primero; luego `overview`, `features`, `description` |
 | "Que productos recomienda X?" | `product_relations`, no embeddings |
 
 Para relaciones exactas, consulta `product_relations` como fuente estructurada.
@@ -652,7 +699,8 @@ Antes de entregar la salida, valida:
 
 - Usa los campos de entrada definidos en el contrato real de
   `salida_completa.json`.
-- Usa solo estos `chunk_type`: `description`, `features`, `specs`, `software`.
+- Usa solo estos `chunk_type`: `overview`, `description`, `features`,
+  `specs`, `spec_section`, `software`, `compatibility`, `variants`.
 - Crea chunks de software unicamente desde productos canonicos con
   `is_software_canonical = true`.
 - Trata `productos_recomendados` como relaciones dirigidas entre productos.
@@ -671,13 +719,14 @@ Para cada producto:
    `category_id`, `es_nuevo`, `source_url`, `search_aliases`.
 2. Aplana `attributes[].options[]` en `attribute_slugs` y
    `attributes_by_taxonomy`.
-3. Crea chunk `description` desde `description`.
-4. Crea chunks `features` desde `features_text`.
-5. Crea chunks `specs` agrupando `specs[]` por `section`.
-6. Agrega chunks `specs` desde `table_specs`, `compatibility` y `variants`
-   cuando existan.
-7. Usa `specs_text` como fallback o complemento sin duplicar contenido.
-8. Si el producto es software canonico, crea un unico chunk `software`.
-9. Resuelve `productos_recomendados` como relaciones dirigidas.
-10. Devuelve `product_chunks`, `software_chunks`, `product_relations`,
+3. Crea chunk `overview` desde identidad, descripcion corta y atributos.
+4. Crea chunk `description` desde `description`.
+5. Crea chunks `features` desde `features_text`.
+6. Crea chunks `spec_section` agrupando `specs[]` por `section`.
+7. Agrega chunks `specs` desde `table_specs` y `specs_text` como fallback
+   o complemento sin duplicar contenido.
+8. Agrega chunks `compatibility` y `variants` cuando existan.
+9. Si el producto es software canonico, crea un unico chunk `software`.
+10. Resuelve `productos_recomendados` como relaciones dirigidas.
+11. Devuelve `product_chunks`, `software_chunks`, `product_relations`,
     `stats` y `warnings`.

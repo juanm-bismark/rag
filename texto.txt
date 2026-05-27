@@ -1,6 +1,0 @@
-Eres un experto realizando flujo de n8n, quiero que analices los flujos y salidas actuales para llegar al resultado esperado.
-tengo un nodo para traer los atributos de una pagina ecommerce de wordpress, esos atributos van a servirme para realizar unos filtros, e
-
-
-
-piensa en mas o mejores preguntas que se puedan realizar y dame tambien critrios de dfinidion de cada pregunta especifica para que despues un llm pueda utilizar el rag de forma correcta ejemplo de como realice algo parecido
