@@ -13,7 +13,7 @@ Referencia operativa del **extractor NLU + router de retrieval**. Cada entrada d
 
 - Esquema fuente: [schema.sql](schema.sql). Solo se usan columnas/índices que existen ahí.
 - Volumen: 74 productos, 8 categorías, 13 marcas, 92 opciones de atributo, 80 recomendaciones, 7 grupos canónicos de software.
-- Embedding model: `text-embedding-3-large` (3072 dims). Sin índice vectorial: seq scan + prefiltrado.
+- Embedding model: `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain). Sin índice vectorial: seq scan + prefiltrado.
 - `product_recommendations` es **mono-tipo** (solo `recommended_product`); no hay columna `relation_type`.
 - `categories.name`/`slug` pueden ser placeholders si el ETL no tiene lookup a Woo; preferir `category_id` en filtros.
 
@@ -45,9 +45,9 @@ Toda pregunta del usuario debe convertirse en este objeto antes del retrieval:
 | Campo | Significado | Origen en el schema |
 |---|---|---|
 | `intent_id` | Pregunta canónica de este catálogo (ej. `A2_attr_combination`) | — |
-| `category_id` | Filtro duro de categoría | `products.category_id`, `rag_chunks.category_id` |
-| `is_new` | Filtro duro de novedad | `products.is_new`, `rag_chunks.is_new` |
-| `brand` | Filtro duro de marca | `products.brand`, `rag_chunks.brand` |
+| `category_id` | Filtro duro de categoría | `products.category_id` (rag_chunks la toma por JOIN) |
+| `is_new` | Filtro duro de novedad | `products.is_new` (rag_chunks la toma por JOIN) |
+| `brand` | Filtro duro de marca | `products.brand` (rag_chunks la toma por JOIN) |
 | `product_refs` | Slugs ya resueltos a productos concretos | `products.slug` |
 | `attribute_filters` | Filtros taxonómicos Woo | `attribute_option_aliases` -> `attribute_options` |
 | `spec_filters` | Filtros numéricos / enum sobre JSONB | `product_specs.specs_normalized` |
@@ -609,30 +609,32 @@ LIMIT 2;
 
 ```sql
 -- $1: vector, $2: category_id, $3: is_new, $4: brand, $5: chunk_types[].
--- Atributos: el backend agrega un AND c.attribute_slugs && ARRAY[...]
+-- Prefiltro por JOIN a products (no hay metadata denormalizada en rag_chunks).
+-- Atributos: el backend agrega un EXISTS-por-grupo sobre product_attribute_values
 -- por cada grupo de `attribute_filters` del NLU.
 --
 -- Ejemplo: attribute_filters = [
 --   {"taxonomy":"pa_red-celular","option_slugs":["5g","4g"]},
 --   {"taxonomy":"pa_wifi","option_slugs":["si"]}
 -- ]
--- =>
---   AND c.attribute_slugs && ARRAY['pa_red-celular:5g','pa_red-celular:4g']
---   AND c.attribute_slugs && ARRAY['pa_wifi:si']
---
--- AND entre grupos (semántica esperada del usuario); OR dentro del grupo
--- via el contenido del array. NO aplanar todos los slugs en un único array
--- con && porque eso colapsa a OR global y devuelve falsos positivos.
+-- => dos EXISTS independientes (uno por taxonomy). AND entre ellos da la
+--    semántica esperada ("5G Y WiFi"); el IN dentro de cada EXISTS da el OR del grupo.
+--    El EAV (product_attribute_values) es la fuente de verdad de los atributos.
 SELECT c.id, c.product_id, c.chunk_type, c.content,
        1 - (c.embedding <=> $1::vector) AS similarity
 FROM rag_chunks c
-WHERE c.product_id IS NOT NULL
-  AND c.embedding IS NOT NULL
-  AND ($2::int    IS NULL OR c.category_id = $2)
-  AND ($3::bool   IS NULL OR c.is_new      = $3)
-  AND ($4::text   IS NULL OR c.brand       = $4)
+JOIN products p ON p.id = c.product_id
+WHERE c.embedding IS NOT NULL
+  AND ($2::int    IS NULL OR p.category_id = $2)
+  AND ($3::bool   IS NULL OR p.is_new      = $3)
+  AND ($4::text   IS NULL OR p.brand       = $4)
   AND ($5::text[] IS NULL OR c.chunk_type  = ANY($5))
-  -- + N cláusulas `c.attribute_slugs && ARRAY[...]` (una por grupo del NLU)
+  -- + N cláusulas EXISTS sobre pav (una por grupo del NLU), ej. para pa_wifi:si:
+  --   AND EXISTS (SELECT 1 FROM product_attribute_values pav
+  --     JOIN attribute_options ao ON ao.id = pav.attribute_option_id
+  --     JOIN attributes a         ON a.id = ao.attribute_id
+  --     WHERE pav.product_id = c.product_id
+  --       AND a.taxonomy = 'pa_wifi' AND ao.slug IN ('si'))
 ORDER BY c.embedding <=> $1::vector
 LIMIT 20;
 ```
@@ -653,19 +655,25 @@ LIMIT 20;
 - **Ruta:** RAG con similarity entre chunks técnicos (`specs`/`spec_section`) dentro de la misma categoría.
 
 ```sql
-SELECT p.id, p.name, p.brand,
+-- Sin category_id denormalizado en rag_chunks: la restricción "misma categoría"
+-- se resuelve uniendo cada chunk a su producto (p1 = referencia, p2 = candidato)
+-- y exigiendo p2.category_id = p1.category_id.
+SELECT p2.id, p2.name, p2.brand,
        AVG(1 - (c2.embedding <=> c1.embedding)) AS avg_sim
-FROM rag_chunks c1
+FROM products p1
+JOIN rag_chunks c1
+  ON c1.product_id = p1.id
+ AND c1.chunk_type IN ('specs','spec_section')
+ AND c1.embedding IS NOT NULL
+JOIN products p2
+  ON p2.category_id = p1.category_id
+ AND p2.id <> p1.id
 JOIN rag_chunks c2
-  ON c2.product_id <> c1.product_id
+  ON c2.product_id = p2.id
  AND c2.chunk_type IN ('specs','spec_section')
- AND c2.category_id = c1.category_id
  AND c2.embedding IS NOT NULL
-JOIN products p ON p.id = c2.product_id
-WHERE c1.product_id = (SELECT id FROM products WHERE slug = $1)
-  AND c1.chunk_type IN ('specs','spec_section')
-  AND c1.embedding IS NOT NULL
-GROUP BY p.id, p.name, p.brand
+WHERE p1.slug = $1
+GROUP BY p2.id, p2.name, p2.brand
 ORDER BY avg_sim DESC
 LIMIT 5;
 ```
@@ -921,7 +929,7 @@ Aplicada **después** de ejecutar la ruta principal y **antes** de devolver al L
 | Devolver máximo 1 chunk por `product_id` en D5 | siempre | Dedup post-retrieval; evita que un producto con muchos chunks domine. |
 | Si `is_new=true` viene del NLU, es **duro** | siempre | El usuario pidió novedad explícita; no se relaja en fallback. |
 | Excluir productos sin `product_specs` cuando la pregunta es técnica (B*, D2) | siempre | Devolver un producto sin specs en respuesta técnica es ruido. |
-| Filtrar siempre por `category_id`, nunca por nombre/slug de categoría | siempre | `rag_chunks.category_id` está denormalizado e indexado; los nombres pueden ser placeholders. |
+| Filtrar siempre por `category_id`, nunca por nombre/slug de categoría | siempre | El prefiltro se hace por JOIN a `products.category_id` (indexado); los nombres pueden ser placeholders. |
 
 ---
 

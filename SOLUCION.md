@@ -2,17 +2,21 @@
 
 Documento de referencia con todas las decisiones tomadas. El pipeline operativo es:
 
-- **[flujo.json](flujo.json)** — n8n: scrapea WooCommerce, parsea HTML de specs/features,
-  deduplica software canónico, resuelve productos recomendados por fuzzy alias matching
-  y emite un JSON estructurado por producto.
-- **[salida_completa.json](salida_completa.json)** — snapshot de la última corrida del
-  flujo. Es la entrada del loader.
-- **Loader (pendiente de implementar)** — toma el output del flujo, llama al LLM para
-  `specs_normalized`, calcula hashes para idempotencia, inserta en las tablas de
-  [schema.sql](schema.sql), genera embeddings de los chunks y registra cada corrida en
-  `ingestion_runs`.
+- **[flujo.json](flujo.json)** — workflow n8n (152 nodos) que implementa el pipeline
+  completo: scrapea WooCommerce, parsea HTML de specs/features, deduplica software
+  canónico, resuelve productos recomendados por fuzzy alias matching, normaliza specs
+  con LLM, calcula fingerprints para idempotencia, carga en las tablas de
+  [schema.sql](schema.sql) con upsert incremental (INSERT/UPDATE/DELETE por entidad),
+  genera los embeddings de los chunks con Gemini y registra cada corrida en
+  `ingestion_runs`. La carga ya no es un "loader" externo pendiente: vive dentro del
+  mismo workflow.
+- **[schema.sql](schema.sql)** — DDL destino: 14 tablas + 4 vistas (catálogo + EAV de
+  atributos + capa RAG), más la tabla de staging `embedding_rag_chunk_upload` y su
+  trigger de sincronización a `rag_chunks`.
 
-Este texto es la guía operativa del pipeline completo.
+Este texto es la guía operativa del pipeline completo. Donde aparece "el loader" más
+abajo se refiere a la **etapa de carga del propio workflow n8n**, no a un componente
+separado.
 
 ---
 
@@ -26,13 +30,13 @@ Sobre eso se monta un patrón **filter-then-rank** con dos rutas paralelas:
 
 - **Ruta estructurada** — SQL puro sobre tablas normalizadas. Resuelve relaciones,
   filtros disponibles, filtros numéricos, taxonomía.
-- **Ruta semántica** — similarity search sobre `rag_chunks` con metadata
-  denormalizada para prefiltrar antes del cosine.
+- **Ruta semántica** — similarity search sobre `rag_chunks`, prefiltrando por
+  JOIN a `products` (categoría/novedad/marca) + EXISTS sobre `pav` antes del cosine.
 
 Un extractor NLU (LLM con tool-calling) clasifica la pregunta en filtros + tipos de
 información, dispara ambas rutas y el LLM final compone la respuesta sobre el merge.
 
-**Volumen real (validado contra `salida_completa.json`):** 74 productos →
+**Volumen real (validado contra la última corrida del flujo, [flujo.json](flujo.json)):** 74 productos →
 **~495 chunks** (74 overview + 74 description + 74 features + 254 spec_sections
 + 3 compatibility + 9 variants + 7 software). 8 `category_id`, 13 marcas, 19
 productos nuevos, 36 atributos filtrables válidos, 92 opciones válidas, 1607
@@ -49,13 +53,13 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 | Decisión | Elegido | Justificación corta |
 |---|---|---|
 | Stack | PostgreSQL 15 + pgvector + pg_trgm | Una DB, todo cabe. |
-| Modelo embeddings | `text-embedding-3-large` (3072 dims) | Pedido del usuario. Costo trivial al volumen. |
+| Modelo embeddings | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Costo trivial al volumen. La dimensión por defecto del modelo (3072) define la columna `vector(3072)`. |
 | Índice vectorial | Ninguno (ver §12) | A 74 productos / ~495 chunks reales, seq scan corre en <2 ms. En el techo planeado de 500 productos / ~3300 chunks, < 10 ms. Activación nunca se justifica a este horizonte. |
 | Atributos taxonómicos (Woo `pa_*`) | EAV controlado | Multivalor + heterogéneo por categoría. |
 | Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Catálogo manual de spec_keys es overkill a este volumen. |
 | Software de gestión | Tabla canónica con embedding único | Evita 12 chunks idénticos (Robustel et al.). |
 | Relaciones | Dirigidas siempre (bidireccionales se duplican) | Queries triviales, costo irrelevante. |
-| Metadata en `rag_chunks` | Denormalizada (`category_id`, `is_new`, `brand`, `attribute_slugs`) | Filter-then-rank exige WHERE barato antes del cosine. `category_slug` queda opcional porque el JSON actual solo trae `category_id`. |
+| Metadata en `rag_chunks` | **No denormalizada** — prefiltro por JOIN a `products` + EXISTS sobre `pav` | A ~3300 chunks sin índice vectorial el JOIN da la misma selectividad que columnas denormalizadas, con cero drift y cero copia que mantener. Se denormalizaría solo al activar índice vectorial (~10k chunks). |
 | Re-ingesta | Fingerprint por registro calculado en n8n → skip si no cambió | Embeddings cuestan; idempotencia obligatoria. n8n no puede usar `require('crypto')` — se usa concatenación legible (`key:value\|key:value`) en lugar de MD5. |
 | Precio / stock | No modelado | Confirmado fuera de scope. |
 
@@ -63,7 +67,7 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 
 ## 3. Esquema de base de datos
 
-12 tablas en total. DDL completo y comentado en [schema.sql](schema.sql).
+14 tablas + 4 vistas derivadas. DDL completo y comentado en [schema.sql](schema.sql).
 
 **Núcleo del catálogo**
 
@@ -79,14 +83,28 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 - `products` — producto canónico, con `search_text` generada para fuzzy match.
 - `product_attribute_values` — asignación N:N producto ↔ option (multivalor).
 - `product_specs` — `specs` (crudo JSONB) + `specs_normalized` (LLM) +
-  `specs_text`/`features_text` (markdown a embeddear).
+  `specs_text`/`features_text` (markdown a embeddear) + `table_specs`/`variants`/`compatibility` (JSONB auxiliares).
+- `product_specs.keys_context` (columna JSONB) — semántica por clave (`shape`/`desc`)
+  que el LLM emite junto a `specs_normalized`. El vocabulario por categoría **no se
+  materializa en tabla**: se deriva al leer con la vista `category_keys_context`
+  (agrega el `keys_context` de todos los productos de la categoría). El loop de
+  normalización lee esa vista para mantener consistencia de claves entre productos
+  de la misma categoría. Las vistas `category_key_drift` y `category_enum_value_drift`
+  detectan claves/valores casi idénticos para revisión manual.
+- `reference_aliases` + `reference_alias_candidates` — datos de referencia GLOBALES
+  para la normalización de specs (certificaciones, traducciones de valor,
+  equivalencias de clave, descartes de identidad). `code.js` los lee vía la vista
+  `reference_bundle` y mergea sobre sus mapas de fallback; los tokens desconocidos
+  se acumulan en `reference_alias_candidates` para promoción humana. GLOBAL, no
+  por categoría.
 - `software` — software de gestión deduplicado (canónico),
   con FK circular `products.software_id` ↔ `software.canonical_product_id`.
 - `product_recommendations` — dirigidas (source → target). Tabla específica para "productos recomendados"; no se mezclan otros tipos de relación (compatibilidad, accesorios) — si llegan a existir, se modelan en tablas propias.
 
 **Capa RAG**
 
-- `rag_chunks` — texto + embedding + **metadata denormalizada**.
+- `rag_chunks` — texto + embedding (**sin metadata denormalizada**: el prefiltro
+  se hace por JOIN a `products` + EXISTS sobre `pav`).
   Un chunk pertenece a un producto **o** a un software (XOR check constraint).
   Tipos válidos: `overview`, `description`, `features`, `specs`, `spec_section`,
   `software`, `compatibility`, `variants`. La columna `section_name` identifica
@@ -98,12 +116,12 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 - `chunk_owner_xor` en `rag_chunks` — un chunk no puede pertenecer a producto Y software a la vez.
 - FK circular `products` ↔ `software` cerrada con `ALTER TABLE` después de crear `products`.
 
-### Incongruencias actuales en `schema.sql` frente a `salida_completa.json`
+### Incongruencias actuales en `schema.sql` frente al output del flujo (`flujo.json`)
 
 No se cambia el DDL automáticamente; estas son las diferencias que el ETL debe
 resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 
-| Punto | En `salida_completa.json` (output del flujo) | En `schema.sql` | Impacto / decisión |
+| Punto | En el output del flujo (`flujo.json`) | En `schema.sql` | Impacto / decisión |
 |---|---|---|---|
 | Categorías | Solo existe `category_id` | `categories.name` y `categories.slug` son `NOT NULL` | El loader necesita lookup externo de Woo o valores sintéticos (`categoria-516`) antes de insertar productos. |
 | Atributo inválido | 1 producto trae atributo `id = 0`, `taxonomy = null` | `attributes.taxonomy` es `NOT NULL` | Debe saltarse y registrarse como warning. |
@@ -118,8 +136,8 @@ resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 
 El "ETL" tiene dos etapas claramente separadas:
 
-**Etapa 1: flujo n8n ([flujo.json](flujo.json))** — ya implementado. Produce
-[salida_completa.json](salida_completa.json) con un objeto por producto que ya
+**Etapa 1: extracción y transformación (n8n, [flujo.json](flujo.json))** — ya
+implementada. Produce, en memoria del workflow, un objeto por producto que ya
 contiene:
 
 | Campo del output | Origen en el flujo |
@@ -135,8 +153,8 @@ Lo que el flujo **ya filtra/limpia**: CTAs ("solicitar bajo demanda", "contácte
 (preservadas dentro de description), self-relations, recomendados que no
 resuelven, duplicados.
 
-**Etapa 2: loader (pendiente de implementar)** — toma cada item del output y
-respeta las dependencias de FK, normalizando nombres (`es_nuevo` → `is_new`,
+**Etapa 2: carga (implementada en el mismo workflow n8n)** — toma cada item del
+output, respeta las dependencias de FK y normaliza nombres (`es_nuevo` → `is_new`,
 `software_canonico_de` → vínculo al producto canónico, `product_recommendations[]`
 del flujo → inserción 1:1 en tabla `product_recommendations`, etc.):
 
@@ -230,332 +248,74 @@ visible en el front para esa categoría. Diferencia > 0 = revisar inmediatamente
 
 ## 5. Prompt de normalización de specs (paso 9)
 
-Esta llamada LLM la ejecuta el **loader**, no el flujo n8n. Toma el array
-`specs[]` que ya emitió el nodo `Especificaciones técnicas` (cada item es
-`{name, value, section?, items?}`) y devuelve `specs_normalized` JSONB para
-insertar en `product_specs`.
+El **prompt vivo y autoritativo es [prompt.md](prompt.md)**; esta sección describe
+cómo el loader lo invoca, qué le pasa y cómo valida la salida. El detalle de reglas
+(unidades canónicas, dedup contra el vocabulario, certificaciones, rangos, narrativa
+vs enum, etc.) vive en [prompt.md](prompt.md) — no se duplica aquí.
 
 Una llamada LLM por producto. Modelo recomendado: `claude-sonnet-4-6` o
-`gpt-4o-mini` (no necesita Opus). Costo total estimado para 74 productos
-(snapshot actual): <$1.
+`gpt-4o-mini` (no necesita Opus). Costo total estimado para 74 productos: <$1.
 
-### Preprocesado obligatorio antes del LLM (loader)
+**Input por producto** (ver `<context>` en [prompt.md](prompt.md)):
+`{ category_name, specs: [{name, value, section?}], keys_context }`. El aplanado de
+items anidados y la limpieza previa los hace `code.js` antes del LLM, de modo que
+`specs` llega siempre con ≥1 ítem plano. `keys_context` es el vocabulario canónico
+de la categoría, derivado de la vista `category_keys_context` (ver más abajo).
 
-Antes de construir el input del prompt, el loader debe:
+**Salida**: un único objeto JSON con tres claves de nivel superior —
+`output` (= `specs_normalized`, se inserta en `product_specs.specs_normalized`),
+`keys_context` (semántica por clave, se persiste en `product_specs.keys_context`) y
+`audit_trace` (traza de decisiones para auditoría). El gate de post-validación manda
+los productos con shape inválido a una cola `needs_review` en vez de insertarlos.
 
-**1. Aplanar items anidados.** El 8% de los specs items tienen sub-items
-(`items[]`). El LLM no debe ver la estructura anidada; aplana a items planos
-con `name` concatenado para que el LLM decida el mapeo sin ambigüedad:
+### Preprocesado antes del LLM (en `code.js`, no en el prompt)
 
-```python
-def flatten_specs(raw):
-    out = []
-    for s in raw:
-        if s.get('items'):
-            for sub in s['items']:
-                out.append({
-                    'name': f"{s['name']} - {sub['name']}",
-                    'value': sub['value'],
-                    'section': s.get('section')
-                })
-        else:
-            out.append(s)
-    return out
-```
+`code.js` deja `specs` listo antes de la llamada al LLM:
 
-**2. Detectar fallback.** Si `specs[]` viene vacío o con 0 ítems después de
-aplanar, intentar extraer specs desde `features_text`. Pasar
-`"fallback_source": "features_text"` en el input del LLM y el contenido de
-`features_text` como `specs_raw` (un único ítem con `name: "features"` y
-`value: <texto completo>`). Marcar el producto con `specs_source = 'features_text'`
-en `product_specs` para auditoría.
+- **Aplana items anidados.** Los sub-items (`items[]`) se concatenan a ítems planos
+  (`"<padre> - <hijo>"`) para que el LLM vea una lista plana sin ambigüedad.
+- **Garantiza `specs` no vacío.** La limpieza/relleno se hace aguas arriba, de modo
+  que el LLM siempre recibe `specs` con ≥1 ítem.
+- **Variantes multi-SKU.** El prompt ([prompt.md](prompt.md) §5/§13) emite una clave
+  calificada por etiqueta/variante (`input_voltage_poe_pd_min_v`,
+  `input_current_eth_gprs_max_a`, una pareja min/max por banda), en vez de aplanar al
+  primer valor. El loader puede registrar `{product_id, variant_count}` en
+  `ingestion_runs.errors` para auditar productos multi-variante.
 
-Productos afectados en el snapshot actual (7): `netio-wifi-app`,
-`netio-nt-com2-4g`, `netio-nt-link-4g`, `teldat-regesta-smart-pro`,
-`suntech-sensor-de-temperatura`, `suntech-kit-de-voz`, `suntech-i-button`.
+### Construcción del `keys_context` de entrada
 
-**3. Detectar productos con variantes.** Si el producto tiene `variants[]`
-no vacío (9 productos en el snapshot), registrar warning en
-`ingestion_runs.errors` con `{product_id, variant_count}` e incluir una
-nota en el input del LLM (`"has_variants": true`). El prompt actual aplana
-las specs al primer conjunto de valores — esto es técnicamente incorrecto
-para productos multi-SKU (ej. `robustel-r2011` tiene variantes con y sin
-WiFi). El modelado correcto de variantes en `specs_normalized` se difiere
-a v3 del prompt porque requiere cambiar el shape del JSONB (de `number` a
-`{default, by_variant}`) lo que rompe todas las queries B*. Hasta entonces,
-el warning permite auditar qué respuestas técnicas pueden ser erróneas.
-
-### Construcción del input
+El loader lee el vocabulario canónico de la categoría desde la vista
+`category_keys_context` (una fila por categoría con
+`{ "<key>": { n, example, shape, desc } }`) y lo pasa como `keys_context`:
 
 ```sql
--- Claves ya vistas en la categoría del producto que estás procesando:
-SELECT array_agg(DISTINCT key ORDER BY key)
-FROM product_specs ps
-JOIN products p ON p.id = ps.product_id
-CROSS JOIN LATERAL jsonb_object_keys(ps.specs_normalized) AS key
-WHERE p.category_id = $1
-  AND ps.specs_normalized <> '{}'::jsonb;
+SELECT keys_context
+FROM category_keys_context
+WHERE category_id = $1;
 ```
 
-La primera ejecución por categoría devuelve `[]`; el LLM crea el vocabulario.
-A partir del 2º producto, ya hay base de reuso. Las claves convergen rápido
-(10–15 productos por categoría son suficientes para estabilizar).
+La primera ejecución por categoría no devuelve fila (vocabulario vacío); el LLM crea
+el vocabulario. A partir del 2º producto ya hay base de reuso. Las claves convergen
+rápido (10–15 productos por categoría son suficientes para estabilizar).
 
-### System prompt (v2026-05-20)
+### Reglas del system prompt
 
-El system prompt define las reglas de comportamiento del LLM. Los datos del
-producto van en el **text input** de cada llamada (ver sección siguiente).
-Incluye un único ejemplo I/O sintético al final del prompt para anclar la
-forma del JSON. Con prompt caching (TTL 5 min) el costo extra es marginal
-y la confiabilidad del formato sube notablemente.
-
-```
-Eres un normalizador de specs técnicas de productos B2B (telecom,
-networking, IoT industrial). Tu salida alimenta PostgreSQL JSONB para
-filtros numéricos y RAG.
-
-Entrada: objeto JSON con category_id, category_slug, category_name,
-product_name, specs_raw, known_keys_in_category, fallback_source, y
-features_text si fallback_source = "features_text".
-
-Salida: objeto JSON plano, sin anidamiento, sin markdown, sin texto
-fuera del JSON.
-
-ORDEN DE OPERACIONES (por cada entrada de specs_raw)
-  1. Si es campo de identidad (§9) o el valor es null/""/[]/N/A → descarta.
-  2. Clasifica el value: numérico, booleano, lista, o narrativo.
-  3. Convierte unidades a las canónicas de §4.
-  4. Decide forma: escalar, rango min/max, o límite único (§5).
-  5. Construye la clave candidata en inglés snake_case.
-  6. Aplica §2 (dedup contra known_keys_in_category). Si colapsa,
-     reemplaza por la canónica.
-  7. Aplica §8 (padre/hijas). Si tu candidata es padre y existen
-     hijas, divide o descarta.
-  8. Emite la clave final con el valor convertido.
-
-§1 — FORMA
-- JSON plano. Claves en snake_case y en INGLÉS. Si la spec viene en
-  español, traduce usando la tabla §2.
-- Valores numéricos como NUMBER, no string.
-- Booleanos: true/false con prefijo has_. Nunca supports_, is_,
-  includes_, with_.
-- Listas separadas por "/", ",", "|" → array de strings minúsculas
-  sin espacios extra ni vacíos.
-- No inventes valores ni narrativa. Solo reformula lo que está en la
-  entrada. Si no puedes parsear con confianza, omite.
-
-§2 — DEDUP CONTRA known_keys_in_category
-Antes de emitir CUALQUIER clave nueva:
-  a) Normaliza tu candidata aplicando estas equivalencias forzadas
-     (también traduce términos en español):
-          temp/temperatura     → temperature
-          frecuencia           → frequency
-          peso                 → weight
-          largo                → length
-          ancho                → width
-          alto                 → height
-          ganancia             → gain
-          potencia             → power
-          voltaje              → voltage
-          corriente            → current
-          conector             → connector
-          montaje              → mounting
-          polarizacion         → polarization
-          bandas               → bands
-          model_name           → model
-          device_model         → model
-          device_family        → model
-          device_brand         → brand
-          vendor               → brand
-          manufacturer         → brand
-          led_indicators       → leds
-          relative_humidity    → humidity
-          size                 → dimensions  (canónico para alto/ancho/largo/profundidad)
-     Elimina prefijos redundantes: device_, product_, item_.
-     Para contadores/cantidades, usa SIEMPRE sufijo _count, nunca plural
-     bare. Correcto: sim_slots_count, cpu_cores_count, antennas_count.
-     Incorrecto: sim_slots, cpu_cores, antennas.
-  b) Ignora el sufijo de unidad al matchear (_g, _kg, _mm, _cm, _ma,
-     _ua, _pct, _percent, _mhz, _ghz, _mbps, etc.). Compara solo la
-     raíz semántica.
-  c) Si la raíz colapsa contra una clave de known_keys_in_category,
-     EMITE con la clave canónica usando la unidad canónica de §4 —
-     aunque la existente use unidad no canónica. Ejemplo: known_keys
-     tiene `weight_kg`, tu spec es "200 g" → emite `weight_g = 200`,
-     NUNCA `weight_kg = 0.2`.
-  d) Solo crea clave nueva si ninguna existente aplica semánticamente.
-     La aparición de un sinónimo en specs_raw NO autoriza a duplicar.
-
-§3 — TÉRMINOS NO TRADUCIBLES
-Conserva como nombres propios: USB, RS232, RS485, RS422, LoRa, LoRaWAN,
-GPS, GNSS, GLONASS, SBAS, 3G, 4G, 5G, LTE, WiFi, Bluetooth, Ethernet,
-PoE, SFP, VLAN, VPN, MPLS, SIM, eSIM, GPIO, CAN, SNMP, SSH, DC, AC,
-RTC, NFC, J1939.
-
-§4 — UNIDAD CANÓNICA ÚNICA
-No coexisten variantes de la misma magnitud:
-  throughput/velocidad → Mbps        *_mbps
-  frecuencia           → MHz         *_mhz
-  temperatura          → Celsius     *_c
-  potencia/consumo     → Watts       *_w
-  voltaje              → Volts       *_v
-  corriente            → Amperes     *_a    (mA→A, µA→A en decimal)
-  ganancia             → dBi         *_dbi
-  peso                 → gramos      *_g    (NUNCA *_kg)
-  dimensiones/tamaño   → mm          *_mm   (NUNCA *_cm, *_m)
-  humedad relativa     → percent     *_percent (NUNCA *_pct)
-  altitud              → metros      *_m
-  tiempo ≥ 1s          → segundos    *_s
-  tiempo < 1s (latencia, response) → ms  *_ms
-  resistencia          → Ohm         *_ohm
-Convierte el valor antes de emitir. USA SIEMPRE el code interpreter
-habilitado para cualquier operación numérica o transformación de
-strings que requiera precisión, no calcules ni transformes mentalmente.
-Casos en los que debes usar el code interpreter:
-  - Conversiones de unidad (kg→g, mA→A, µA→A, MHz↔GHz, mm↔cm, °F→°C,
-    inch→mm, lb→kg, etc.)
-  - Aritmética sobre rangos ("9–36 V" → split en min=9, max=36)
-  - Parseo de strings compuestos ("4 x RJ45 10/100" → count=4, speed=100)
-  - Decimales con múltiples órdenes de magnitud (µA → A en decimal)
-  - Validación del JSON final (parse antes de emitir)
-  - Cualquier operación donde un error aritmético produciría una spec
-    incorrecta
-Los errores aritméticos del LLM son la causa #1 de specs incorrectas.
-Solo emite el valor después de verificarlo en el intérprete.
-Ejemplos esperados:
-  "1.2 kg"  → weight_g = 1200
-  "50 mA"   → active_current_a = 0.05
-  "200 µA"  → sleep_current_a = 0.0002
-  "85 %"    → relative_humidity_max_percent = 85
-
-§5 — RANGO, ESCALAR, LÍMITE ÚNICO (mutuamente excluyentes)
-Decide qué forma emite tu spec actual, y resuelve conflictos con
-known_keys así:
-  a) RANGO (texto con "a", "-", "hasta", "to", "min/max",
-     "típico/máximo", "~", o dos números con la misma unidad cuando el
-     contexto implica continuidad: temperaturas, voltajes, frecuencias
-     contiguas) → emite SOLO <base>_min_<unit> y <base>_max_<unit>.
-     NO confundir con ALTERNANCIA: "12V/24V", "3.3V o 5V", "850/900/
-     1800/1900 MHz" son valores discretos seleccionables, no un rango.
-     Esos van como array de strings (§1).
-  b) ESCALAR (valor único sin calificador) → emite SOLO <base>_<unit>,
-     SALVO que known_keys ya contenga <base>_min_<unit>/<base>_max_<unit>;
-     en ese caso emite min=max=valor.
-  c) LÍMITE ÚNICO declarado explícitamente:
-       "máximo X" / "hasta X" / "≤ X" → SOLO <base>_max_<unit>.
-       "mínimo X" / "desde X" / "≥ X" → SOLO <base>_min_<unit>.
-     Nunca inventes el extremo opuesto.
-  d) PROHIBIDO emitir simultáneamente <base>_<unit> y <base>_min_<unit>
-     o <base>_max_<unit> en el mismo producto.
-  e) Si known_keys solo contiene el escalar y tu spec es rango, emite
-     min/max (deja morir el escalar para esa categoría).
-
-§6 — NARRATIVA (prefijo "_")
-Texto libre técnico que no se puede convertir a número/booleano/lista
-va bajo una clave con prefijo "_", como array de strings.
-Ejemplos: _install_notes, _operating_notes, _physical_notes.
-PROHIBIDO emitir *_notes, *_description, *_remarks, *_comments, *_info
-SIN el prefijo "_".
-
-§7 — FALLBACK DESDE features_text
-Si fallback_source = "features_text" y specs_raw está vacío:
-  - Extrae solo de features_text.
-  - Solo claves con patrón numérico+unidad explícita o booleano
-    explícito. No infieras desde marketing.
-  - Prefija con fb_ (excepto certifications y claves "_").
-
-§8 — PADRE/HIJAS
-PROHIBIDO emitir clave "padre" si existen claves "hijas" en
-known_keys_in_category o tu propia salida ya las separa:
-  dimensions_mm  si existen *_height_mm / *_width_mm / *_length_mm
-  ethernet_ports si existen ethernet_lan_ports_count / _wan_ports_count
-  serial_esd_v   si existen serial_esd_air_v / serial_esd_contact_v
-  interfaces     si hay claves específicas por interfaz
-  inputs         si hay digital_inputs_count / analog_inputs_count
-Si el value original solo trae el padre como resumen ("3 USB, 2
-Ethernet"), divídelo en hijas cuando la información lo permita; si no,
-OMITE (no inventes la suma).
-
-§9 — IDENTIDAD DEL PRODUCTO (excluida de specs)
-NO emitas estas claves; viven en columnas dedicadas del producto:
-  brand, manufacturer, vendor, device_brand
-  model, device_model, model_name, device_family
-  name, product_name, sku, serial_number
-  firmware_version, firmware_versions, os_versions
-  source_url, datasheet_url, image_url
-Tampoco emitas category_id, category_slug, category_name ni
-product_name (vienen como input).
-
-§10 — CERTIFICACIONES
-Si detectas tokens regulatorios en name/value/section, emite
-certifications como array de strings normalizado:
-  Chile SUBTEL     → CL-SUBTEL
-  Uruguay URSEC    → UY-URSEC
-  Argentina ENACOM → AR-ENACOM
-  Brasil ANATEL    → BR-ANATEL
-  México IFETEL    → MX-IFETEL
-  FCC              → GLOBAL-FCC
-  CE               → GLOBAL-CE
-  RoHS             → GLOBAL-RoHS
-  REACH            → GLOBAL-REACH
-Si dice "en curso", "pendiente", "tramitando" o equivalente, OMITE.
-
-EJEMPLO DE SALIDA (referencia de forma, no de valores reales)
-Input parcial:
-  {"specs_raw":[
-    {"name":"Temperatura","value":"-40 a 75 °C","section":"Ambiental"},
-    {"name":"Voltaje DC","value":"12 V","section":"Alimentación"},
-    {"name":"Peso","value":"1.2 kg","section":"Físico"},
-    {"name":"Puertos LAN","value":"4 x RJ45 10/100","section":"Interfaces"},
-    {"name":"Certificaciones","value":"Chile SUBTEL en curso, FCC"},
-    {"name":"Notas instalación","value":"Montaje DIN. IP54."}
-  ],
-  "known_keys_in_category":["operating_temperature_min_c",
-   "operating_temperature_max_c","input_voltage_v"]}
-
-Output:
-  {
-    "operating_temperature_min_c": -40,
-    "operating_temperature_max_c": 75,
-    "input_voltage_v": 12,
-    "weight_g": 1200,
-    "ethernet_lan_ports_count": 4,
-    "ethernet_lan_ports_speed_mbps": 100,
-    "certifications": ["GLOBAL-FCC"],
-    "_install_notes": ["Montaje DIN", "IP54"]
-  }
-
-Observa: temperatura usa min/max porque ya están en known_keys; voltaje
-es escalar; peso convierte kg→g; "Chile SUBTEL en curso" se omite por
-§10; notas van como _install_notes array.
-```
+El system prompt **completo y autoritativo vive en [prompt.md](prompt.md)**: define
+las reglas de comportamiento del LLM (forma del JSON, unidades canónicas, dedup
+contra `keys_context`, rangos/escalares, narrativa vs enum, padre/hijas, identidad,
+certificaciones, higiene de salida) y termina con ejemplos I/O. El system prompt no
+cambia por producto, así que el prompt caching (TTL 5 min) lo mantiene barato; los
+datos del producto van en el **text input** de cada llamada (abajo).
 
 ### Input en runtime (text input por llamada)
 
-El text input es el `user message` de cada llamada al LLM. Contiene los
-datos reales del producto — nunca van en el system prompt.
-
-El loader construye este objeto antes de cada llamada:
+El text input es el `user message` de cada llamada: los datos reales del producto.
+Forma (ver `<context>` en [prompt.md](prompt.md)):
 
 ```json
 {
-  "category_id": 516,
-  "category_slug": "modems-routers",
   "category_name": "Modems y Routers",
-  "product_name": "Robustel EG5100",
-  "fallback_source": "specs",
-  "known_keys_in_category": [
-    "throughput_lte_dl_mbps",
-    "throughput_lte_ul_mbps",
-    "ports_lan_count",
-    "ports_lan_speed_mbps",
-    "wifi_standard",
-    "voltage_min_v",
-    "voltage_max_v",
-    "operating_temp_min_c",
-    "operating_temp_max_c"
-  ],
-  "specs_raw": [
+  "specs": [
     {"name": "Throughput LTE", "value": "150 Mbps DL / 50 Mbps UL", "section": "Conectividad"},
     {"name": "Puertos LAN",    "value": "4 x RJ45 10/100",           "section": "Interfaces"},
     {"name": "Puertos WAN",    "value": "1 x RJ45 Gigabit",          "section": "Interfaces"},
@@ -563,21 +323,23 @@ El loader construye este objeto antes de cada llamada:
     {"name": "Voltaje",        "value": "9-36 V DC",                 "section": "Alimentación"},
     {"name": "Certificaciones","value": "Homologado Chile-SUBTEL, Uruguay-URSEC"},
     {"name": "Instalación",    "value": "Montaje DIN rail. Requiere gabinete IP54."}
-  ]
+  ],
+  "keys_context": {
+    "throughput_lte_dl_mbps":      {"n": 8,  "example": 100, "shape": "scalar", "desc": "LTE downlink throughput"},
+    "operating_temperature_min_c": {"n": 12, "example": -40, "shape": "range",  "desc": "minimum operating temperature"},
+    "operating_temperature_max_c": {"n": 12, "example": 75,  "shape": "range",  "desc": "maximum operating temperature"}
+  }
 }
 ```
 
-Cuando `fallback_source = "features_text"`, `specs_raw` viene vacío y se
-agrega el campo `features_text` con el contenido completo del bloque de
-características del producto.
-
-`known_keys_in_category` se construye con la query de §5.1. En la primera
-ejecución de una categoría devuelve `[]`; el LLM genera el vocabulario
-inicial y las siguientes llamadas ya tienen claves de referencia.
+`keys_context` se construye desde la vista `category_keys_context` (ver arriba). En
+la primera ejecución de una categoría llega vacío (`{}`); el LLM genera el
+vocabulario inicial y las llamadas siguientes ya tienen claves de referencia.
 
 ### Ejemplo de salida esperada
 
-Salida del LLM para el input de ejemplo anterior:
+`output` del LLM para el input anterior (las otras dos claves de nivel superior,
+`keys_context` y `audit_trace`, se omiten aquí por brevedad):
 
 ```json
 {
@@ -589,22 +351,10 @@ Salida del LLM para el input de ejemplo anterior:
   "ports_wan_speed_mbps": 1000,
   "voltage_min_v": 9,
   "voltage_max_v": 36,
-  "operating_temp_min_c": -40,
-  "operating_temp_max_c": 75,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75,
   "certifications": ["CL-SUBTEL", "UY-URSEC"],
   "_install_notes": ["Montaje DIN rail", "Requiere gabinete IP54"]
-}
-```
-
-Ejemplo con fallback (`fallback_source = "features_text"`):
-
-```json
-{
-  "fb_throughput_lte_dl_mbps": 150,
-  "fb_has_wifi": true,
-  "fb_operating_temp_min_c": -40,
-  "fb_operating_temp_max_c": 70,
-  "_operating_notes": ["Diseñado para entornos industriales con alta vibración"]
 }
 ```
 
@@ -616,7 +366,7 @@ existentes. La validación actúa en dos niveles complementarios:
 **Nivel 1 — Levenshtein (tipográfico, ya existente):**
 
 1. Por cada clave nueva emitida por el LLM para un producto, calcular distancia
-   Levenshtein contra cada clave en `known_keys_in_category`.
+   Levenshtein contra cada clave de `keys_context` (las claves canónicas de la categoría).
 2. Si `distance ≤ 2` y la clave existente NO está ya presente en el output
    → **bloquear el INSERT** y forzar reuso o revisión manual. Registrar en
    `ingestion_runs.errors` con `{product_id, llm_key, suggested_key, distance}`.
@@ -635,7 +385,7 @@ Levenshtein no detecta variantes como `temp_funcionamiento_c` ≈
 ```python
 # Para cada llm_key que Levenshtein permitió:
 emb_new = embed(llm_key)                    # embedding de la clave snake_case
-for kk in known_keys_in_category:
+for kk in keys_context:                     # claves canónicas de la categoría
     if kk not in embed_cache:
         embed_cache[kk] = embed(kk)
     if cosine_similarity(emb_new, embed_cache[kk]) >= 0.85:
@@ -647,33 +397,37 @@ Umbral 0.85 es conservador: deja pasar `ports_lan_count` vs `ports_wan_count`
 (distintos) pero bloquea `operating_temp_c` vs `temp_funcionamiento_c`
 (mismo concepto). Ajustar si hay falsos positivos en las primeras corridas.
 
-Excluir claves con prefijo `_` y `fb_` de ambas validaciones (son por
-definición únicas por producto).
+Excluir claves con prefijo `_` de ambas validaciones (narrativas, por
+definición poco frecuentes por producto).
 
-### Trazabilidad del prompt
+### Forzar re-normalización tras cambio de prompt
 
-Cada corrida del ETL persiste `prompt_version` y `prompt_normalized_at` en
-`product_specs`. Cuando se ajuste el prompt:
+`prompt_version` se eliminó por decisión deliberada: cambios de prompt son raros
+(1-2 veces/año esperado) y mantener una columna + lógica condicional en n8n no
+se justifica. Cuando se ajuste el prompt, forzar re-normalización completa:
 
 ```sql
--- Re-normalizar solo productos con prompt obsoleto
-SELECT product_id FROM product_specs
-WHERE prompt_version IS NULL OR prompt_version <> 'v2026-05-20';
+-- Invalida el fingerprint de todos los productos
+UPDATE product_specs SET specs_fingerprint = NULL;
 ```
 
-Sin esta columna, una mejora del prompt obliga a re-normalizar el catálogo
-completo o a tener un universo mezclado sin forma de auditar.
+En el próximo run de n8n, todos los productos tienen `stored_fp = NULL ≠ new_fp`,
+por lo que entran al pipeline completo (re-normalize + re-gen-text + re-chunks).
+
+Trade-off aceptado: no hay trazabilidad por producto de qué prompt produjo qué
+normalized. Si se vuelve necesario auditar, reintroducir `prompt_version` como
+columna opcional sin lógica de skip — solo para registro.
 
 ### Validación post-normalización
 
 Query mensual para detectar claves huérfanas (segunda red de seguridad).
-Excluir prefijos `_` y `fb_` que son legítimamente poco frecuentes:
+Excluir el prefijo `_` (narrativas, legítimamente poco frecuentes):
 
 ```sql
 SELECT key, COUNT(*) AS products_with_key
 FROM product_specs ps
 CROSS JOIN LATERAL jsonb_object_keys(ps.specs_normalized) AS key
-WHERE key NOT LIKE '\_%' AND key NOT LIKE 'fb\_%'
+WHERE key NOT LIKE '\_%'
 GROUP BY key
 HAVING COUNT(*) < 3
 ORDER BY products_with_key, key;
@@ -716,25 +470,36 @@ de abajo y embeddea.
 
 ### Por cada chunk insertado
 
-1. Consultar `rag_chunks` por `product_id` + `chunk_type` + `section_name`.
-2. Si no existe → INSERT + embeddear (incrementar `chunks_created`).
-3. Si existe y `content` es idéntico y metadata no cambió → **skip embedding** (incrementar `chunks_skipped`).
-4. Si cambió solo metadata → UPDATE de columnas sin tocar `content`; **no regenerar embedding**.
-5. Si cambió `content` → UPDATE; el trigger `trg_chunks_updated_at` nulifica `embedding` automáticamente → el paso de embeddings lo detecta por `embedding IS NULL` y re-embeddea.
-6. Denormalizar metadata desde `products` (o `software`) en el momento del INSERT/UPDATE.
+La idempotencia de chunks gira sobre `source_key` (columna `unique` en `rag_chunks`,
+estable entre corridas). **El embedding se calcula arriba, no se hace backfill de
+`NULL`** — el camino "INSERT con `embedding = NULL` → recoger después `WHERE embedding
+IS NULL`" ya no existe.
 
-No existe columna `content_hash` en `rag_chunks`. La comparación de cambio se hace directamente sobre la columna `content`.
+1. n8n compara el `content` por `source_key` **antes** del nodo Vector Store. Si el
+   chunk no cambió → **skip** (no se re-embeddea, incrementar `chunks_skipped`).
+2. Si el chunk es nuevo o su `content` cambió → se embeddea con Gemini
+   (`gemini-embedding-001`, 3072 dims) y la fila aterriza en la tabla de staging
+   `embedding_rag_chunk_upload` (`content`, `metadata`, `embedding` NOT NULL).
+3. El trigger `sync_embedding_upload_to_rag_chunks` (schema.sql §8b) parsea la
+   `metadata`, hace el **UPSERT por `source_key`** (`ON CONFLICT`) en `rag_chunks`
+   ya con embedding, y **drena** la fila de staging en el acto. Así `rag_chunks`
+   queda siempre con embedding, desde un único escritor (sin doble escritura ni el
+   pileup observado upload=472 / rag_chunks=314).
+4. Los chunks **eliminados** (producto/sección que desaparece) van por un nodo
+   `Delete` aparte en n8n — un chunk borrado no pasa por embeddings.
 
-### Construcción de `attribute_slugs`
+No existe columna `content_hash` en `rag_chunks`: la comparación de cambio se hace
+directamente sobre `content`, indexada por `source_key`.
 
-```sql
--- Para un producto dado, materializa el array de filtros
-SELECT array_agg(DISTINCT a.taxonomy || ':' || ao.slug)
-FROM product_attribute_values pav
-JOIN attribute_options ao ON ao.id = pav.attribute_option_id
-JOIN attributes a         ON a.id = ao.attribute_id
-WHERE pav.product_id = $1;
-```
+> **Requisito en n8n:** el Default Data Loader **no** debe partir el `content` (text
+> splitter en OFF → 1 documento = 1 chunk). Si lo parte, los pedazos comparten
+> `source_key` y el `ON CONFLICT` deja solo el último → content truncado y conteos
+> que no cuadran. Esto no se arregla en el trigger.
+
+**El chunk no guarda metadata de catálogo** (`category_id`/`is_new`/`brand` y los
+filtros de atributo se resuelven por JOIN a `products`/`pav` en query time). La
+fase 1 solo escribe `content` + owner (`product_id` **o** `software_id`) +
+`chunk_type`/`section_name`; no necesita leer `products`.
 
 ### Chunks de software
 
@@ -775,9 +540,10 @@ WHERE pav.product_id = $1;
   un grupo: una `taxonomy` + una lista `option_slugs` de opciones aceptables
   para ese grupo.
 - **OR dentro del grupo, AND entre grupos.** El backend materializa esto en
-  N cláusulas separadas (ver query 7 en §8): un `c.attribute_slugs && ARRAY[...]`
-  por grupo. Aplanar a un único array con `&&` colapsa la semántica a OR
-  global y es un anti-patrón.
+  N cláusulas separadas (ver query 7 en §8): un `EXISTS` sobre
+  `product_attribute_values` por grupo (con `ao.slug = ANY(...)` para el OR
+  interno). Colapsar todos los grupos en un solo EXISTS/IN da OR global y es
+  un anti-patrón.
 - El NLU **debe** preservar la separación por grupo en el output; no
   emitir todos los slugs en una lista única.
 
@@ -820,9 +586,9 @@ El re-ranking clásico (cross-encoders, Cohere Rerank, LLM-as-reranker)
 está diseñado para escenarios de **alto recall**: BM25/cosine devuelve
 100-200 candidatos con orden ruidoso y necesita refinarlos. **No es este caso.**
 
-A 74 productos / ~495 chunks con prefiltrado SQL fuerte (`category_id` +
-`is_new` + `attribute_slugs`), el pool sobre el que opera cosine es
-típicamente 20-100 chunks. Cosine sobre `text-embedding-3-large` ya
+A 74 productos / ~495 chunks con prefiltrado SQL fuerte (JOIN a `products` por
+`category_id`/`is_new`/`brand` + EXISTS de atributos sobre `pav`), el pool sobre el que opera cosine es
+típicamente 20-100 chunks. Cosine sobre `gemini-embedding-001` ya
 ordena bien sobre ese pool. El verdadero motor de calidad es el
 **prefiltrado** + el **dedup por `product_id`**, no el rerank.
 
@@ -1028,30 +794,36 @@ ORDER BY a.name, ao.name;
 --    $1: vector de la query, $2: category_id, $3: is_new, $4: brand,
 --    $5: chunk_types[]
 --
--- Atributos: el backend agrega dinámicamente un AND c.attribute_slugs && ARRAY[...]
--- por cada grupo de `attribute_filters` emitido por el NLU. Cada array contiene
--- las opciones del MISMO atributo (OR interno); AND entre grupos da la semántica
+-- Prefiltro por JOIN a products (rag_chunks NO denormaliza metadata).
+-- Atributos: el backend agrega dinámicamente un EXISTS-por-grupo sobre
+-- product_attribute_values por cada grupo de `attribute_filters` del NLU. El IN
+-- dentro de cada EXISTS da el OR del grupo; AND entre EXISTS da la semántica
 -- esperada del usuario ("5G Y WiFi", no "5G O WiFi").
 --
 -- Ejemplo: attribute_filters = [
 --   {"taxonomy":"pa_red-celular","option_slugs":["5g","4g"]},
 --   {"taxonomy":"pa_wifi","option_slugs":["si"]}
 -- ]
--- => se inyectan dos cláusulas:
---   AND c.attribute_slugs && ARRAY['pa_red-celular:5g','pa_red-celular:4g']
---   AND c.attribute_slugs && ARRAY['pa_wifi:si']
+-- => se inyectan dos EXISTS (uno por taxonomy):
+--   AND EXISTS (... a.taxonomy='pa_red-celular' AND ao.slug = ANY('{5g,4g}'))
+--   AND EXISTS (... a.taxonomy='pa_wifi'        AND ao.slug = ANY('{si}'))
 --
--- ANTI-PATRÓN: aplanar todos los slugs en un único array con && colapsa la
--- semántica a OR global y devuelve productos que cumplen UNO solo de los filtros.
+-- ANTI-PATRÓN: un único EXISTS/IN mezclando taxonomies colapsa a OR global.
 SELECT c.id, c.product_id, c.software_id, c.chunk_type, c.content,
        1 - (c.embedding <=> $1::vector) AS similarity
 FROM rag_chunks c
+JOIN products p ON p.id = c.product_id
 WHERE c.embedding IS NOT NULL
-  AND ($2::int    IS NULL OR c.category_id   = $2)
-  AND ($3::bool   IS NULL OR c.is_new        = $3)
-  AND ($4::text   IS NULL OR c.brand         = $4)
+  AND ($2::int    IS NULL OR p.category_id   = $2)
+  AND ($3::bool   IS NULL OR p.is_new        = $3)
+  AND ($4::text   IS NULL OR p.brand         = $4)
   AND ($5::text[] IS NULL OR c.chunk_type    = ANY($5))
-  -- + N cláusulas `c.attribute_slugs && ARRAY[...]` (una por grupo del NLU)
+  -- + N cláusulas EXISTS sobre pav (una por grupo del NLU):
+  --   AND EXISTS (SELECT 1 FROM product_attribute_values pav
+  --     JOIN attribute_options ao ON ao.id = pav.attribute_option_id
+  --     JOIN attributes a         ON a.id = ao.attribute_id
+  --     WHERE pav.product_id = c.product_id
+  --       AND a.taxonomy = $tax AND ao.slug = ANY($opts))
 ORDER BY c.embedding <=> $1::vector
 LIMIT 20;
 
@@ -1100,19 +872,24 @@ WHERE p.category_id = $1
 ORDER BY 1;
 
 -- 9) Productos similares por specs (similarity entre embeddings de chunks técnicos)
-SELECT p.id, p.name,
+-- "misma categoría" se resuelve por JOIN a products (p1=referencia, p2=candidato),
+-- ya que rag_chunks no denormaliza category_id.
+SELECT p2.id, p2.name,
        AVG(1 - (c2.embedding <=> c1.embedding)) AS avg_sim
-FROM rag_chunks c1
+FROM products p1
+JOIN rag_chunks c1
+  ON c1.product_id = p1.id
+ AND c1.chunk_type IN ('specs','spec_section')
+ AND c1.embedding IS NOT NULL
+JOIN products p2
+  ON p2.category_id = p1.category_id
+ AND p2.id <> p1.id
 JOIN rag_chunks c2
-  ON c2.product_id <> c1.product_id
+  ON c2.product_id = p2.id
  AND c2.chunk_type IN ('specs','spec_section')
- AND c2.category_id = c1.category_id
  AND c2.embedding IS NOT NULL
-JOIN products p ON p.id = c2.product_id
-WHERE c1.product_id = (SELECT id FROM products WHERE slug = $1)
-  AND c1.chunk_type IN ('specs','spec_section')
-  AND c1.embedding IS NOT NULL
-GROUP BY p.id, p.name
+WHERE p1.slug = $1
+GROUP BY p2.id, p2.name
 ORDER BY avg_sim DESC LIMIT 5;
 
 -- 10) Match fuzzy de producto por mención del usuario (resuelve "EG5100" sin marca)
@@ -1144,7 +921,7 @@ WHERE p.software_id = (SELECT id FROM software WHERE name = $1);
 
 | Fase | Trabajo | Salida | Esfuerzo |
 |---|---|---|---|
-| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `schema.sql` y ETL alineados con `salida_completa.json` | medio día |
+| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `schema.sql` y ETL alineados con el output del flujo (`flujo.json`) | medio día |
 | 1 | Crear DB y ejecutar `schema.sql` | DB lista | <1 h |
 | 2 | ETL pasos 1–3 (taxonomía + atributos) | `categories`, `attributes`, `attribute_options`, `category_attributes` | medio día |
 | 3 | ETL pasos 4–7 (software + productos + atributos por producto) | `software`, `products`, `product_attribute_values` | 1 día |
@@ -1261,8 +1038,7 @@ El sistema es idempotente por diseño. n8n calcula los fingerprints antes de esc
          ↓
 [Code: calcular fingerprints]
          ↓
-[Supabase Get Many: SELECT id, content_fingerprint, specs_fingerprint,
-                           attributes_fingerprint, embedding_fingerprint
+[Supabase Get Many: SELECT id, content_fingerprint, specs_fingerprint
                     FROM products / software / product_specs]
          ↓
 [Code: clasificar cada registro]
@@ -1279,11 +1055,13 @@ El sistema es idempotente por diseño. n8n calcula los fingerprints antes de esc
 | Tabla | Columna | Campos que cubre | Formato n8n |
 |---|---|---|---|
 | `software` | `content_fingerprint` | `name`, `description_text`, `attributes` | `'name:<v>\|desc:<v>\|attrs:<v>'` |
-| `products` | `content_fingerprint` | `name`, `brand`, `model`, `description`, `is_new`, `search_aliases`, `software_id` | `['name:<v>','brand:<v>',...].join('\|')` |
-| `product_specs` | `specs_fingerprint` | `specs` + `specs_normalized` JSONB | `'specs:<json>\|normalized:<json>'` |
-| `rag_chunks` | — | `content` (sin columna separada) | comparar `content` directo en query |
+| `products` | `content_fingerprint` | `name`, `brand`, `model`, `description`, `is_new`, `search_aliases`, `software_id` | `'name:<v>\|brand:<v>\|model:<v>\|desc:<v>\|is_new:<v>\|aliases:<v>\|sw_id:<v>'` |
+| `product_specs` | `specs_fingerprint` | Todo EXCEPTO `specs_normalized` (derivado del LLM): `specs`, `table_specs`, `variants`, `compatibility`, `specs_text`, `features_text` | `'specs:<json>\|table_specs:<json>\|variants:<json>\|compatibility:<json>\|specs_text:<text>\|features_text:<text>'` |
+| `rag_chunks` | — (idempotencia por `source_key`) | `content` (sin columna separada) | comparar `content` por `source_key` antes del Vector Store |
 
-**Señal de re-embedding en chunks:** el trigger `trg_chunks_updated_at` nulifica `embedding` cuando `content` cambia. El ETL de embeddings corre `WHERE embedding IS NULL`.
+**Señal de re-embedding en chunks:** n8n compara el `content` por `source_key` **antes** del nodo Vector Store. Solo los chunks nuevos o con `content` cambiado se embeben (Gemini) y aterrizan en `embedding_rag_chunk_upload`; el trigger `sync_embedding_upload_to_rag_chunks` (schema.sql §8b) hace el UPSERT por `source_key` dejando `rag_chunks` siempre con embedding. Ya no existe el camino `embedding = NULL` + backfill.
+
+**Forzar re-normalización tras cambio de prompt LLM:** `UPDATE product_specs SET specs_fingerprint = NULL`. En el próximo run, n8n ve fingerprint distinto y re-procesa todo el pipeline (normalize + gen-text + chunks).
 
 **Stale records (hard delete):** productos presentes en DB pero ausentes en el source se eliminan. `ON DELETE CASCADE` limpia `rag_chunks`, `product_specs`, `product_attribute_values` automáticamente. Solo aplica cuando el source envía el **catálogo completo**; si el source es parcial, recolectar todos los IDs vistos antes de correr los DELETEs.
 
@@ -1297,13 +1075,13 @@ Una re-corrida sin cambios reales cuesta 0 USD en embeddings y <30s de wall time
 
 | Riesgo | Mitigación |
 |---|---|
-| Inconsistencia de claves entre productos en `specs_normalized` | Validación Levenshtein en ETL (§5) + reuso de `known_keys_in_category` + query mensual de huérfanas. |
+| Inconsistencia de claves entre productos en `specs_normalized` | Validación Levenshtein en ETL (§5) + reuso de `keys_context` + query mensual de huérfanas. |
 | Extractor NLU saca filtros incorrectos | `confidence` umbral + fallback escalonado + log obligatorio + eco de filtros al usuario cuando `confidence ∈ [0.6, 0.8]`. |
 | Specs sin parsear (`raw_text` ambiguo) | Quedan en `specs` crudo; no se pierden. El LLM final puede leerlas vía retrieval por chunk `specs`. |
 | Cambios en WooCommerce no se reflejan | ETL incremental con fingerprints corre periódicamente o por webhook. Productos eliminados en Woo se detectan por hard delete al comparar IDs del source vs DB. |
 | Software huérfano (canónico borrado) | FK `ON DELETE SET NULL` en `software.canonical_product_id`; queries deben tolerar NULL. |
 | Crecimiento que invalide el "sin índice vectorial" | Métrica de latencia P95; cuando supere umbral, una sola sentencia `CREATE INDEX` resuelve. |
-| Drift del prompt de normalización de specs sin trazabilidad | `prompt_version` + `prompt_normalized_at` en `product_specs` permiten re-normalizar selectivamente. |
+| Drift del prompt de normalización de specs sin trazabilidad | Cambios de prompt son raros (1-2/año). Forzar re-normalize global con `UPDATE product_specs SET specs_fingerprint = NULL`. Aceptado el trade-off de no auditar qué prompt produjo qué normalized. |
 | Inyección vía `description` / `features_text` (proveedor malicioso o scraper que arrastra instrucciones del HTML del fabricante) | Sanitización en ingesta: stripear etiquetas `<script>`, frases tipo "ignore previous instructions", URLs sospechosas. En el prompt de composición, encerrar los chunks recuperados en delimitadores claros (`<chunk id="..." product="...">...</chunk>`) e instruir al LLM final que **nunca** ejecute instrucciones dentro de delimitadores. |
 | Fan-out del contexto al LLM final crece con catálogo | Dedup por `product_id` (≤3 chunks/producto) + límite duro de 10 chunks totales / 4000 tokens en el merge. Re-evaluar si `compare` con >2 productos se vuelve común. |
 | Pool de cosine sin ordenar bien por sí solo en queries de `compare` o criterio implícito | Mitigación primaria: dedup por `product_id`. Si el eval muestra P@5 < 0.80 en `intent=compare`, activar rerank detrás de feature flag (§7). |
@@ -1318,21 +1096,21 @@ condiciones que invalidarían cada elección quedan explícitas para revisión f
 | Decisión | Elegido | Alternativa descartada | Razón | Condición para revisar |
 |---|---|---|---|---|
 | Vector store | pgvector en mismo Postgres | Pinecone / Qdrant / Weaviate | Una sola DB, joins SQL triviales con catálogo, menos ops. A <500 productos no justifica DB extra. | >100k chunks o necesidad de filtrado por metadata muy compleja. |
-| Modelo de embedding | `text-embedding-3-large` (3072 dims) | `text-embedding-3-small` (1536 dims) o `3-large` truncado a 1536 vía Matryoshka (`dimensions=1536`) | Acceso disponible solo a `3-large`. Costo absoluto despreciable al volumen. Si llega el momento de necesitar menos dims (índice HNSW, storage), el path **sin cambiar de modelo** es pedirle a la misma API `text-embedding-3-large` con `dimensions=1536` — la familia `text-embedding-3` está entrenada con Matryoshka Representation Learning, así que el output truncado preserva ~98% de la calidad del 3072. | Si P95 de retrieval supera 150 ms o el storage cruza umbrales de costo. Migración: `ALTER COLUMN ... TYPE vector(1536)` + re-embeddear con `dimensions=1536`. |
-| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real validado: 74 productos → ~495 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por `category_id`/`is_new`/`attribute_slugs` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
+| Modelo de embedding | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Salida reducida a 1536 dims vía `output_dimensionality` | Costo absoluto despreciable al volumen. Si llega el momento de necesitar menos dims (índice HNSW, storage), el path **sin cambiar de modelo** es pedirle al mismo `gemini-embedding-001` una `output_dimensionality` menor — el modelo está entrenado con Matryoshka Representation Learning, así que el output reducido preserva la mayor parte de la calidad del 3072. | Si P95 de retrieval supera 150 ms o el storage cruza umbrales de costo. Migración: `ALTER COLUMN ... TYPE vector(1536)` + re-embeddear con `output_dimensionality=1536`. |
+| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real validado: 74 productos → ~495 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por JOIN a `products` (`category_id`/`is_new`/`brand`) + EXISTS de atributos sobre `pav` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
 | Tipo de embedding en DDL | `vector(3072)` | `halfvec(3072)` desde día 1 | A 495 chunks la diferencia de storage (6 MB vs 3 MB) es irrelevante. `vector` es el tipo más probado, mejor soportado por drivers y el default en la mayoría de tutoriales/ejemplos de pgvector. Half-precision solo se justificaría si hubiera que indexar, y eso no va a pasar a este horizonte. | Si algún día se cruza el umbral del índice: `ALTER COLUMN ... TYPE halfvec(3072) USING ...::halfvec(3072)` toma segundos a 3300 filas. No se pierde nada por aplazar. |
 | Atributos taxonómicos | EAV controlado (3 tablas) | Una columna JSONB por producto | EAV permite filtros eficientes con índices estándar y multivalor por categoría. JSONB sirve para leer pero rinde mal en filtros booleanos múltiples. | No aplica a este volumen ni dominio. |
-| Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Tabla `spec_keys` + `product_spec_values` | Vocabulario emergente y heterogéneo por categoría. El catálogo manual no escala a 1600+ specs. El LLM con reuso de `known_keys_in_category` converge en 10–15 productos por categoría. | Si la query mensual de claves huérfanas no converge en 2 ciclos. |
+| Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Tabla `spec_keys` + `product_spec_values` | Vocabulario emergente y heterogéneo por categoría. El catálogo manual no escala a 1600+ specs. El LLM con reuso de `keys_context` converge en 10–15 productos por categoría. | Si la query mensual de claves huérfanas no converge en 2 ciclos. |
 | Software de gestión | Tabla canónica + chunk único | Texto duplicado por producto | Embedding único elimina ruido en top-K (12 productos comparten la misma descripción de Robustel Cloud Manager). | Si el software empieza a tener variantes reales por producto, splittear. |
 | Recomendados | Tabla `product_recommendations` dirigida (source → target) sin `relation_type` ni `weight` | Tabla genérica `product_relations` con `relation_type` (`recommended`, `alternative`, `accessory`, ...) | Decisión deliberada de **una tabla por tipo de relación**, no una tabla polimórfica. Hoy solo existen "recomendados"; si llegan otros tipos (compatibilidad, accesorios) se crearán tablas específicas. Ventajas: nombres semánticos en SQL (`product_recommendations`, `product_compatibility`), sin columna `relation_type` que mantener, queries más claras. `weight` eliminado porque el flujo siempre emite 0.7 — no aporta información diferencial. | Si aparecen ≥4 tipos de relaciones con la misma estructura (source, target) y queries que las consultan unificadamente, consolidar en una tabla polimórfica con `relation_type`. |
 | Brand | TEXT en `products` | Tabla `brands` separada | 13 marcas hoy, sin atributos asociados a la marca. Tabla suma joins sin valor. | Si aparecen atributos por marca (logos, contactos, garantía). |
-| Metadata en `rag_chunks` | Columnas denormalizadas (`category_id`, `brand`, `is_new`, `attribute_slugs`) | JSONB de metadata | Filter-then-rank exige columnas indexables. GIN sobre JSONB es menos predecible en plan que `btree`/`gin` sobre columnas. | No aplica. |
-| Re-ingesta | Fingerprint por contenido calculado en n8n (`content_fingerprint`, `specs_fingerprint`, `embedding_fingerprint`) + hard delete para stale | Truncate + reload / MD5 en DB | Reload rompe IDs y FKs. Fingerprints garantizan idempotencia y diff barato (re-corrida sin cambios = 0 USD en embeddings). MD5 descartado porque n8n no puede usar `require('crypto')` — fingerprint legible es equivalente y debuggeable. Hard delete elegido sobre soft delete porque el source siempre envía el catálogo completo. | Si el source pasa a envíos parciales, cambiar hard delete por soft delete con `is_active`. |
+| Metadata en `rag_chunks` | **Sin denormalizar** — prefiltro por JOIN a `products` + EXISTS sobre `pav` | (a) columnas denormalizadas en el chunk; (b) JSONB de metadata | A ~3300 chunks sin índice vectorial el JOIN da la misma selectividad que las columnas, sin la copia que mantener (drift, write-amplification al cambiar atributos). pgvector vive en el mismo Postgres → el JOIN al catálogo es trivial. | El día que se active índice vectorial (~10k chunks): denormalizar entonces y backfillear desde el JOIN (minutos). |
+| Re-ingesta | Fingerprint por contenido calculado en n8n (`content_fingerprint` en products/software, `specs_fingerprint` en product_specs) + hard delete para stale. Chunks comparan `content` directo (sin fingerprint). | Truncate + reload / MD5 en DB | Reload rompe IDs y FKs. Fingerprints garantizan idempotencia y diff barato (re-corrida sin cambios = 0 USD en embeddings). MD5 descartado porque n8n no puede usar `require('crypto')` — fingerprint legible es equivalente y debuggeable. Hard delete elegido sobre soft delete porque el source siempre envía el catálogo completo. | Si el source pasa a envíos parciales, cambiar hard delete por soft delete con `is_active`. |
 | Categorías | Tabla con `name`/`slug` `NOT NULL` (placeholders si Woo no responde) | NOT NULL estricto bloqueante | Permite ingesta sin bloquear por lookup externo. | Cuando se conecte Woo en vivo, reemplazar placeholders. |
 | `category_summary` chunk | **No se genera** | 1 chunk por categoría con texto descriptivo | A este volumen el contexto de categoría se obtiene mejor desde SQL puro (`categories`) o desde los `overview` agregados. | Si retrieval muestra que el LLM final necesita contexto narrativo de categoría. |
 | Hybrid search (BM25/keyword + RRF) | **No se implementa hoy** | Agregar `ts_vector` sobre `rag_chunks.content` + fusión RRF con el cosine | A 74 productos los casos donde keyword vence a embedding ya están cubiertos: identificadores ("R2011", "EG5100") por el matcher fuzzy de §7, marca/atributos por filtros SQL exactos. El delta de calidad estimado es <2% y el costo de mantener dos índices + tuning de RRF (`k`, peso por canal) supera el beneficio. | Catálogo >500 productos **o** >5% de queries con respuesta incorrecta atribuible a fallo de embedding en términos técnicos raros **o** entrada de descripciones largas con jerga única. Activación: `ALTER TABLE rag_chunks ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;` + índice GIN + fusión RRF en query layer. |
-| Cache de embeddings de queries | **No se implementa hoy** | Tabla `query_cache (hash, embedding, created_at)` con TTL | Con `3-large` el costo por query es ~$0.00013; con `3-small` ~$0.00002. A 10k queries/mes sigue siendo <$2. La complejidad operativa (invalidación cuando cambia el modelo, TTL, normalización de query antes del hash) supera el ahorro. | >100k queries/mes **o** latencia de embedding domina P50 del pipeline. |
-| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 74 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `text-embedding-3-large` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
+| Cache de embeddings de queries | **No se implementa hoy** | Tabla `query_cache (hash, embedding, created_at)` con TTL | Con `gemini-embedding-001` el costo por query es una fracción de centavo; a 10k queries/mes sigue siendo trivial. La complejidad operativa (invalidación cuando cambia el modelo, TTL, normalización de query antes del hash) supera el ahorro. | >100k queries/mes **o** latencia de embedding domina P50 del pipeline. |
+| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 74 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `gemini-embedding-001` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
 | Dedup de chunks por producto en merge | **Sí, máximo 3/producto, ≤10 totales** | Pasar el top-K crudo al LLM final | Sin dedup, el contexto del LLM se llena de `overview`+`description`+`features` del mismo producto y el modelo pondera por repetición. | No aplica. |
 | `product_specs.compatibility` | **JSONB sin normalizar** | Tabla `product_compatibility` con FK a productos / split en `compatibility` + `certifications` | Inspección del JSON real: 3/74 productos tienen `compatibility` no vacía. Ninguno apunta a productos del catálogo (Honeywell/DSC/Paradox son marcas externas; `"Chile-SUBTEL"` es certificación regulatoria, no compatibilidad). Una tabla relacional con 6-9 filas no aporta nada. El chunk `compatibility` del retrieval ya cubre el caso para el LLM final. | Si llegan ≥10 productos con `compatibility` que apunte a slugs del catálogo, normalizar a tabla. Si las certificaciones regulatorias se multiplican, agregar `product_specs.certifications JSONB` separado y dejar `compatibility` solo para compatibilidad de dispositivo. |
 
@@ -1444,7 +1222,7 @@ Pregunta del usuario
        │     (relaciones, categoría info, opciones disponibles)   │
        │                                                           │
        └─── Similarity (sobre rag_chunks filtrados) → top-20 ─────┤
-            (category_id, is_new, brand, attribute_slugs,        │
+            (JOIN products: category_id/is_new/brand + EXISTS pav,│
              chunk_type IN info_types + prefiltrado)             │
                           │                                       │
                           ▼                                       │
@@ -1503,33 +1281,20 @@ suntech-kit-de-voz   -> pa_audio-en-cabina -> ['no', 'si']
 
 **Cómo el LLM final lo maneja:** el prompt debe instruir que si un producto tiene `['no','si']` para un atributo y la pregunta es binaria ("¿tiene WiFi?"), la respuesta es "El producto tiene variantes: con y sin WiFi". Ver §4 (UX de ambigüedad).
 
-### 14.7 Bug del `attribute_slugs && $array_plano`
+### 14.7 Filtros de atributo: un EXISTS por grupo (nunca un array plano)
 
-**Primera versión de la query 7** (descartada):
+Los `attribute_filters` del NLU vienen agrupados por `taxonomy`. La semántica
+correcta es **OR dentro del grupo, AND entre grupos** ("5G **o** 4G" **y** "WiFi=sí").
 
-```sql
-WHERE ($5::text[] IS NULL OR c.attribute_slugs && $5)
--- $5 = ['pa_red-celular:5g','pa_wifi:si']
-```
+El backend la materializa con **un `EXISTS` sobre `product_attribute_values` por
+cada grupo** (ver query 7 en §8 y `semantic_search` en [TOOLS.md](TOOLS.md)): el
+`ao.slug IN (...)` interno da el OR del grupo; el AND entre los EXISTS da el AND
+entre grupos. El EAV (`product_attribute_values`) es la fuente de verdad del filtro.
 
-**El bug:** `&&` es overlap. Un chunk pasa si **al menos un** slug de `$5`
-está en `attribute_slugs`. Si el usuario pide "5G **y** WiFi", el array
-aplanado evalúa OR global: un producto que solo tiene WiFi (sin 5G)
-entra al ranking. Falsos positivos sistemáticos.
+Tentación a evitar: colapsar los slugs de todos los grupos en un solo predicado
+(`IN` único o un array con `&&`). Eso evalúa **OR global** y deja pasar productos
+que cumplen UNO solo de los filtros — un producto con WiFi pero sin 5G entraría a
+"5G y WiFi". Un EXISTS por grupo preserva la semántica sin ambigüedad.
 
-**Por qué se llegó ahí:** la denormalización de `attribute_slugs` en
-`rag_chunks` invita a la simplificación de "un parámetro = un array". Es
-correcto si los filtros son alternativas (`5g` O `4g`), pero rompe cuando
-son grupos distintos.
-
-**Corrección adoptada:** un `&&` por grupo del NLU, AND entre cláusulas.
-Ver query 7 actual en §8 y la semántica de `attribute_filters` en §7.
-
-**Fallback para predicados complejos** (negaciones, exclusiones): query 7b
-de §8 (comentada) con CTE sobre el EAV. Más cara, pero general. Se activa
-solo si el NLU emite operadores no expresables con `&&` (`NOT`, `XOR`,
-condicionales).
-
-**Lección:** la denormalización es optimización del happy path; la fuente
-de verdad sigue siendo el EAV (`product_attribute_values`). Cuando la
-semántica se complica, caer al EAV es la salida correcta.
+Predicados que un `IN`/EXISTS simple no expresa (negaciones, exclusiones cruzadas:
+"5G pero NO 3G") se resuelven agregando un `NOT EXISTS` por cada grupo negado.
