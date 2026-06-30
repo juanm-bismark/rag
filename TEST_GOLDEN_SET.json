@@ -1,0 +1,314 @@
+{
+  "descripcion": "Golden test set para validación continua del agente RAG. 25 preguntas de referencia cubriendo todos los tipos de intent.",
+  "generado": "2026-06-30",
+  "total_casos": 25,
+  "coverage": {
+    "tipo_A": 5,
+    "tipo_B": 5,
+    "tipo_C": 3,
+    "tipo_D": 4,
+    "tipo_E": 3
+  },
+  "test_cases": [
+    {
+      "id": "A1_001",
+      "tipo": "A",
+      "intent": "A1_productos_nuevos",
+      "pregunta": "¿Qué hay de nuevo en routers?",
+      "categoria_id": 516,
+      "esperado": {
+        "min_resultados": 3,
+        "campos_requeridos": ["id", "name", "brand", "slug"]
+      },
+      "validacion": "Debe devolver productos con is_new=true"
+    },
+    {
+      "id": "A3_001",
+      "tipo": "A",
+      "intent": "A3_marcas_disponibles",
+      "pregunta": "¿Qué marcas de routers tienen?",
+      "categoria_id": 516,
+      "esperado": {
+        "min_resultados": 4,
+        "incluye": ["Robustel", "Teldat", "Sierra Wireless", "Maipu"],
+        "campos_requeridos": ["brand", "products"]
+      },
+      "validacion": "Debe agrupar por brand y contar"
+    },
+    {
+      "id": "A5_001",
+      "tipo": "A",
+      "intent": "A5_busqueda_modelo",
+      "pregunta": "¿Tienen el EG5100?",
+      "modelo": "EG5100",
+      "esperado": {
+        "min_resultados": 1,
+        "slug": "robustel-eg5100"
+      },
+      "validacion": "Fuzzy match contra search_text"
+    },
+    {
+      "id": "A9_001",
+      "tipo": "A",
+      "intent": "A9_listado_categorias",
+      "pregunta": "¿Qué venden en el catálogo?",
+      "esperado": {
+        "min_resultados": 8,
+        "incluye": ["516", "77", "1599", "1554", "1626"]
+      },
+      "validacion": "Debe listar todas las categorías con product_count > 0"
+    },
+    {
+      "id": "A10_001",
+      "tipo": "A",
+      "intent": "A10_productos_marca",
+      "pregunta": "¿Qué tienen de Robustel?",
+      "brand": "Robustel",
+      "esperado": {
+        "min_resultados": 10,
+        "marca": "Robustel"
+      },
+      "validacion": "Filtrar por brand exacto"
+    },
+    {
+      "id": "B1_001",
+      "tipo": "B",
+      "intent": "B1_umbral_numerico",
+      "pregunta": "Routers con al menos 200 Mbps de downlink",
+      "categoria_id": 516,
+      "spec_key": "wwan_max_downlink_mbps",
+      "op": ">=",
+      "valor": 200,
+      "esperado": {
+        "min_resultados": 2,
+        "max_valor": 300
+      },
+      "validacion": "Filtro numérico sobre JSONB specs_normalized"
+    },
+    {
+      "id": "B1_002",
+      "tipo": "B",
+      "intent": "B1_umbral_alto",
+      "pregunta": "Routers con 1000 Mbps de downlink",
+      "categoria_id": 516,
+      "spec_key": "wwan_max_downlink_mbps",
+      "op": ">=",
+      "valor": 1000,
+      "esperado": {
+        "resultados": 0,
+        "fallback_trigger": "true"
+      },
+      "validacion": "Edge case: umbral muy alto, requiere fallback"
+    },
+    {
+      "id": "B2_001",
+      "tipo": "B",
+      "intent": "B2_rango_cerrado",
+      "pregunta": "Productos con temperatura de operación entre -20 y 60°C",
+      "categoria_id": 516,
+      "spec_key": "operating_temperature_min_c",
+      "spec_key_max": "operating_temperature_max_c",
+      "op": "between",
+      "min": -20,
+      "max": 60,
+      "esperado": {
+        "min_resultados": 10
+      },
+      "validacion": "BETWEEN sobre min/max"
+    },
+    {
+      "id": "B4_001",
+      "tipo": "B",
+      "intent": "B4_ranking",
+      "pregunta": "¿Cuál es el router más rápido?",
+      "categoria_id": 516,
+      "order_by": "wwan_max_downlink_mbps",
+      "dir": "DESC",
+      "limit": 1,
+      "esperado": {
+        "resultados": 1,
+        "metric": 300
+      },
+      "validacion": "ORDER BY DESC + LIMIT 1"
+    },
+    {
+      "id": "B5_001",
+      "tipo": "B",
+      "intent": "B5_feature_binaria",
+      "pregunta": "¿Qué routers tienen puerto serial?",
+      "categoria_id": 516,
+      "spec_key": "has_serial_port",
+      "op": "is_true",
+      "esperado": {
+        "min_resultados": 5
+      },
+      "validacion": "Filtro booleano en specs"
+    },
+    {
+      "id": "C1_001",
+      "tipo": "C",
+      "intent": "C1_recomendaciones",
+      "pregunta": "¿Qué se recomienda con el EG5100?",
+      "product_slug": "robustel-eg5100",
+      "esperado": {
+        "min_resultados": 1,
+        "incluye_slug": "robustel-eg5120"
+      },
+      "validacion": "product_recommendations table"
+    },
+    {
+      "id": "C2_001",
+      "tipo": "C",
+      "intent": "C2_top_recomendados",
+      "pregunta": "¿Cuáles son los routers más recomendados?",
+      "categoria_id": 516,
+      "esperado": {
+        "min_resultados": 5,
+        "campos_requeridos": ["name", "times_recommended"]
+      },
+      "validacion": "Ranking por frecuencia en product_recommendations"
+    },
+    {
+      "id": "C3_001",
+      "tipo": "C",
+      "intent": "C3_inversa_recomendaciones",
+      "pregunta": "¿Quién apunta al EG5100 como complemento?",
+      "product_slug": "robustel-eg5100",
+      "esperado": {
+        "min_resultados": 0
+      },
+      "validacion": "Buscar fuentes que recomiendan este producto (inversa)"
+    },
+    {
+      "id": "D1_001",
+      "tipo": "D",
+      "intent": "D1_descripcion",
+      "pregunta": "¿Qué es el EG5100?",
+      "product_slug": "robustel-eg5100",
+      "info_types": ["overview", "description"],
+      "esperado": {
+        "min_longitud_contenido": 50,
+        "contiene": ["EG5100", "Robustel", "gateway"]
+      },
+      "validacion": "RAG overview chunk"
+    },
+    {
+      "id": "D2_001",
+      "tipo": "D",
+      "intent": "D2_specs_narrativas",
+      "pregunta": "¿Cuáles son las specs del R1510?",
+      "product_slug": "robustel-r1510",
+      "info_types": ["specs", "spec_section"],
+      "esperado": {
+        "min_chunks": 3,
+        "tipos_requeridos": ["spec_section"]
+      },
+      "validacion": "RAG spec_section chunks"
+    },
+    {
+      "id": "D3_001",
+      "tipo": "D",
+      "intent": "D3_features",
+      "pregunta": "¿Qué destaca del EG5100?",
+      "product_slug": "robustel-eg5100",
+      "info_types": ["features"],
+      "esperado": {
+        "min_resultados": 1
+      },
+      "validacion": "RAG features chunk"
+    },
+    {
+      "id": "D5_001",
+      "tipo": "D",
+      "intent": "D5_busqueda_abierta",
+      "pregunta": "Necesito un router para IoT industrial",
+      "categoria_id": 516,
+      "attribute_filters": [{"taxonomy": "pa_uso", "option_slugs": ["industrial"]}],
+      "info_types": ["description", "features"],
+      "esperado": {
+        "min_resultados": 5,
+        "campos_requeridos": ["product_id", "chunk_type", "similarity"]
+      },
+      "validacion": "Búsqueda semántica + prefiltrado estructural"
+    },
+    {
+      "id": "E1_001",
+      "tipo": "E",
+      "intent": "E1_comparacion",
+      "pregunta": "Compara el EG5100 con el R1510",
+      "product_slugs": ["robustel-eg5100", "robustel-r1510"],
+      "info_types": ["description", "specs", "features"],
+      "esperado": {
+        "productos": 2,
+        "min_chunks_por_producto": 3
+      },
+      "validacion": "Dos queries D1 paralelas"
+    },
+    {
+      "id": "E2_001",
+      "tipo": "E",
+      "intent": "E2_caso_uso_criterios",
+      "pregunta": "Necesito un router industrial con LAN",
+      "categoria_id": 516,
+      "attribute_filters": [
+        {"taxonomy": "pa_uso", "option_slugs": ["industrial"]},
+        {"taxonomy": "pa_lan", "option_slugs": ["si"]}
+      ],
+      "info_types": ["description"],
+      "esperado": {
+        "min_resultados": 5,
+        "max_resultados": 15
+      },
+      "validacion": "A2 (attributes) → D5 (narrative)"
+    },
+    {
+      "id": "E4_001",
+      "tipo": "E",
+      "intent": "E4_brand_overview",
+      "pregunta": "¿Qué tienen de Robustel?",
+      "brand": "Robustel",
+      "categoria_id": 516,
+      "esperado": {
+        "min_productos": 10,
+        "min_chunks_rag": 5
+      },
+      "validacion": "A10 → D5 (por productos)"
+    },
+    {
+      "id": "F1_001",
+      "tipo": "F",
+      "intent": "F1_metadata_specs",
+      "pregunta": "¿Qué specs puedo filtrar en routers?",
+      "categoria_id": 516,
+      "esperado": {
+        "min_keys": 15,
+        "incluye": ["wwan_max_downlink_mbps", "ethernet_lan_ports_count", "operating_temperature_min_c"]
+      },
+      "validacion": "list_spec_keys metadata query"
+    },
+    {
+      "id": "SOLUCIONES_001",
+      "tipo": "SOLUCIONES",
+      "intent": "SOLUCIONES_conectividad",
+      "pregunta": "¿Qué soluciones tienen en conectividad?",
+      "page_keys": ["conectividad"],
+      "search_mode": "specific",
+      "esperado": {
+        "min_chunks": 3,
+        "page_key": "conectividad"
+      },
+      "validacion": "solution_pages_table RAG (gemini embeddings)"
+    }
+  ],
+  "criterios_aceptacion": {
+    "tasa_exito_minima": "90% (23/25 casos)",
+    "fallback_permitido": ["B1 alto umbral", "C4 sin cross-cat", "E3 sin accesorios"],
+    "bloqueadores": "Ninguno"
+  },
+  "instrucciones_uso": "Ejecutar cada test_case contra el agente. Registrar: (1) intent_id inferido correctamente, (2) tools invocadas, (3) número de resultados, (4) tiempo de respuesta < 2s",
+  "proximos_pasos": [
+    "Integrar en CI/CD (pytest + agente mock)",
+    "Agregar 5 test cases más con datos nuevos c/ mes",
+    "Crear versión parametrizada para A/B testing de prompts"
+  ]
+}

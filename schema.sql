@@ -85,7 +85,9 @@ CREATE TABLE attribute_option_aliases (
 -- externaliza (aplicar equivalencias por-segmento de forma genérica es inseguro;
 -- solo el EXACT_KEY_MAP de clave completa es data-driven).
 --
--- Seed inicial (reproduce el hardcode actual, 115 filas): reference_aliases_seed.sql
+-- Seed inicial (reproduce el hardcode de code.js): reference_aliases_seed.sql
+-- (archivo ~150 filas; en BD hoy 142 tras gobernanza: cert 50, identity_discard 34,
+--  key_equivalence 33, value_translation 25).
 CREATE TABLE reference_aliases (
   kind       TEXT NOT NULL
              CHECK (kind IN ('cert','value_translation','key_equivalence','identity_discard')),
@@ -172,6 +174,18 @@ CREATE TABLE products (
 ALTER TABLE software
   ADD CONSTRAINT software_canonical_product_fk
   FOREIGN KEY (canonical_product_id) REFERENCES products(id) ON DELETE SET NULL;
+
+-- Reconciliación idempotente de products.software_id (repara drift en BD existentes).
+-- Garantiza ON DELETE SET NULL: borrar un software pone en NULL el software_id de
+-- sus productos en vez de bloquear. En bases creadas antes de añadir esta cláusula
+-- la FK quedaba como NO ACTION y producía:
+--   update or delete on table "software" violates foreign key constraint
+--   "products_software_id_fkey" on table "products".
+-- Seguro de re-ejecutar: en build limpio sólo reafirma la constraint ya creada.
+ALTER TABLE products DROP CONSTRAINT IF EXISTS products_software_id_fkey;
+ALTER TABLE products
+  ADD CONSTRAINT products_software_id_fkey
+  FOREIGN KEY (software_id) REFERENCES software(id) ON DELETE SET NULL;
 
 
 CREATE OR REPLACE FUNCTION products_set_search_text()
@@ -313,9 +327,14 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 --     refleja la verdad actual; claves muertas (drift corregido) caen a n=0 y desaparecen.
 --   - Discrepancias entre productos sobre shape/desc de una clave se resuelven por
 --     MAYORÍA (mode()): el canónico = lo que dice la mayoría, auto-corrige outliers.
---   - n/example se derivan de specs_normalized (siempre presentes); shape/desc de
---     keys_context (los aporta el LLM). Si keys_context aún está vacío, la vista igual
---     entrega n/example.
+--   - n/example/value_type se derivan de specs_normalized (siempre presentes);
+--     shape/desc de keys_context (los aporta el LLM). Si keys_context aún está vacío,
+--     la vista igual entrega n/example/value_type.
+--   - value_type es la clasificación AUTORITATIVA por jsonb_typeof del dato real
+--     (number | number_array | enum | boolean | string | object). shape (del LLM) NO
+--     es confiable para construir queries: colapsa arrays numéricos en 'scalar'
+--     ([10,100,1000] reportado como scalar). Por eso las tools (filter_products_by_specs,
+--     get_catalog_metadata.list_spec_keys) deciden el op por value_type, no por shape.
 --
 -- IMPORTANTE: ninguna capa de almacenamiento arregla el drift "misma cosa, una letra
 -- distinta" (todas indexan por el string EXACTO). Eso se previene en el PROMPT (§2c/§5).
@@ -335,24 +354,45 @@ WITH per_product_key AS (
   CROSS JOIN LATERAL jsonb_object_keys(ps.specs_normalized) AS kv(key)
   WHERE ps.specs_normalized <> '{}'::jsonb
 ),
+typed AS (
+  -- value_type DERIVADO del dato (no del shape del LLM). Distingue array de
+  -- números (filtrable por umbral) de enum (array de strings -> contains).
+  SELECT ppk.*,
+         CASE jsonb_typeof(value)
+           WHEN 'number'  THEN 'number'
+           WHEN 'boolean' THEN 'boolean'
+           WHEN 'string'  THEN 'string'
+           WHEN 'object'  THEN 'object'
+           WHEN 'array'   THEN
+             CASE WHEN jsonb_array_length(value) > 0
+                       AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(value) e
+                                       WHERE jsonb_typeof(e) <> 'number')
+                  THEN 'number_array'   -- [10,100,1000] -> filtrable por umbral
+                  ELSE 'enum' END       -- ["rj45"], ["10gbase-r"] -> contains
+           ELSE 'unknown'
+         END AS vtype
+  FROM per_product_key ppk
+),
 per_key AS (
   SELECT category_id,
          key,
          count(*)                                                  AS n,
          (array_agg(value ORDER BY updated_at DESC NULLS LAST))[1] AS example,
+         mode() WITHIN GROUP (ORDER BY vtype)                      AS value_type,
          mode() WITHIN GROUP (ORDER BY ctx ->> 'shape')            AS shape,
          mode() WITHIN GROUP (ORDER BY ctx ->> 'desc')             AS descr
-  FROM per_product_key
+  FROM typed
   GROUP BY category_id, key
 )
 SELECT category_id,
        jsonb_object_agg(
          key,
          jsonb_strip_nulls(jsonb_build_object(
-           'n',       n,
-           'example', example,
-           'shape',   shape,
-           'desc',    descr
+           'n',          n,
+           'example',    example,
+           'value_type', value_type,   -- autoritativo (derivado del dato)
+           'shape',      shape,        -- pista del LLM (no autoritativa)
+           'desc',       descr
          ))
          ORDER BY key
        ) AS keys_context
@@ -726,7 +766,7 @@ CREATE INDEX idx_chunks_product     ON rag_chunks (product_id, chunk_type)  WHER
 CREATE INDEX idx_chunks_software    ON rag_chunks (software_id)             WHERE software_id IS NOT NULL;
 
 -- Indice vectorial: NO crear. Decision deliberada para este catalogo.
--- Volumen real: 74 productos -> 314 chunks (medido); techo 500 productos -> ~3300 chunks.
+-- Volumen real: 73 productos -> 310 chunks (medido); techo 500 productos -> ~3300 chunks.
 -- Seq scan sobre vector(3072) con prefiltrado por JOIN a products (category_id /
 -- is_new / brand) + EXISTS sobre pav deja el ORDER BY cosine sobre 50-300 chunks: < 10 ms.
 -- A este horizonte cualquier indice aproximado agrega overhead sin beneficio.

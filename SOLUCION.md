@@ -33,14 +33,19 @@ Sobre eso se monta un patrón **filter-then-rank** con dos rutas paralelas:
 - **Ruta semántica** — similarity search sobre `rag_chunks`, prefiltrando por
   JOIN a `products` (categoría/novedad/marca) + EXISTS sobre `pav` antes del cosine.
 
-Un extractor NLU (LLM con tool-calling) clasifica la pregunta en filtros + tipos de
-información, dispara ambas rutas y el LLM final compone la respuesta sobre el merge.
+En **runtime v1** esto lo ejecuta **un solo agente n8n con tool-calling** (ver §7): el
+agente clasifica la pregunta de forma implícita al elegir y parametrizar las tools,
+dispara ambas rutas y compone la respuesta sobre el merge. El "extractor NLU" **no es
+una etapa runtime separada** — quedó como contrato lógico/evaluable (ver §7
+"Arquitectura runtime" y [PREGUNTAS.md §1](PREGUNTAS.md)).
 
-**Volumen real (validado contra la última corrida del flujo, [flujo.json](flujo.json)):** 74 productos →
-**~495 chunks** (74 overview + 74 description + 74 features + 254 spec_sections
-+ 3 compatibility + 9 variants + 7 software). 8 `category_id`, 13 marcas, 19
-productos nuevos, 36 atributos filtrables válidos, 92 opciones válidas, 1607
-specs crudas, 80 productos recomendados (edges dirigidos) y 7 grupos canónicos de software.
+**Volumen real (medido contra la base cargada en Supabase):** 73 productos →
+**310 chunks** (73 overview + 11 description + 69 features + 108 spec_section
++ 36 specs + 4 variants + 3 compatibility + 6 software). El conteo de `description`
+es bajo a propósito: la regla de chunking de §6 omite ese chunk cuando solapa
+fuertemente con `overview`. 8 `category_id`, 11 marcas, 19 productos nuevos,
+36 atributos filtrables válidos, 92 opciones válidas, 1607 specs crudas,
+80 productos recomendados (edges dirigidos) y 6 grupos canónicos de software.
 **Techo planeado:** <500 productos → ~3300 chunks. PostgreSQL + pgvector en una
 sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrado
 < 10 ms — ver §12 para la justificación cuantitativa y la migración a
@@ -54,7 +59,7 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 |---|---|---|
 | Stack | PostgreSQL 15 + pgvector + pg_trgm | Una DB, todo cabe. |
 | Modelo embeddings | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Costo trivial al volumen. La dimensión por defecto del modelo (3072) define la columna `vector(3072)`. |
-| Índice vectorial | Ninguno (ver §12) | A 74 productos / ~495 chunks reales, seq scan corre en <2 ms. En el techo planeado de 500 productos / ~3300 chunks, < 10 ms. Activación nunca se justifica a este horizonte. |
+| Índice vectorial | Ninguno (ver §12) | A 73 productos / 310 chunks reales, seq scan corre en <2 ms. En el techo planeado de 500 productos / ~3300 chunks, < 10 ms. Activación nunca se justifica a este horizonte. |
 | Atributos taxonómicos (Woo `pa_*`) | EAV controlado | Multivalor + heterogéneo por categoría. |
 | Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Catálogo manual de spec_keys es overkill a este volumen. |
 | Software de gestión | Tabla canónica con embedding único | Evita 12 chunks idénticos (Robustel et al.). |
@@ -127,8 +132,8 @@ resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 | Atributo inválido | 1 producto trae atributo `id = 0`, `taxonomy = null` | `attributes.taxonomy` es `NOT NULL` | Debe saltarse y registrarse como warning. |
 | Fuente de recomendados | `productos_recomendados[]` viene del JSON actual | `product_recommendations` no tiene columna `source` | La fuente queda en `ingestion_runs.source`, no en cada edge. |
 | Output del nodo "relaciones" | El nodo emite `{product_recommendations: [...], stats: {total_recommendations, skipped_*_recommendation, ...}}` | Tabla DB `product_recommendations` con las mismas columnas | El loader inserta 1:1 el campo en la tabla del mismo nombre. El nombre del node en n8n es `"relaciones"` aunque emite `product_recommendations` — desalineación visual sin impacto funcional. |
-| `compatibility` mezcla dos semánticas | Caso A (Netio): items `{brand, models}` apuntando a marcas de terceros (Honeywell, DSC, Paradox) **fuera del catálogo**. Caso B (Robustel R1520): strings sueltos (`"Chile-SUBTEL"`, `"Uruguay-URSEC"`) que son **certificaciones regulatorias**, no compatibilidad de dispositivo | Una sola columna `product_specs.compatibility JSONB` | Decisión: **mantener como JSONB** (ver §12). Justificación: (a) ningún item resuelve a productos del catálogo, no aplica tabla relacional; (b) sparse (3/74 productos). Riesgo: el loader debe tolerar **ambas formas** del JSONB (lista de objetos `{brand, models}` y lista de strings) y emitir warning si llega una tercera forma. |
-| Brand de productos sin attribute `fabricante` | Nodo `merge del catalogo` aplica heurística filtrada: brand desde attribute `fabricante` cuando existe; fallback solo si (a) `name` tiene espacio, (b) primera palabra no está en `GENERIC_FIRST_WORDS` (`antena, cable, kit, módulo, modem, router, gateway, switch, transceptor, adaptador, fuente, accesorio, conector, sensor, panel, soporte, rack`), (c) primera palabra ≥ 2 caracteres. Si alguna regla falla, `brand = null` y `model = null`. | `products.brand` y `products.model` admiten NULL; el nodo emite además `brand_source` con valores `'attribute' \| 'heuristic' \| null` | Cobertura sobre el snapshot (74 productos): 56 desde attribute, 11 desde heurística, 7 null. El loader debe loggear warning estructurado por cada producto con `brand_source='heuristic'` (deuda de datos: el attribute `fabricante` debería estar cargado en Woo para esos productos). |
+| `compatibility` mezcla dos semánticas | Caso A (Netio): items `{brand, models}` apuntando a marcas de terceros (Honeywell, DSC, Paradox) **fuera del catálogo**. Caso B (Robustel R1520): strings sueltos (`"Chile-SUBTEL"`, `"Uruguay-URSEC"`) que son **certificaciones regulatorias**, no compatibilidad de dispositivo | Una sola columna `product_specs.compatibility JSONB` | Decisión: **mantener como JSONB** (ver §12). Justificación: (a) ningún item resuelve a productos del catálogo, no aplica tabla relacional; (b) sparse (3/73 productos). Riesgo: el loader debe tolerar **ambas formas** del JSONB (lista de objetos `{brand, models}` y lista de strings) y emitir warning si llega una tercera forma. |
+| Brand de productos sin attribute `fabricante` | Nodo `merge del catalogo` aplica heurística filtrada: brand desde attribute `fabricante` cuando existe; fallback solo si (a) `name` tiene espacio, (b) primera palabra no está en `GENERIC_FIRST_WORDS` (`antena, cable, kit, módulo, modem, router, gateway, switch, transceptor, adaptador, fuente, accesorio, conector, sensor, panel, soporte, rack`), (c) primera palabra ≥ 2 caracteres. Si alguna regla falla, `brand = null` y `model = null`. | `products.brand` y `products.model` admiten NULL; el nodo emite además `brand_source` con valores `'attribute' \| 'heuristic' \| null` | Cobertura sobre la base cargada (73 productos): 67 con marca resuelta (attribute `fabricante` o heurística) y 6 sin marca (`brand=null`, `model=null`). El loader debe loggear warning estructurado por cada producto con `brand_source='heuristic'` (deuda de datos: el attribute `fabricante` debería estar cargado en Woo para esos productos). |
 
 ---
 
@@ -163,7 +168,7 @@ del flujo → inserción 1:1 en tabla `product_recommendations`, etc.):
 | 1 | `categories` | `DISTINCT category_id` | Insertar 8 filas. Si no hay lookup de Woo, usar placeholders controlados para `name`/`slug` porque el DDL actual no permite NULL. |
 | 2 | `attributes` + `attribute_options` | `attributes[].options[]` | Insertar solo atributos con `taxonomy` no NULL e `id != 0`. Snapshot: 36 atributos y 92 opciones válidas. |
 | 3 | `category_attributes` | derivado del mismo JSON | Recorrer cada producto y registrar pares (`category_id`, `attribute_id`) únicos. |
-| 4 | `software` (solo canónicos) | productos con `is_software_canonical = true` | Insertar 7 grupos canónicos usando `software_dedupe_group_id`, `software_nombre`, `software_texto`, `software_attributes`, `software_fragmentos`, `software_caracteres`. Aún sin `canonical_product_id`. |
+| 4 | `software` (solo canónicos) | productos con `is_software_canonical = true` | Insertar 6 grupos canónicos usando `software_dedupe_group_id`, `software_nombre`, `software_texto`, `software_attributes`, `software_fragmentos`, `software_caracteres`. Aún sin `canonical_product_id`. |
 | 5 | `products` | cada elemento del JSON | Mapear `id`, `slug`, `name`, `brand`, `model`, `category_id`, `source_url`, `description`, `es_nuevo`, `search_aliases`. Resolver `software_id` desde `software_dedupe_group_id`. |
 | 6 | `software.canonical_product_id` | UPDATE | Cierre del bucle FK. |
 | 7 | `product_attribute_values` | `attributes[].options[]` | Insertar una fila por producto-atributo-opción. Skipping explícito del atributo inválido detectado (`id = 0`, `taxonomy = null`) en `antena-magnetica-3-9-dbi-1-5-mts`. |
@@ -244,6 +249,35 @@ ORDER BY a.taxonomy, ao.slug;
 Criterio de aprobación: cada par `(taxonomy, slug)` cuadra contra el conteo
 visible en el front para esa categoría. Diferencia > 0 = revisar inmediatamente.
 
+### Repoblado desde cero (bootstrap)
+
+Runbook para reconstruir la BD tras un wipe. Hay **tres clases** de tablas, con
+dependencias distintas; respetarlas evita fallos de FK:
+
+- **Seeds curados SQL** — datos reales viven en el archivo `.sql`.
+- **Ingesta n8n** — las puebla el pipeline (`pipeline_ingesta.json`), pasos 1–11
+  de la tabla de arriba.
+- **Estructura + n8n** — el `.sql` solo crea tabla/función; los datos los genera
+  un flujo n8n aparte.
+
+**Nota sobre `schema.sql`:** hace `DROP ... CASCADE` (líneas 12–27) y recrea las
+tablas del pipeline. **No toca `solution_pages_table`** (no está en esa lista; la
+gobierna `solution_pages.sql`, que es idempotente por su propio `drop ... if exists`).
+
+Orden de ejecución:
+
+| # | Acción | Tabla(s) | Depende de | Por qué |
+|---|---|---|---|---|
+| 0 | Recrear esquema (solo si dropeaste tablas; **no** si solo borraste filas) | todas las del pipeline | — | `DROP/CREATE`; incluye el fix `products_software_id_fkey ON DELETE SET NULL` |
+| 1 | `reference_aliases_seed.sql` | `reference_aliases` | nada | Texto puro (`kind, alias, canonical`), sin FK a datos → corre apenas exista el esquema |
+| 2 | Ingesta n8n completa (`pipeline_ingesta.json`) | `categories` … `rag_chunks` | esquema | Pasos 1–11 de §4 |
+| 3 | `attribute_option_aliases_seed.sql` | `attribute_option_aliases` | **paso 2** | ⚠️ Inserta IDs literales (`498`, `1586`…) con FK a `attribute_options(id)`. Si `attribute_options` está vacía, **las 226 filas fallan** con `violates foreign key constraint`. Solo corre tras la ingesta |
+| 4 | `solution_pages.sql` (estructura) + flujo n8n de solution pages (datos) | `solution_pages_table` | independiente | El `.sql` solo crea tabla + `match_solution_pages`; los embeddings los puebla el flujo n8n de páginas de solución |
+
+Regla mental: **`reference_aliases` antes de la ingesta; `attribute_option_aliases`
+después** — porque el segundo referencia por FK lo que la ingesta crea en el paso 2.
+`solution_pages` es un subsistema aparte (ver §7.2) y no bloquea al pipeline principal.
+
 ---
 
 ## 5. Prompt de normalización de specs (paso 9)
@@ -254,7 +288,7 @@ cómo el loader lo invoca, qué le pasa y cómo valida la salida. El detalle de 
 vs enum, etc.) vive en [prompt.md](prompt.md) — no se duplica aquí.
 
 Una llamada LLM por producto. Modelo recomendado: `claude-sonnet-4-6` o
-`gpt-4o-mini` (no necesita Opus). Costo total estimado para 74 productos: <$1.
+`gpt-4o-mini` (no necesita Opus). Costo total estimado para 73 productos: <$1.
 
 **Input por producto** (ver `<context>` en [prompt.md](prompt.md)):
 `{ category_name, specs: [{name, value, section?}], keys_context }`. El aplanado de
@@ -513,7 +547,81 @@ fase 1 solo escribe `content` + owner (`product_id` **o** `software_id`) +
 
 ## 7. Patrón de retrieval
 
-### Output del extractor NLU (en query time)
+### Arquitectura runtime: agente único (v1) — decisión oficial
+
+**Runtime v1 = un solo agente n8n con tool-calling** ([agente.json](agente.json)),
+NO un pipeline "NLU separado → LLM final → tools". El AI Agent (modelo con
+function-calling, configurado en [agente.json](agente.json) — hoy gpt-5.x-mini, temp
+baja) entiende la intención, elige las tools, rellena los `filter` con `$fromAI()` y
+compone la respuesta,
+todo en un loop. Es el patrón nativo de n8n (AI Agent + herramientas conectadas) y el
+modelo estándar de function-calling: el "NLU" queda **implícito dentro del tool-call**
+— cuando el agente llama `search_products({category_id, attribute_filters})`, eso *es*
+la extracción de intención + filtros.
+
+**Por qué a este volumen**: 73 productos / 8 categorías / 310 chunks, tools agrupadas
+por mecanismo, sin rerank ni índice vectorial. No hay volumen ni ambigüedad que pague
+un NLU separado + caller con cascada de fallback.
+
+**El contrato NLU de [PREGUNTAS.md §1](PREGUNTAS.md) NO desaparece**: queda como
+**contrato lógico / de evaluación**, no como etapa runtime obligatoria. El agente lo
+produce de forma implícita en cada tool-call.
+
+> **Terminología**: en el resto de SOLUCION/TOOLS/PREGUNTAS, "extractor NLU" / "el NLU"
+> se refiere a **esa extracción implícita del agente** (el contrato lógico), no a una
+> etapa ni componente separado. Las secciones marcadas `[DIFERIDO]` describen lo que se
+> construiría **si** se separa el NLU (ver condiciones arriba).
+
+**Deuda diferida (marcada, no borrada)** — SOLUCION/TOOLS/PREGUNTAS se diseñaron
+alrededor de un NLU previo + LLM final + tools. Lo que se difiere en v1:
+
+- `confidence` explícito de extracción y **eco al usuario** por baja confianza
+  (ver "Política de confianza del NLU").
+- **Fallback determinista en el caller** (cascada relajar `spec_filters` →
+  `attribute_filters` → `category_id`; ver "Política de fallback", [PREGUNTAS.md §4](PREGUNTAS.md),
+  [TOOLS.md §5](TOOLS.md)). En v1 el reintento lo decide el propio agente.
+- **Logging estructurado del contrato** (intent, filtros, ruta, fallback) para el
+  golden-set/eval (§9 gate, §10).
+- **Budget de merge cruzado** (≤3 chunks/producto, ≤10 total, ≤4000 tokens). En v1 el
+  dedup por producto vive dentro de `semantic_search`/`match_rag_chunks`; el budget
+  cruzado no se impone.
+
+**Deuda de datos del catálogo (detectada con el set [pr](pr), 2026-06-25)** — no son bugs
+de SQL (las tools devuelven lo que el dato permite), sino huecos de ingesta a poblar:
+
+- **Recomendaciones cross-categoría ausentes.** `product_recommendations` (80 aristas) es
+  producto-a-producto dentro de la MISMA categoría (router↔router). No hay aristas hacia
+  accesorios/antenas, así que "¿qué accesorios necesito para el EG5100?" no se resuelve con
+  `get_recommendations` (devuelve otro gateway). Mitigación v1: el agente usa
+  `compatibility_query` y, si vacío, lista Accesorios (cat 1554) con disclaimer. Fix de
+  raíz: poblar aristas de accesorio/compatibilidad en la ingesta.
+- **Compatibilidad casi vacía (3/73).** `product_specs.compatibility` solo está poblada en
+  3 productos; el EG5100 no es uno. "Antenas compatibles con X" queda sin dato. Fix:
+  extraer compatibilidad en la ingesta para todo el catálogo.
+- **Ganancia de antena canónica.** La antena 3.9 dBi usaba `gain_max_dbi`; se normalizó en
+  la BD a `gain_dbi` (clave canónica). La ingesta debe emitir `gain_dbi` para no
+  reintroducir el split de claves en la próxima corrida.
+- **Split de categoría "routers" {516, 1641}.** Resuelto a nivel de tool con `category_ids`
+  (arreglo) — ver [TOOLS.md §6.2](TOOLS.md). Si a futuro se decide consolidar la taxonomía,
+  hacerlo en el source (Woo/`category_worker`), no en la BD del RAG.
+
+**Siguiente mejora obligatoria (antes de medir calidad en serio)**: loggear cada
+tool-call como "contrato observado" — intención inferida, tool usada, filtros enviados,
+resultado, fallback aplicado y warnings. Conserva trazabilidad para el eval **sin meter
+otro LLM**.
+
+**Condiciones para activar el NLU separado (solo si el eval lo exige)**:
+- el golden set muestra baja precisión de `attribute_filters`/`intent`;
+- el agente elige las tools correctas pero con **argumentos inestables**;
+- se necesita `confidence` real para UX o auditoría;
+- crece el catálogo y sube la ambigüedad;
+- se requiere **Structured Outputs (`strict: true`)** para forzar el contrato JSON antes
+  del retrieval como requisito de producción.
+
+### Contrato lógico de extracción (NLU) — query time
+
+> Esto es el **contrato lógico/evaluable** (no una etapa runtime en v1; ver
+> "Arquitectura runtime"). En v1 el agente lo produce implícitamente al llamar las tools.
 
 ```json
 {
@@ -564,7 +672,7 @@ fase 1 solo escribe `content` + owner (`product_id` **o** `software_id`) +
 | `specs_structured` (filtros numéricos) | `product_specs.specs_normalized` | SQL puro JSONB |
 | `compatibility_lookup` | `product_specs.compatibility` (JSONB) | SQL puro JSONB |
 
-### Política de confianza del NLU
+### Política de confianza del NLU  · [DIFERIDO en v1 — ver "Arquitectura runtime"]
 
 | `confidence` | Comportamiento |
 |---|---|
@@ -572,7 +680,7 @@ fase 1 solo escribe `content` + owner (`product_id` **o** `software_id`) +
 | `0.6 – 0.8` | Aplicar filtros, pero **registrar el output completo del NLU en la respuesta al usuario** ("Entendí: 5G + WiFi=Sí; corrígeme si no es correcto"). Permite recuperar de extracciones plausibles pero erróneas sin que el usuario tenga que adivinar qué entendió el sistema. |
 | `≥ 0.8` | Aplicar filtros silenciosamente. |
 
-### Política de fallback
+### Política de fallback  · [DIFERIDO en v1 — el reintento lo decide el propio agente]
 
 1. Si la query estructurada devuelve 0 resultados → relajar en este orden:
    `spec_filters` → último grupo de `attribute_filters` agregado → resto de
@@ -586,7 +694,7 @@ El re-ranking clásico (cross-encoders, Cohere Rerank, LLM-as-reranker)
 está diseñado para escenarios de **alto recall**: BM25/cosine devuelve
 100-200 candidatos con orden ruidoso y necesita refinarlos. **No es este caso.**
 
-A 74 productos / ~495 chunks con prefiltrado SQL fuerte (JOIN a `products` por
+A 73 productos / 310 chunks con prefiltrado SQL fuerte (JOIN a `products` por
 `category_id`/`is_new`/`brand` + EXISTS de atributos sobre `pav`), el pool sobre el que opera cosine es
 típicamente 20-100 chunks. Cosine sobre `gemini-embedding-001` ya
 ordena bien sobre ese pool. El verdadero motor de calidad es el
@@ -689,10 +797,11 @@ Reglas:
 - Si el `score` top < 0.4 → tratar como búsqueda abierta, no como identificación;
   caer en `filter_search` o `describe` según `intent`.
 
-### Tool surface al LLM final
+### Tool surface del agente
 
-El LLM final **no llama al pipeline directamente** ni recibe el contrato NLU como
-input. Llama a un set acotado de **tools** que envuelven SQL/embeddings y devuelven
+En runtime v1 el **extractor NLU y el "LLM final" son el mismo agente** (ver
+"Arquitectura runtime" arriba): no recibe un contrato NLU precomputado, sino que llama
+directamente a un set acotado de **tools** que envuelven SQL/embeddings y devuelven
 payloads tipados. Diseño completo (firmas, composición de híbridas, errores y
 warnings) en [TOOLS.md](TOOLS.md).
 
@@ -723,6 +832,139 @@ Anti-patrones rechazados:
 Los fallbacks de §7 ("Política de fallback") viven **dentro** del adapter de cada
 tool, no en el LLM. El LLM solo ve el resultado final + warnings tipados
 (`fallback_applied`, `spec_key_unknown`, etc. — ver [TOOLS.md §5](TOOLS.md)).
+
+---
+
+## 7.1 Diccionario de sinónimos de atributos (`attribute_option_aliases`)
+
+**Qué es.** Tabla `(attribute_option_id, alias)` que mapea términos en lenguaje natural
+del usuario a la `attribute_option` correcta. La consumen:
+
+- `get_catalog_metadata({type:"resolve_alias", term})` (intent A8 de [PREGUNTAS.md](PREGUNTAS.md)).
+- La resolución de `attribute_filters` dentro de `search_products` / `semantic_search`
+  cuando el usuario escribe un término coloquial ("móvil") en vez del slug (`pa_red-celular:4g`).
+
+**Estado: SEMBRADA** — 226 alias sobre 76 opciones (seed curado y aplicado 2026-06-23).
+`resolve_alias` verificado: "movil"/"celular"→`pa_red-celular:3g-4g`,
+"industrial"→`pa_uso:industrial`, "wireless"→`pa_wifi:si`, "sfp"/"omnidireccional"/"yagi"/etc.
+Con esto el filter-then-rank ya NO se degrada a "rank por similitud" por falta de
+sinónimos → el gate de cierre de fase 9 (§9, punto 1) queda **satisfecho**.
+
+> Los filtros que llegan con el **slug exacto** (el agente emite `pa_uso:industrial`)
+> funcionan sin diccionario — el EAV `product_attribute_values` es la fuente de verdad;
+> el diccionario solo cubre el salto "término coloquial → slug".
+>
+> Las 16 opciones sin alias son los valores **"No"** de los booleanos + `pa_red:n/a`
+> (intencional — la negación la maneja el LLM). `vpn` / `dual sim` / `poe` tampoco van
+> aquí: NO son opciones de atributo sino **specs** (`vpn_features`, `sim_slots_count`,
+> `ethernet_poe_ports_count`) → se resuelven por `filter_products_by_specs`.
+
+**Cómo se sembró / cómo regenerar.** Ejecutado en
+[attribute_option_aliases_seed.sql](attribute_option_aliases_seed.sql) (226 alias,
+idempotente con `ON CONFLICT DO NOTHING`). El mapa término→opción es una **decisión
+curada**, no una derivación de los datos. Para regenerar o ampliar:
+
+1. Listar las opciones reales del catálogo (hoy 92 filas):
+
+   ```sql
+   SELECT ao.id AS attribute_option_id, a.taxonomy, a.name AS attribute, ao.slug, ao.name
+   FROM attribute_options ao
+   JOIN attributes a ON a.id = ao.attribute_id
+   ORDER BY a.taxonomy, ao.slug;
+   ```
+
+2. Pasar esa lista a un LLM con la instrucción: "por cada (atributo, opción) genera los
+   términos en español que un usuario escribiría para referirse a ella — coloquiales,
+   abreviaturas, con/sin tilde, sinónimos técnicos. Devuelve filas
+   `{attribute_option_id, alias}` con `alias` en minúscula." Ejemplos esperados:
+   `pa_red-celular:4g` → `4g, lte, movil, móvil, celular, datos móviles`;
+   `pa_uso:industrial` → `industrial, rugerizado, uso rudo, outdoor`;
+   `pa_wifi:si` → `wifi, wi-fi, inalámbrico, wlan`.
+
+3. Insertar (alias **siempre en minúscula** — `resolve_alias` baja el término con
+   `lower()` y `pg_trgm` es case-sensitive):
+
+   ```sql
+   INSERT INTO attribute_option_aliases (attribute_option_id, alias) VALUES
+     (<id>, 'movil'), (<id>, 'celular'), (<id>, 'lte')
+   ON CONFLICT (attribute_option_id, alias) DO NOTHING;
+   ```
+
+   Costo: 92 opciones → una sola llamada LLM, < $1. Es la **fase 8** del plan (§9).
+
+**Cuándo se actualiza / modifica.**
+
+- **Nuevas opciones**: cuando entra un atributo/opción nuevo desde Woo (cambia
+  `attribute_options`), correr el LLM solo sobre las opciones que aún no tienen alias.
+- **Mensual** (§10): revisar el log del NLU/agente — términos del usuario que **no
+  resolvieron** — y promover los recurrentes como nuevos alias. Curaduría humana, misma
+  filosofía que `reference_alias_candidates` (se detecta, un humano aprueba; no se
+  auto-inserta al canon).
+- No hay trigger ni cálculo automático: es estado curado y editable a mano.
+
+Query para auditar opciones sin ningún alias (huecos del diccionario):
+
+```sql
+SELECT a.taxonomy, ao.slug, ao.name
+FROM attribute_options ao
+JOIN attributes a ON a.id = ao.attribute_id
+LEFT JOIN attribute_option_aliases aoa ON aoa.attribute_option_id = ao.id
+WHERE aoa.alias IS NULL
+ORDER BY a.taxonomy, ao.slug;
+```
+
+---
+
+## 7.2 Subsistema de páginas de solución (`solution_pages`)
+
+Además del catálogo de productos, el agente tiene una **segunda superficie de retrieval**:
+las **páginas de solución** de bismark.net.co (contenido consultivo de alto nivel:
+conectividad, IoT, SD-WAN, SIM Card). Es un RAG **independiente** del catálogo — otra
+tabla, otra función, otro propósito: responde "¿qué ofrece Bismark? / ¿en qué consiste
+SD-WAN?", no "¿qué router 5G tiene throughput > X?". DDL en
+[solution_pages.sql](solution_pages.sql).
+
+**Tabla `solution_pages_table`** (genérica, estilo LangChain):
+
+- `id`, `content` (texto de la página/sección), `metadata jsonb`, `embedding vector(3072)`
+  (`gemini-embedding-001`, vía n8n), `created_at`. RLS habilitado (SELECT a `authenticated`;
+  INSERT/UPDATE/DELETE a `service_role`).
+- Índices: GIN sobre `metadata jsonb_path_ops` **+ HNSW** sobre `embedding::halfvec(3072)`
+  (`halfvec_cosine_ops`). Nota: aquí SÍ hay índice vectorial, al contrario del catálogo
+  (`rag_chunks` corre seq scan, ver §12).
+- Estado actual: **43 filas, 0 embeddings nulos**; `page_key` ∈ {sdwan 19, conectividad 9,
+  iot 8, sim-card 7}.
+- ⚠️ La `metadata` se guarda **plana, con el ruido del loader LangChain** (`loc`, `blobType`,
+  `source`, `lines`, junto a `page_key`, `doc_type`, `canonical_url`…) — al contrario del
+  catálogo, donde el trigger de §8b de [schema.sql](schema.sql) limpia ese ruido. Es una
+  inconsistencia de diseño entre los dos RAG; funciona (la función lee
+  `metadata->>'page_key'`), pero conviene saberlo.
+
+**Función `match_solution_pages(query_embedding, match_threshold, match_count, filter)`**
+→ `(id, content, metadata, similarity)`:
+
+- Enrutamiento por `filter`: `search_mode` ∈ {`specific`, `general`} + `page_keys` (array de
+  {`conectividad`, `iot`, `sdwan`, `sim-card`}). `specific` exige 1–4 page_keys válidos;
+  `general` fuerza `page_keys=null` (panorama amplio). Valida ambos y lanza excepción ante
+  combinaciones inválidas (p.ej. `general` con page_keys específicos, o un page_key fuera de
+  la lista).
+- `match_count`: default 5 (specific) / 7 (general). Orden por distancia coseno + `limit`.
+- **Threshold desactivado a propósito** (las 3 líneas — declaración, asignación y `WHERE` —
+  comentadas; riesgo de resultados vacíos). El parámetro `match_threshold` permanece en la
+  firma por compatibilidad con el nodo Vector Store, pero **no se aplica** (ni en el SQL ni
+  desde el agente — ver TOOLS.md / agente.json: se quitó esa guía).
+- **`match_documents`**: shim que reenvía a `match_solution_pages` (el nodo LangChain por
+  defecto invoca `match_documents`). **`match_solution_pages_debug`**: variante de
+  depuración, no para producción.
+
+**En el agente** ([agente.json](agente.json)): la tool **`classify_bismark_search_scope`**
+(nodo Vector Store en modo retrieve-as-tool, `queryName=match_solution_pages`, con su nodo
+de embeddings Gemini) ES esta superficie. El agente la usa para consultas de solución de
+alto nivel y usa las 6 tools del catálogo ([TOOLS.md](TOOLS.md)) para producto concreto. El
+modelo decide internamente `search_mode`/`page_keys`; no se exponen al usuario.
+
+**Ingesta**: las páginas se cargan vía n8n (Gemini + LangChain) a `solution_pages_table`.
+Volumen pequeño y estable; no usa el pipeline de fingerprints del catálogo (§10).
 
 ---
 
@@ -929,8 +1171,8 @@ WHERE p.software_id = (SELECT id FROM software WHERE name = $1);
 | 5 | ETL paso 9 (normalización LLM de specs) | `specs_normalized` poblado | 1 día (incluye revisión claves huérfanas) |
 | 6 | ETL paso 10 (productos recomendados) | `product_recommendations` | medio día |
 | 7 | ETL paso 11 (chunks + embeddings) | `rag_chunks` poblado | 1 día |
-| 8 | Diccionario inicial de `attribute_option_aliases` | sinónimos cargados | medio día |
-| 9 | Endpoint de retrieval con la query 7 + extractor NLU + dedup por producto | API funcional | 2–3 días |
+| 8 | Diccionario inicial de `attribute_option_aliases` | sinónimos cargados ✅ **hecho** (226 alias / 76 opciones, ver §7.1) | medio día |
+| 9 | Endpoint de retrieval (agente con tool-calling) + dedup por producto | API funcional | 2–3 días |
 | 10 | Métricas de operación, diccionario de huérfanos, golden set de 50 queries para eval end-to-end | dashboard mínimo + eval automatizada | 2 días |
 
 **Total estimado:** 9–11 días de trabajo enfocado para tener el RAG funcionando
@@ -938,15 +1180,14 @@ end-to-end con prefiltrado real y eval. El re-ranking se evalúa **después**
 sobre los resultados del golden set; si los umbrales de §7 no se cumplen,
 no se implementa.
 
-### Gate de cierre de fase 9 (extractor NLU)
+### Gate de cierre de fase 9 (capa de extracción del agente)
 
 La fase 9 no se cierra sin estos cinco entregables. Sin ellos, el patrón
 filter-then-rank se degrada silenciosamente a "rank por similitud" y nadie
 lo nota.
 
-1. **Diccionario `attribute_option_aliases` cargado.** Mínimo: sinónimos
-   obvios por categoría (ver fase 8). El extractor sin aliases no resuelve
-   "móvil" → `pa_red-celular:4g`.
+1. **Diccionario `attribute_option_aliases` cargado.** ✅ **Cumplido** (226 alias / 76
+   opciones, ver §7.1). El agente sin aliases no resuelve "móvil" → `pa_red-celular`.
 2. **Logging estructurado del extractor por cada query.** Campos mínimos:
    pregunta original, output completo del tool-call, `confidence`, intent
    detectado, ruta tomada (filtros aplicados vs fallback), número de chunks
@@ -1097,22 +1338,22 @@ condiciones que invalidarían cada elección quedan explícitas para revisión f
 |---|---|---|---|---|
 | Vector store | pgvector en mismo Postgres | Pinecone / Qdrant / Weaviate | Una sola DB, joins SQL triviales con catálogo, menos ops. A <500 productos no justifica DB extra. | >100k chunks o necesidad de filtrado por metadata muy compleja. |
 | Modelo de embedding | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Salida reducida a 1536 dims vía `output_dimensionality` | Costo absoluto despreciable al volumen. Si llega el momento de necesitar menos dims (índice HNSW, storage), el path **sin cambiar de modelo** es pedirle al mismo `gemini-embedding-001` una `output_dimensionality` menor — el modelo está entrenado con Matryoshka Representation Learning, así que el output reducido preserva la mayor parte de la calidad del 3072. | Si P95 de retrieval supera 150 ms o el storage cruza umbrales de costo. Migración: `ALTER COLUMN ... TYPE vector(1536)` + re-embeddear con `output_dimensionality=1536`. |
-| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real validado: 74 productos → ~495 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por JOIN a `products` (`category_id`/`is_new`/`brand`) + EXISTS de atributos sobre `pav` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
-| Tipo de embedding en DDL | `vector(3072)` | `halfvec(3072)` desde día 1 | A 495 chunks la diferencia de storage (6 MB vs 3 MB) es irrelevante. `vector` es el tipo más probado, mejor soportado por drivers y el default en la mayoría de tutoriales/ejemplos de pgvector. Half-precision solo se justificaría si hubiera que indexar, y eso no va a pasar a este horizonte. | Si algún día se cruza el umbral del índice: `ALTER COLUMN ... TYPE halfvec(3072) USING ...::halfvec(3072)` toma segundos a 3300 filas. No se pierde nada por aplazar. |
+| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real medido: 73 productos → 310 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por JOIN a `products` (`category_id`/`is_new`/`brand`) + EXISTS de atributos sobre `pav` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
+| Tipo de embedding en DDL | `vector(3072)` | `halfvec(3072)` desde día 1 | A 310 chunks la diferencia de storage (~4 MB vs ~2 MB) es irrelevante. `vector` es el tipo más probado, mejor soportado por drivers y el default en la mayoría de tutoriales/ejemplos de pgvector. Half-precision solo se justificaría si hubiera que indexar, y eso no va a pasar a este horizonte. | Si algún día se cruza el umbral del índice: `ALTER COLUMN ... TYPE halfvec(3072) USING ...::halfvec(3072)` toma segundos a 3300 filas. No se pierde nada por aplazar. |
 | Atributos taxonómicos | EAV controlado (3 tablas) | Una columna JSONB por producto | EAV permite filtros eficientes con índices estándar y multivalor por categoría. JSONB sirve para leer pero rinde mal en filtros booleanos múltiples. | No aplica a este volumen ni dominio. |
 | Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Tabla `spec_keys` + `product_spec_values` | Vocabulario emergente y heterogéneo por categoría. El catálogo manual no escala a 1600+ specs. El LLM con reuso de `keys_context` converge en 10–15 productos por categoría. | Si la query mensual de claves huérfanas no converge en 2 ciclos. |
 | Software de gestión | Tabla canónica + chunk único | Texto duplicado por producto | Embedding único elimina ruido en top-K (12 productos comparten la misma descripción de Robustel Cloud Manager). | Si el software empieza a tener variantes reales por producto, splittear. |
 | Recomendados | Tabla `product_recommendations` dirigida (source → target) sin `relation_type` ni `weight` | Tabla genérica `product_relations` con `relation_type` (`recommended`, `alternative`, `accessory`, ...) | Decisión deliberada de **una tabla por tipo de relación**, no una tabla polimórfica. Hoy solo existen "recomendados"; si llegan otros tipos (compatibilidad, accesorios) se crearán tablas específicas. Ventajas: nombres semánticos en SQL (`product_recommendations`, `product_compatibility`), sin columna `relation_type` que mantener, queries más claras. `weight` eliminado porque el flujo siempre emite 0.7 — no aporta información diferencial. | Si aparecen ≥4 tipos de relaciones con la misma estructura (source, target) y queries que las consultan unificadamente, consolidar en una tabla polimórfica con `relation_type`. |
-| Brand | TEXT en `products` | Tabla `brands` separada | 13 marcas hoy, sin atributos asociados a la marca. Tabla suma joins sin valor. | Si aparecen atributos por marca (logos, contactos, garantía). |
+| Brand | TEXT en `products` | Tabla `brands` separada | 11 marcas hoy, sin atributos asociados a la marca. Tabla suma joins sin valor. | Si aparecen atributos por marca (logos, contactos, garantía). |
 | Metadata en `rag_chunks` | **Sin denormalizar** — prefiltro por JOIN a `products` + EXISTS sobre `pav` | (a) columnas denormalizadas en el chunk; (b) JSONB de metadata | A ~3300 chunks sin índice vectorial el JOIN da la misma selectividad que las columnas, sin la copia que mantener (drift, write-amplification al cambiar atributos). pgvector vive en el mismo Postgres → el JOIN al catálogo es trivial. | El día que se active índice vectorial (~10k chunks): denormalizar entonces y backfillear desde el JOIN (minutos). |
 | Re-ingesta | Fingerprint por contenido calculado en n8n (`content_fingerprint` en products/software, `specs_fingerprint` en product_specs) + hard delete para stale. Chunks comparan `content` directo (sin fingerprint). | Truncate + reload / MD5 en DB | Reload rompe IDs y FKs. Fingerprints garantizan idempotencia y diff barato (re-corrida sin cambios = 0 USD en embeddings). MD5 descartado porque n8n no puede usar `require('crypto')` — fingerprint legible es equivalente y debuggeable. Hard delete elegido sobre soft delete porque el source siempre envía el catálogo completo. | Si el source pasa a envíos parciales, cambiar hard delete por soft delete con `is_active`. |
 | Categorías | Tabla con `name`/`slug` `NOT NULL` (placeholders si Woo no responde) | NOT NULL estricto bloqueante | Permite ingesta sin bloquear por lookup externo. | Cuando se conecte Woo en vivo, reemplazar placeholders. |
 | `category_summary` chunk | **No se genera** | 1 chunk por categoría con texto descriptivo | A este volumen el contexto de categoría se obtiene mejor desde SQL puro (`categories`) o desde los `overview` agregados. | Si retrieval muestra que el LLM final necesita contexto narrativo de categoría. |
-| Hybrid search (BM25/keyword + RRF) | **No se implementa hoy** | Agregar `ts_vector` sobre `rag_chunks.content` + fusión RRF con el cosine | A 74 productos los casos donde keyword vence a embedding ya están cubiertos: identificadores ("R2011", "EG5100") por el matcher fuzzy de §7, marca/atributos por filtros SQL exactos. El delta de calidad estimado es <2% y el costo de mantener dos índices + tuning de RRF (`k`, peso por canal) supera el beneficio. | Catálogo >500 productos **o** >5% de queries con respuesta incorrecta atribuible a fallo de embedding en términos técnicos raros **o** entrada de descripciones largas con jerga única. Activación: `ALTER TABLE rag_chunks ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;` + índice GIN + fusión RRF en query layer. |
+| Hybrid search (BM25/keyword + RRF) | **No se implementa hoy** | Agregar `ts_vector` sobre `rag_chunks.content` + fusión RRF con el cosine | A 73 productos los casos donde keyword vence a embedding ya están cubiertos: identificadores ("R2011", "EG5100") por el matcher fuzzy de §7, marca/atributos por filtros SQL exactos. El delta de calidad estimado es <2% y el costo de mantener dos índices + tuning de RRF (`k`, peso por canal) supera el beneficio. | Catálogo >500 productos **o** >5% de queries con respuesta incorrecta atribuible a fallo de embedding en términos técnicos raros **o** entrada de descripciones largas con jerga única. Activación: `ALTER TABLE rag_chunks ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;` + índice GIN + fusión RRF en query layer. |
 | Cache de embeddings de queries | **No se implementa hoy** | Tabla `query_cache (hash, embedding, created_at)` con TTL | Con `gemini-embedding-001` el costo por query es una fracción de centavo; a 10k queries/mes sigue siendo trivial. La complejidad operativa (invalidación cuando cambia el modelo, TTL, normalización de query antes del hash) supera el ahorro. | >100k queries/mes **o** latencia de embedding domina P50 del pipeline. |
-| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 74 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `gemini-embedding-001` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
+| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 73 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `gemini-embedding-001` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
 | Dedup de chunks por producto en merge | **Sí, máximo 3/producto, ≤10 totales** | Pasar el top-K crudo al LLM final | Sin dedup, el contexto del LLM se llena de `overview`+`description`+`features` del mismo producto y el modelo pondera por repetición. | No aplica. |
-| `product_specs.compatibility` | **JSONB sin normalizar** | Tabla `product_compatibility` con FK a productos / split en `compatibility` + `certifications` | Inspección del JSON real: 3/74 productos tienen `compatibility` no vacía. Ninguno apunta a productos del catálogo (Honeywell/DSC/Paradox son marcas externas; `"Chile-SUBTEL"` es certificación regulatoria, no compatibilidad). Una tabla relacional con 6-9 filas no aporta nada. El chunk `compatibility` del retrieval ya cubre el caso para el LLM final. | Si llegan ≥10 productos con `compatibility` que apunte a slugs del catálogo, normalizar a tabla. Si las certificaciones regulatorias se multiplican, agregar `product_specs.certifications JSONB` separado y dejar `compatibility` solo para compatibilidad de dispositivo. |
+| `product_specs.compatibility` | **JSONB sin normalizar** | Tabla `product_compatibility` con FK a productos / split en `compatibility` + `certifications` | Inspección del JSON real: 3/73 productos tienen `compatibility` no vacía. Ninguno apunta a productos del catálogo (Honeywell/DSC/Paradox son marcas externas; `"Chile-SUBTEL"` es certificación regulatoria, no compatibilidad). Una tabla relacional con 6-9 filas no aporta nada. El chunk `compatibility` del retrieval ya cubre el caso para el LLM final. | Si llegan ≥10 productos con `compatibility` que apunte a slugs del catálogo, normalizar a tabla. Si las certificaciones regulatorias se multiplican, agregar `product_specs.certifications JSONB` separado y dejar `compatibility` solo para compatibilidad de dispositivo. |
 
 ---
 
@@ -1176,7 +1417,7 @@ CREATE TABLE product_spec_values (
 );
 ```
 
-**Por qué se rechazó (para 74 productos, techo <500):**
+**Por qué se rechazó (para 73 productos, techo <500):**
 - Curaduría manual: ~80–120 spec_keys entre 8 categorías. Mantenimiento perpetuo.
 - Parser de unidades robusto: "1.5 Gbps" → 1500 Mbps requiere reglas por unidad.
 - Validación de `allowed_values`: bloquea ingestas si una opción no está pre-registrada.
@@ -1211,8 +1452,8 @@ CREATE INDEX idx_specs_normalized ON product_specs USING gin (specs_normalized j
 Pregunta del usuario
        │
        ▼
-[Extractor NLU]  ←  contexto: categorías, atributos, spec_keys de candidata
-                    (categoria auto-detectada o ambigua)
+[Agente n8n (tool-calling)]  ←  el "extractor NLU" implícito: entiende la intención
+                    y elige/parametriza tools (categoría auto-detectada o ambigua)
        │
        ▼
 {category_id, is_new, brand, attribute_filters,
@@ -1257,7 +1498,7 @@ Costo real de la alternativa descartada:
 | Mitigación de inconsistencias (claves huérfanas) | 0.5 día/mes | Query mensual + fusión manual |
 
 **Costo del JSONB + LLM (elegido):**
-- Normalización por producto: ~2 minutos/producto × 74 = 2–3 horas.
+- Normalización por producto: ~2 minutos/producto × 73 = 2–3 horas.
 - Prompt reutilizable.
 - Revisión manual de huérfanas: 0.5 día/mes.
 - **Total: 1 día vs 8 días. ROI claro.**

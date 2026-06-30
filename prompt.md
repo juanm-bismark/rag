@@ -32,7 +32,7 @@ The caller (n8n loader) sends a single JSON input per product:
       "<key>": {
         "n": number,                   // derived downstream count of products using key
         "example": any,                // latest derived example value for that key
-        "shape"?: "scalar"|"range"|"enum"|"narrative"|"boolean",
+        "shape"?: "scalar"|"numeric_array"|"range"|"enum"|"narrative"|"boolean",
         "desc"?: str
       }
     }                                  // canonical category vocabulary/context
@@ -661,7 +661,7 @@ fences. No text outside the JSON.
 "output": { ...the normalized specs_normalized JSONB... },
 "keys_context": {
 "<each key in output>": {
-"shape": "scalar"|"range"|"enum"|"boolean"|"narrative",
+"shape": "scalar"|"numeric_array"|"range"|"enum"|"boolean"|"narrative",
 "desc":  "<short English noun phrase, ≤8 words>"
 }
 }
@@ -703,7 +703,7 @@ The caller may provide an existing category vocabulary shaped like:
 "<existing_key>": {
 "n": 12,
 "example": ...,
-"shape": "scalar|range|enum|narrative|boolean",
+"shape": "scalar|numeric_array|range|enum|narrative|boolean",
 "desc": "<semantic meaning>"
 }
 }
@@ -723,16 +723,23 @@ convergence, NOT a load-bearing field: still emit it, but a missing or
 imperfect `keys_context` is recovered, never fatal.
 
 shape — pick exactly one:
-"scalar"    single number or numeric array, INCLUDING a standalone
-            one-sided limit whose paired endpoint is ABSENT
-            (weight_g, input_voltage_v, poe_power_w, input_power_max_w,
-            vswr_max, mtbf_min_hours)
-"range"     a min/max endpoint whose PAIR is also present in this output
-            (operating_temperature_min_c WITH operating_temperature_max_c)
-"enum"      array of short string tokens, incl. string
-alternations AND certifications (wifi_standards, certifications)
-"boolean"   a has_* boolean          (has_wifi)
-"narrative" a "_"-prefixed sentence array (_install_notes)
+"scalar"        a SINGLE number, INCLUDING a standalone one-sided limit
+                whose paired endpoint is ABSENT
+                (weight_g, input_voltage_v, input_power_max_w,
+                vswr_max, mtbf_min_hours)
+"numeric_array" an array of MULTIPLE numbers — a set of supported numeric
+                values (speeds, bandwidths, power levels). Use this, NOT
+                "scalar", whenever the value is a numeric array of length ≥2
+                (ethernet_port_speeds_mbps [10,100,1000], sfp_supported_speeds_mbps,
+                wifi_channel_bandwidths_mhz, poe_power_w [125,380,760]).
+                A single-element numeric array still collapses to a scalar (§ex1).
+                Downstream these are filtered by threshold via their MAXIMUM.
+"range"         a min/max endpoint whose PAIR is also present in this output
+                (operating_temperature_min_c WITH operating_temperature_max_c)
+"enum"          array of short string tokens, incl. string
+                alternations AND certifications (wifi_standards, certifications)
+"boolean"       a has_* boolean          (has_wifi)
+"narrative"     a "_"-prefixed sentence array (_install_notes)
 
 desc — a SHORT English noun phrase (≤8 words) naming the concept,
 so a LATER product can map a synonym spec onto this exact

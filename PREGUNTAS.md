@@ -1,6 +1,8 @@
 # Catálogo de preguntas — Bismark RAG
 
-Referencia operativa del **extractor NLU + router de retrieval**. Cada entrada describe:
+Referencia operativa del **router de retrieval** y **contrato lógico/evaluable** de
+extracción (no una etapa runtime en v1 — el agente único lo produce implícitamente;
+ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describe:
 
 1. Qué pregunta del usuario resuelve.
 2. Patrones de lenguaje natural que la disparan.
@@ -12,16 +14,23 @@ Referencia operativa del **extractor NLU + router de retrieval**. Cada entrada d
 **Premisas:**
 
 - Esquema fuente: [schema.sql](schema.sql). Solo se usan columnas/índices que existen ahí.
-- Volumen: 74 productos, 8 categorías, 13 marcas, 92 opciones de atributo, 80 recomendaciones, 7 grupos canónicos de software.
+- Volumen: 73 productos, 8 categorías, 11 marcas, 92 opciones de atributo, 80 recomendaciones, 6 grupos canónicos de software.
 - Embedding model: `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain). Sin índice vectorial: seq scan + prefiltrado.
-- `product_recommendations` es **mono-tipo** (solo `recommended_product`); no hay columna `relation_type`.
+- `product_recommendations` es **mono-tipo** (solo `recommended_product`); no hay columna `relation_type`. **En los datos actuales (2026-06-25) las 80 aristas son 100% intra-categoría** (`cross_cat_edges = 0`): no hay recomendaciones router→accesorio. Afecta C4/E3 (ver notas).
+- **Compatibilidad** (`product_specs.compatibility`): poblada solo en **3/73** productos — R1520-4L (certificaciones regulatorias), Netio NT-Link 4G y Netio WiFi APP (paneles de alarma). El resto es `[]`. Afecta B6 (ver nota).
 - `categories.name`/`slug` pueden ser placeholders si el ETL no tiene lookup a Woo; preferir `category_id` en filtros.
 
 ---
 
-## 1. Contrato del extractor NLU
+## 1. Contrato de extracción (lógico / evaluable)
 
-Toda pregunta del usuario debe convertirse en este objeto antes del retrieval:
+> **Runtime v1**: esto NO es una etapa separada. El agente único
+> ([agente.json](agente.json)) produce este contrato de forma **implícita** al elegir y
+> parametrizar las tools; se conserva como contrato de diseño/evaluación (golden-set) y
+> como base para el logging estructurado de cada tool-call. Ver
+> [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md).
+
+Forma del objeto (lo que el agente expresa implícitamente en cada tool-call):
 
 ```json
 {
@@ -159,7 +168,7 @@ ORDER BY products DESC, brand;
 ### A4 — Productos que usan un software
 
 - **Ejemplos:** "qué productos usan RobustOS", "dispositivos compatibles con Robustel Cloud Manager".
-- **Triggers:** mención de un software canónico (resolver por `software.name` o `software_dedupe_group_id`).
+- **Triggers:** mención de un software canónico (resolver por `software.name` o `software.canonical_product_id`).
 - **Entidades obligatorias:** `software_id`.
 - **Ruta:** SQL puro.
 
@@ -182,7 +191,7 @@ ORDER BY p.name;
 - **Ruta:** SQL puro (JOIN `products → software`).
 
 ```sql
-SELECT s.id, s.name, s.dedupe_group_id, s.description_text
+SELECT s.id, s.name, s.canonical_product_id, s.description_text
 FROM products p
 JOIN software s ON s.id = p.software_id
 WHERE p.slug = $1;
@@ -422,6 +431,12 @@ WHERE p.category_id = $1
 - **Entidades obligatorias:** `product_refs[0]` (o token a buscar) y/o `category_id`.
 - **Fuente:** `product_specs.compatibility` (JSONB array; estructura depende del crawler).
 - **Ruta:** SQL puro sobre JSONB.
+- **[DATO BD actual 2026-06-25]** Solo 3/73 productos traen `compatibility` no vacía:
+  `robustel-r1520-4l` (certificaciones regulatorias, no compatibilidad de equipo),
+  `netio-nt-link-4g` y `netio-wifi-app` (paneles de alarma Honeywell/DSC/Paradox). El
+  EG5100 y las antenas tienen `[]` → **"antenas compatibles con el EG5100" NO es
+  ejecutable hoy** (excluida del set de validación). El único caso testeable es la
+  compatibilidad de los comunicadores de alarma con sus paneles (cat 518).
 
 **B6a — Listar compatibilidades declaradas por un producto dado:**
 
@@ -505,6 +520,11 @@ ORDER BY p.name;
 
 - **Ejemplos:** "qué accesorios suelen ir con routers", "qué tipo de antena va con módems 5G".
 - **Ruta:** SQL puro con JOIN doble a `categories`.
+- **[DATO BD actual 2026-06-25]** Las recomendaciones son 100% intra-categoría
+  (`cross_cat_edges = 0`): `category_to_category(516)` solo devuelve la **misma** categoría
+  516. Los ejemplos de "accesorios que van con routers" **NO son derivables** de
+  `product_recommendations` hoy → excluidos del set de validación. Requiere poblar aristas
+  cross-categoría en la ingesta.
 
 ```sql
 SELECT c.id AS target_category_id, c.name AS target_category,
@@ -750,6 +770,11 @@ LIMIT 10;
 
 - **Ejemplos:** "qué necesito para instalar el EG5100", "qué accesorios van con el X".
 - **Pipeline:** C1 -> agrupar por categoría de los recomendados -> RAG sobre `description` para narrar.
+- **[DATO BD actual 2026-06-25]** Depende de que C1 devuelva accesorios, pero C1 es
+  intra-categoría (router→router): "qué accesorios necesito para el EG5100" devuelve otro
+  gateway, no accesorios → **excluida del set de validación** hasta poblar aristas
+  cross-categoría. Mitigación runtime en el agente: `compatibility_query` → fallback a
+  Accesorios (cat 1554) con disclaimer.
 
 ---
 
@@ -874,7 +899,7 @@ ORDER BY products_with_key, key;
 ### G5 — Software canónico sin productos vinculados
 
 ```sql
-SELECT s.id, s.dedupe_group_id, s.name
+SELECT s.id, s.canonical_product_id, s.name
 FROM software s
 LEFT JOIN products p ON p.software_id = s.id
 WHERE p.id IS NULL;
@@ -903,6 +928,11 @@ ORDER BY a.taxonomy, ao.slug;
 ---
 
 ## 4. Política global de fallback
+
+> **[DIFERIDO en runtime v1]** Esta cascada determinista en el caller se difirió: en v1
+> el reintento/relajación lo decide el propio agente (ver [SOLUCION.md §7 "Arquitectura
+> runtime"](SOLUCION.md)). Se conserva como contrato de diseño y como lo que el logging
+> de tool-calls debe registrar (`fallback_aplicado`).
 
 Aplicada **después** de ejecutar la ruta principal y **antes** de devolver al LLM final.
 

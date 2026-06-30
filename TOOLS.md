@@ -1,31 +1,38 @@
-# Tool surface al LLM final — Bismark RAG
+# Tool surface del agente — Bismark RAG
 
-Define la **superficie de tools** que el LLM final invoca para responder preguntas
-del catálogo. Es la capa pública que envuelve el pipeline de [SOLUCION.md §7](SOLUCION.md)
-(extractor NLU + filter-then-rank) y consume el catálogo de intents de
+Define la **superficie de tools** que el agente invoca para responder preguntas del
+catálogo. Es la capa pública que envuelve el filter-then-rank de
+[SOLUCION.md §7](SOLUCION.md) y consume el catálogo de intents de
 [PREGUNTAS.md](PREGUNTAS.md).
 
-**Relación con el resto del pipeline:**
+**Runtime v1: un solo agente n8n con tool-calling** ([agente.json](agente.json)). El
+agente entiende la pregunta, elige y parametriza las tools (rellenando el `filter` con
+`$fromAI()`) y compone la respuesta — todo en un loop. **No** hay un extractor NLU
+separado ni un "LLM final" aparte; el "NLU" queda **implícito en el tool-call**. El
+contrato de [PREGUNTAS.md §1](PREGUNTAS.md) es un **contrato lógico/evaluable**, no una
+etapa runtime. Ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md) para la decisión
+y la deuda diferida (confidence/eco, fallback determinista, logging del contrato).
 
 ```
 Pregunta usuario
     │
     ▼
-[Extractor NLU §7]  ──── produce el contrato JSON (intent_id, filters, info_types, ...)
-    │
-    ▼
-[LLM final con tool-use]  ──── usa el contrato para elegir y parametrizar tools
-    │
+[Agente n8n con tool-calling]  ──── entiende la intención + elige/parametriza tools
+    │                                (el "contrato NLU" queda implícito en el tool-call)
     ▼
 [Tools de este documento]  ──── ejecutan SQL/embeddings y devuelven payloads tipados
     │
     ▼
-[LLM final]  ──── compone la respuesta natural
+[El mismo agente]  ──── compone la respuesta natural sobre el merge
 ```
 
-El NLU **no es una tool** del LLM final: es un paso previo que normaliza la pregunta
-al contrato del §1 de [PREGUNTAS.md](PREGUNTAS.md). Las tools consumen ese contrato
-como argumentos estructurados.
+(Donde el resto del documento dice "el extractor NLU", "el LLM final" o "el caller", en
+runtime v1 se refiere a **ese mismo agente** / a su extracción implícita.)
+
+> **Alcance de este documento:** las **6 tools del CATÁLOGO** de productos. El agente tiene
+> además una **segunda superficie**, la tool `classify_bismark_search_scope` (RAG de
+> páginas de solución de alto nivel: conectividad/iot/sdwan/sim-card), documentada en
+> [SOLUCION.md §7.2](SOLUCION.md). No se detalla aquí porque no es una tool del catálogo.
 
 ---
 
@@ -48,12 +55,12 @@ Las 6 tools disponibles y cómo invocarlas. Cada una recibe `filter jsonb`. Las 
 
 **Reglas duras para el LLM:**
 
-1. **Antes** de llamar `filter_products_by_specs` con un `spec_key`, llamar `get_catalog_metadata({type:"list_spec_keys", category_id, prefix?})` para validar que la clave exista. Si no existe, no inventes — usa la lista devuelta para reformular.
+1. **Antes** de llamar `filter_products_by_specs` con un `spec_key`, llamar `get_catalog_metadata({type:"list_spec_keys", category_id, prefix?})` para validar que la clave exista. Si no existe, no inventes — usa la lista devuelta para reformular. Lee también `value_type` (elige el op: `number`/`number_array`→umbral, `enum`→`contains`, `boolean`→`is_true`) y `example` (convierte la unidad por el sufijo de la clave: "1 Gbps" → `1000` en `_mbps`). Un umbral numérico funciona igual sobre `number` y `number_array` (el array se reduce a su máximo) — **no descartes una clave por ser array**.
 2. **Antes** de armar `attribute_filters`, si el usuario usó un sinónimo ("móvil", "industrial"), llamar `get_catalog_metadata({type:"resolve_alias", term})` para resolverlo al `option_slug` correcto.
 3. **Para preguntas semánticas abiertas** (D5), llamar `semantic_search` con `query_embedding` precomputado. **No** inventes embeddings.
 4. **Para comparar 2 productos** (E1): llamar `get_product_narrative` por cada slug.
 5. **Para caso de uso + criterios duros** (E2): primero `filter_products_by_specs` → tomar los `id` → pasar a `semantic_search.filter.product_ids_shortlist`.
-6. **Categorías siempre por `category_id`**, nunca por nombre/slug.
+6. **Categorías siempre por `category_id`** (o `category_ids` arreglo para unir categorías, p.ej. routers = [516,1641]), nunca por nombre/slug.
 7. Si una función devuelve error (`RAISE EXCEPTION`), leer el `message + HINT` y reformular. No reintentar el mismo input.
 
 ---
@@ -95,6 +102,7 @@ Cubre **A1, A2, A4, A5, A10**. Encuentra productos por filtros duros.
 ```typescript
 type SearchProductsInput = {
   category_id?: number;          // A1, A2, A10
+  category_ids?: number[];       // unión de categorías (p.ej. routers = [516,1641]); prioriza sobre category_id
   brand?: string;                // A10, A1, A2
   is_new?: boolean;              // A1
   software_id?: number;          // A4
@@ -179,7 +187,8 @@ BEGIN
        OR NOT EXISTS (
          SELECT 1
          FROM jsonb_array_elements(v_attr_filters) AS af
-         WHERE NOT EXISTS (
+         WHERE jsonb_array_length(af->'option_slugs') > 0   -- ignora grupos vacíos (no excluyen)
+           AND NOT EXISTS (
            SELECT 1
            FROM product_attribute_values pav
            JOIN attribute_options ao ON ao.id = pav.attribute_option_id
@@ -217,8 +226,16 @@ type SpecFilter =
   | { spec_key: string; op: "contains"; value: string }                      // B3
   | { spec_key: string; op: "is_true" };                                     // B5
 
+// Los ops numéricos (>,>=,<,<=,between) funcionan igual sobre value_type `number`
+// y `number_array`: el array se reduce a su MÁXIMO (capacidad tope del equipo).
+// Así "ethernet_port_speeds_mbps > 1000" sobre [10,100,1000,2500] sí matchea (max=2500).
+// `=` sobre number_array es any-element ("soporta exactamente ese valor").
+// `contains` es para enums (arrays de strings: ethernet_standards, *_connector).
+// Consulta value_type con get_catalog_metadata({type:"list_spec_keys"}) antes de filtrar.
+
 type FilterProductsBySpecsInput = {
-  category_id: number;            // obligatorio: spec_keys son category-specific
+  category_id?: number;           // category_id O category_ids (al menos uno); spec_keys son category-specific
+  category_ids?: number[];        // unión de categorías (p.ej. routers = [516,1641]); prioriza sobre category_id
   spec_filters: SpecFilter[];
   compatibility_query?: {         // B6
     mode: "from_product" | "contains_term";
@@ -246,18 +263,37 @@ type FilterProductsBySpecsOutput = Array<{
   no existentes con `RAISE EXCEPTION`. No silenciar — el LLM debe reformular.
 - Para `op` numéricos, usar `jsonb_typeof` guard como en [PREGUNTAS.md F2](PREGUNTAS.md)
   para no crashear con valores no numéricos.
+- **Specs numéricas multivalor** (`number_array`, p.ej. `ethernet_port_speeds_mbps`,
+  `sfp_supported_speeds_mbps`, `wifi_channel_bandwidths_mhz`): los umbrales se
+  resuelven con el helper `jsonb_numeric_magnitude(v)`, que devuelve el escalar si
+  `v` es `number` o el **máximo** del array si es `number_array` (capacidad tope).
+  Antes esto era el bug del falso negativo: el guard `jsonb_typeof = 'number'`
+  excluía TODO array → 0 resultados aunque el dato existiera. Ya NO: number y
+  number_array se filtran por el mismo umbral.
 
 **Implementación SQL:**
 
+> Dos piezas: el helper `jsonb_numeric_magnitude` (reduce number/number_array a un
+> escalar comparable = el máximo del array) y la función, que lo usa en los umbrales
+> y en `order_by`. La función incluye `order_by` (B4) y la semántica array descrita arriba.
+
 ```sql
+-- Helper: magnitud numérica comparable de un valor spec.
+--   number -> el escalar; number_array -> su máximo (capacidad tope); resto -> NULL.
+CREATE OR REPLACE FUNCTION public.jsonb_numeric_magnitude(v jsonb)
+RETURNS numeric LANGUAGE sql IMMUTABLE SET search_path = public, extensions AS $$
+  SELECT CASE
+    WHEN v IS NULL THEN NULL
+    WHEN jsonb_typeof(v) = 'number' THEN (v #>> '{}')::numeric
+    WHEN jsonb_typeof(v) = 'array'  THEN
+      (SELECT max((el #>> '{}')::numeric)
+       FROM jsonb_array_elements(v) el WHERE jsonb_typeof(el) = 'number')
+    ELSE NULL
+  END
+$$;
+
 CREATE OR REPLACE FUNCTION public.filter_products_by_specs(filter jsonb DEFAULT '{}'::jsonb)
-RETURNS TABLE (
-  id            bigint,
-  slug          text,
-  name          text,
-  brand         text,
-  metric_values jsonb
-)
+RETURNS TABLE (id bigint, slug text, name text, brand text, metric_values jsonb)
 LANGUAGE plpgsql STABLE
 SET search_path = public, extensions
 AS $$
@@ -272,7 +308,10 @@ DECLARE
   v_compat_term  text;
   v_limit        int;
   v_valid_keys   text[];
-  sf jsonb; sk text;
+  v_order_key    text;
+  v_order_dir    text;
+  v_order_sign   int := 1;
+  sf jsonb; sk text; op text;
 BEGIN
   IF jsonb_typeof(v_filter) IS DISTINCT FROM 'object' THEN
     RAISE EXCEPTION 'filter must be a json object';
@@ -295,21 +334,40 @@ BEGIN
     RAISE EXCEPTION 'compatibility_query.mode must be from_product or contains_term';
   END IF;
 
-  -- Anti-alucinación: validar spec_keys contra las realmente presentes en la categoría
-  IF jsonb_typeof(v_spec_filters) = 'array' THEN
+  v_order_key := NULLIF(trim(v_filter#>>'{order_by,spec_key}'), '');
+  v_order_dir := LOWER(COALESCE(NULLIF(trim(v_filter#>>'{order_by,dir}'), ''), 'asc'));
+  IF v_order_key IS NOT NULL AND v_order_dir NOT IN ('asc','desc') THEN
+    RAISE EXCEPTION 'order_by.dir must be asc or desc';
+  END IF;
+  v_order_sign := CASE WHEN v_order_dir = 'desc' THEN -1 ELSE 1 END;
+
+  -- Claves válidas de la categoría (para validar spec_filters y/o order_by)
+  IF jsonb_typeof(v_spec_filters) = 'array' OR v_order_key IS NOT NULL THEN
     SELECT array_agg(DISTINCT key) INTO v_valid_keys
     FROM product_specs ps
     JOIN products p ON p.id = ps.product_id,
     LATERAL jsonb_object_keys(ps.specs_normalized) AS key
     WHERE p.category_id = v_category_id;
+  END IF;
 
+  IF jsonb_typeof(v_spec_filters) = 'array' THEN
     FOR sf IN SELECT * FROM jsonb_array_elements(v_spec_filters) LOOP
       sk := sf->>'spec_key';
-      IF NOT (sk = ANY(v_valid_keys)) THEN
+      op := lower(sf->>'op');
+      IF NOT (sk = ANY(COALESCE(v_valid_keys, ARRAY[]::text[]))) THEN
         RAISE EXCEPTION 'spec_key % not found in category %', sk, v_category_id
-          USING HINT = 'Valid keys: ' || array_to_string(v_valid_keys, ', ');
+          USING HINT = 'Valid keys: ' || COALESCE(array_to_string(v_valid_keys, ', '), '(none)');
+      END IF;
+      IF op IS NULL OR op NOT IN ('>=','<=','>','<','=','between','contains','is_true') THEN
+        RAISE EXCEPTION 'unsupported op % for spec_key %', sf->>'op', sk
+          USING HINT = 'Valid ops: >=, <=, >, <, =, between, contains, is_true';
       END IF;
     END LOOP;
+  END IF;
+
+  IF v_order_key IS NOT NULL AND NOT (v_order_key = ANY(COALESCE(v_valid_keys, ARRAY[]::text[]))) THEN
+    RAISE EXCEPTION 'order_by.spec_key % not found in category %', v_order_key, v_category_id
+      USING HINT = 'Valid keys: ' || COALESCE(array_to_string(v_valid_keys, ', '), '(none)');
   END IF;
 
   RETURN QUERY
@@ -327,17 +385,28 @@ BEGIN
     WHERE v_spec_filters IS NULL
        OR NOT EXISTS (
          SELECT 1 FROM jsonb_array_elements(v_spec_filters) AS f
-         WHERE jsonb_typeof(b.specs_normalized->(f->>'spec_key')) <> 'null'
-           AND CASE f->>'op'
-             WHEN '>='      THEN (b.specs_normalized->>(f->>'spec_key'))::numeric < (f->>'value')::numeric
-             WHEN '<='      THEN (b.specs_normalized->>(f->>'spec_key'))::numeric > (f->>'value')::numeric
-             WHEN '>'       THEN (b.specs_normalized->>(f->>'spec_key'))::numeric <= (f->>'value')::numeric
-             WHEN '<'       THEN (b.specs_normalized->>(f->>'spec_key'))::numeric >= (f->>'value')::numeric
-             WHEN '='       THEN (b.specs_normalized->>(f->>'spec_key'))::numeric <> (f->>'value')::numeric
-             WHEN 'between' THEN (b.specs_normalized->>(f->>'spec_key'))::numeric NOT BETWEEN (f->>'min')::numeric AND (f->>'max')::numeric
-             WHEN 'is_true' THEN COALESCE((b.specs_normalized->>(f->>'spec_key'))::boolean, false) = false
-             WHEN 'contains'THEN NOT (b.specs_normalized->(f->>'spec_key') @> to_jsonb(f->>'value'))
-           END
+         -- clave ausente => insatisfecho (excluye). Umbrales (>,>=,<,<=,between)
+         -- unifican number y number_array vía jsonb_numeric_magnitude (max del array);
+         -- COALESCE(...,true) => magnitud NULL (no numérico) se trata como no-cumple.
+         WHERE NOT (b.specs_normalized ? (f->>'spec_key'))
+            OR (CASE lower(f->>'op')
+                  WHEN '>='      THEN COALESCE(jsonb_numeric_magnitude(b.specs_normalized->(f->>'spec_key')) <  (f->>'value')::numeric, true)
+                  WHEN '<='      THEN COALESCE(jsonb_numeric_magnitude(b.specs_normalized->(f->>'spec_key')) >  (f->>'value')::numeric, true)
+                  WHEN '>'       THEN COALESCE(jsonb_numeric_magnitude(b.specs_normalized->(f->>'spec_key')) <= (f->>'value')::numeric, true)
+                  WHEN '<'       THEN COALESCE(jsonb_numeric_magnitude(b.specs_normalized->(f->>'spec_key')) >= (f->>'value')::numeric, true)
+                  WHEN 'between' THEN COALESCE(jsonb_numeric_magnitude(b.specs_normalized->(f->>'spec_key')) NOT BETWEEN (f->>'min')::numeric AND (f->>'max')::numeric, true)
+                  WHEN '='       THEN CASE
+                                        WHEN jsonb_typeof(b.specs_normalized->(f->>'spec_key'))='number'
+                                          THEN (b.specs_normalized->>(f->>'spec_key'))::numeric <> (f->>'value')::numeric
+                                        WHEN jsonb_typeof(b.specs_normalized->(f->>'spec_key'))='array'
+                                          THEN NOT EXISTS (SELECT 1 FROM jsonb_array_elements(b.specs_normalized->(f->>'spec_key')) el
+                                                           WHERE jsonb_typeof(el)='number' AND (el#>>'{}')::numeric = (f->>'value')::numeric)
+                                        ELSE true END
+                  WHEN 'is_true' THEN CASE WHEN jsonb_typeof(b.specs_normalized->(f->>'spec_key'))='boolean'
+                                          THEN (b.specs_normalized->>(f->>'spec_key'))::boolean = false ELSE true END
+                  WHEN 'contains'THEN NOT (b.specs_normalized->(f->>'spec_key') @> to_jsonb(f->>'value'))
+                  ELSE true
+                END)
        )
   ),
   by_compat AS (
@@ -345,16 +414,19 @@ BEGIN
     FROM by_specs b
     WHERE v_compat_mode = ''
        OR (v_compat_mode = 'contains_term' AND b.compatibility::text ILIKE '%' || v_compat_term || '%')
-       OR (v_compat_mode = 'from_product'  AND b.slug = v_compat_slug AND b.compatibility <> '[]'::jsonb)
+       OR (v_compat_mode = 'from_product'  AND b.slug = v_compat_slug AND COALESCE(b.compatibility, '[]'::jsonb) <> '[]'::jsonb)
   )
   SELECT
     b.id, b.slug, b.name, b.brand,
     COALESCE(
-      (SELECT jsonb_object_agg(sf->>'spec_key', b.specs_normalized->(sf->>'spec_key'))
-       FROM jsonb_array_elements(COALESCE(v_spec_filters, '[]'::jsonb)) AS sf),
+      (SELECT jsonb_object_agg(sf2->>'spec_key', b.specs_normalized->(sf2->>'spec_key'))
+       FROM jsonb_array_elements(COALESCE(v_spec_filters, '[]'::jsonb)) AS sf2),
       '{}'::jsonb
     ) AS metric_values
   FROM by_compat b
+  ORDER BY (CASE WHEN v_order_key IS NULL THEN NULL
+                 ELSE jsonb_numeric_magnitude(b.specs_normalized->v_order_key) * v_order_sign
+            END) ASC NULLS LAST
   LIMIT v_limit;
 END;
 $$;
@@ -497,7 +569,8 @@ type GetProductNarrativeInput = {
   product_slug?: string;        // D1, D2, D3, A4b
   software_id?: number;         // D4
   info_types: Array<
-    | "description"             // D1
+    | "overview"                // D1 — "qué es" canónico (presente en TODOS los productos)
+    | "description"             // D1 — alias: si lo pides, la función incluye overview (description solo existe en 11/73)
     | "specs"                   // D2
     | "spec_section"            // D2
     | "features"                // D3
@@ -518,7 +591,6 @@ type GetProductNarrativeOutput = {
   software?: {
     id: number;
     name: string;
-    dedupe_group_id: number;
   };
   chunks: Array<{
     chunk_type: string;
@@ -712,6 +784,128 @@ La función SQL **no implementa fallbacks** — devuelve lo que el filter permit
 
 Esto mantiene la función pura y la orquestación de fallback en el caller.
 
+**Realización como tool en n8n (`match_rag_chunks`):**
+
+El nodo **Vector Store de Supabase** (modo `retrieve-as-tool`) exige que la función
+devuelva la forma fija `(id, content, metadata, similarity)`. `semantic_search`
+devuelve filas de producto, así que NO encaja en ese nodo. Para exponerla al agente
+con el mismo patrón que `match_solution_pages`, existe el gemelo
+**`public.match_rag_chunks(query_embedding, match_threshold, match_count, filter jsonb)`**:
+mismo prefiltro por JOIN a `products` (`category_id`/`is_new`/`brand`/`chunk_types`/
+`product_ids_shortlist`/`reference_product_slug`/`attribute_filters`) y mismo dedup por
+`product_id`, pero devuelve la forma estándar de 4 columnas con
+`product_id/slug/name/brand/category_id/is_new/chunk_type/section_name` embebidos en
+`metadata`. El nodo calcula el embedding (Gemini) internamente. `semantic_search`
+queda como la versión backend/programática (filas tipadas, `best_chunk`);
+`match_rag_chunks` es la cara del agente. Ambas comparten lógica y rankean idéntico.
+
+**DDL de `match_rag_chunks` (desplegado):**
+
+```sql
+CREATE OR REPLACE FUNCTION public.match_rag_chunks(
+  query_embedding extensions.vector(3072),
+  match_threshold double precision DEFAULT NULL,
+  match_count     integer          DEFAULT NULL,
+  filter          jsonb            DEFAULT '{}'::jsonb
+)
+RETURNS TABLE (id bigint, content text, metadata jsonb, similarity double precision)
+LANGUAGE plpgsql STABLE
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_filter       jsonb := COALESCE(filter, '{}'::jsonb);
+  v_category_id  int;
+  v_brand        text;
+  v_is_new       boolean;
+  v_chunk_types  text[];
+  v_shortlist    bigint[];
+  v_ref_slug     text;
+  v_ref_id       bigint;
+  v_attr_filters jsonb;
+  v_match_count  int;
+BEGIN
+  IF query_embedding IS NULL THEN
+    RAISE EXCEPTION 'query_embedding cannot be null';
+  END IF;
+  IF jsonb_typeof(v_filter) IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION 'filter must be a json object';
+  END IF;
+
+  v_category_id := NULLIF(v_filter->>'category_id','')::int;
+  v_brand       := NULLIF(trim(v_filter->>'brand'),'');
+  v_is_new      := NULLIF(v_filter->>'is_new','')::boolean;
+  v_ref_slug    := NULLIF(trim(v_filter->>'reference_product_slug'),'');
+  v_attr_filters := CASE WHEN jsonb_typeof(v_filter->'attribute_filters')='array'
+                         THEN v_filter->'attribute_filters' ELSE NULL END;
+
+  -- chunk_types (o info_types como alias) para acotar por tipo
+  IF jsonb_typeof(v_filter->'chunk_types') = 'array' THEN
+    SELECT array_agg(value) INTO v_chunk_types FROM jsonb_array_elements_text(v_filter->'chunk_types');
+  ELSIF jsonb_typeof(v_filter->'info_types') = 'array' THEN
+    SELECT array_agg(value) INTO v_chunk_types FROM jsonb_array_elements_text(v_filter->'info_types');
+  END IF;
+
+  IF jsonb_typeof(v_filter->'product_ids_shortlist') = 'array' THEN
+    SELECT array_agg((value)::bigint) INTO v_shortlist FROM jsonb_array_elements_text(v_filter->'product_ids_shortlist');
+  END IF;
+
+  IF v_ref_slug IS NOT NULL THEN
+    SELECT p.id INTO v_ref_id FROM products p WHERE p.slug = v_ref_slug;
+    IF v_ref_id IS NULL THEN
+      RAISE EXCEPTION 'reference_product_slug % not found', v_ref_slug;
+    END IF;
+  END IF;
+
+  v_match_count := GREATEST(COALESCE(match_count, 5), 1);
+
+  RETURN QUERY
+  WITH ranked AS (
+    SELECT c.id, c.content, c.product_id, c.chunk_type, c.section_name,
+           p.slug, p.name, p.brand, p.category_id, p.is_new,
+           (1 - (c.embedding <=> query_embedding))::double precision AS sim,
+           ROW_NUMBER() OVER (PARTITION BY c.product_id
+                              ORDER BY c.embedding <=> query_embedding, c.id) AS rn
+    FROM rag_chunks c
+    JOIN products p ON p.id = c.product_id          -- excluye chunks software (product_id NULL)
+    WHERE c.embedding IS NOT NULL
+      AND (v_category_id IS NULL OR p.category_id = v_category_id)
+      AND (v_is_new      IS NULL OR p.is_new      = v_is_new)
+      AND (v_brand       IS NULL OR p.brand       = v_brand)
+      AND (v_chunk_types IS NULL OR c.chunk_type  = ANY(v_chunk_types))
+      AND (v_shortlist   IS NULL OR c.product_id  = ANY(v_shortlist))
+      AND (v_ref_id      IS NULL OR c.product_id <> v_ref_id)
+      AND (
+        v_attr_filters IS NULL
+        OR NOT EXISTS (
+          SELECT 1 FROM jsonb_array_elements(v_attr_filters) AS af
+          WHERE jsonb_array_length(af->'option_slugs') > 0
+            AND NOT EXISTS (
+              SELECT 1 FROM product_attribute_values pav
+              JOIN attribute_options ao ON ao.id = pav.attribute_option_id
+              JOIN attributes a         ON a.id = ao.attribute_id
+              WHERE pav.product_id = c.product_id
+                AND a.taxonomy = af->>'taxonomy'
+                AND ao.slug IN (SELECT jsonb_array_elements_text(af->'option_slugs'))
+            )
+        )
+      )
+  )
+  SELECT r.id, r.content,
+         jsonb_build_object(
+           'product_id', r.product_id, 'slug', r.slug, 'name', r.name, 'brand', r.brand,
+           'category_id', r.category_id, 'is_new', r.is_new,
+           'chunk_type', r.chunk_type, 'section_name', r.section_name
+         ) AS metadata,
+         r.sim AS similarity
+  FROM ranked r
+  WHERE r.rn = 1
+    AND (match_threshold IS NULL OR r.sim >= match_threshold)
+  ORDER BY r.sim DESC
+  LIMIT v_match_count;
+END;
+$$;
+```
+
 **Implementación SQL:**
 
 ```sql
@@ -802,7 +996,8 @@ BEGIN
         v_attr_filters IS NULL
         OR NOT EXISTS (
           SELECT 1 FROM jsonb_array_elements(v_attr_filters) AS af
-          WHERE NOT EXISTS (
+          WHERE jsonb_array_length(af->'option_slugs') > 0   -- ignora grupos vacíos
+            AND NOT EXISTS (
             SELECT 1 FROM product_attribute_values pav
             JOIN attribute_options ao ON ao.id = pav.attribute_option_id
             JOIN attributes a         ON a.id = ao.attribute_id
@@ -839,18 +1034,27 @@ type GetCatalogMetadataInput =
   | { type: "list_spec_keys"; category_id: number; prefix?: string; with_counts?: boolean; limit?: number }           // F1
   | { type: "spec_distribution"; category_id: number; spec_key: string }                                              // F2
   | { type: "categories_with_attribute"; taxonomy: string; option_slug: string };                                     // F3
+// Nota: las variantes con `category_id` aceptan además `category_ids?: number[]` (unión de
+// categorías; p.ej. routers = [516,1641]). Aplica a list_brands_in_category,
+// list_attributes_for_category, list_spec_keys y spec_distribution.
 
 // Output: { type, data } discriminado por `type`. Shapes de `data`:
 // - list_categories: Array<{id, name, slug, product_count}>
 // - list_brands_in_category: Array<{brand, products}>
 // - list_attributes_for_category: Array<{attribute_id, name, taxonomy, options: Array<{id, name, slug, products?}>}>
 // - resolve_alias: Array<{option_id, slug, taxonomy, attribute_name, similarity}>
-// - list_spec_keys:
-//     • with_counts=false (default): Array<string>                        — solo nombres
-//     • with_counts=true:            Array<{key, products}>               — ordenado por cobertura desc
+// - list_spec_keys: Array<{key, products, value_type, example, desc}> ordenado por cobertura desc.
+//     • value_type ∈ number | number_array | enum | boolean | string  — DERIVADO del dato
+//       (vía category_keys_context), NO del shape del LLM. El LLM lo usa para elegir el op:
+//       number/number_array → umbrales (>,>=,<,<=,between); enum → contains; boolean → is_true.
+//     • example: valor representativo (delata la UNIDAD por el sufijo de la clave y la forma:
+//       [10,100] number_array, "rj45" enum). Úsalo para convertir "1 Gbps" → 1000 en _mbps.
+//     • desc: glosa textual del LLM (pista blanda, puede faltar).
 //     • prefix:"wifi_": filtra keys que empiezan con ese prefijo (caso típico: el LLM ya sabe qué grupo busca)
 //     • limit (default 100): cap superior; la cat 516 tiene ~200 keys, sin prefix se trunca
-// - spec_distribution: {min, max, avg, with_key, total}
+//     • with_counts: reservado/ignorado — el conteo `products` ya viene siempre.
+// - spec_distribution: {min, max, avg, with_key, total}  — min/max/avg vía jsonb_numeric_magnitude
+//     (number y number_array; los arrays cuentan por su máximo)
 // - categories_with_attribute: Array<{id, name, slug}>
 ```
 
@@ -972,50 +1176,41 @@ BEGIN
     LIMIT 5;
 
   ELSIF v_type = 'list_spec_keys' THEN
-    -- prefix opcional + limit default 100 + with_counts opcional para priorizar keys cubiertas
+    -- Devuelve objetos ricos: {key, products, value_type, example, desc}.
+    -- value_type es DERIVADO del dato (vía category_keys_context), NO del shape del LLM.
+    -- El agente lo usa para elegir el op (number/number_array→umbral; enum→contains;
+    -- boolean→is_true) y resolver la unidad por el sufijo de la clave + el example.
     IF v_category_id IS NULL THEN RAISE EXCEPTION 'category_id required'; END IF;
-    IF v_with_counts THEN
-      SELECT jsonb_agg(jsonb_build_object('key', key, 'products', cnt) ORDER BY cnt DESC, key)
-      INTO v_result
-      FROM (
-        SELECT key, COUNT(DISTINCT ps.product_id) AS cnt
-        FROM product_specs ps
-        JOIN products p ON p.id = ps.product_id,
-        LATERAL jsonb_object_keys(ps.specs_normalized) AS key
-        WHERE p.category_id = v_category_id
-          AND (v_prefix IS NULL OR key LIKE v_prefix || '%')
-        GROUP BY key
-        ORDER BY cnt DESC, key
-        LIMIT v_limit_keys
-      ) k;
-    ELSE
-      SELECT jsonb_agg(key ORDER BY key)
-      INTO v_result
-      FROM (
-        SELECT DISTINCT key
-        FROM product_specs ps
-        JOIN products p ON p.id = ps.product_id,
-        LATERAL jsonb_object_keys(ps.specs_normalized) AS key
-        WHERE p.category_id = v_category_id
-          AND (v_prefix IS NULL OR key LIKE v_prefix || '%')
-        ORDER BY key
-        LIMIT v_limit_keys
-      ) k;
-    END IF;
+    SELECT jsonb_agg(obj ORDER BY products DESC, key)
+    INTO v_result
+    FROM (
+      SELECT e.key AS key, (e.val->>'n')::int AS products,
+             jsonb_strip_nulls(jsonb_build_object(
+               'key', e.key, 'products', (e.val->>'n')::int,
+               'value_type', e.val->>'value_type',
+               'example', e.val->'example',
+               'desc', e.val->>'desc'
+             )) AS obj
+      FROM category_keys_context cc
+      CROSS JOIN LATERAL jsonb_each(cc.keys_context) AS e(key, val)
+      WHERE cc.category_id = v_category_id
+        AND (v_prefix IS NULL OR e.key LIKE v_prefix || '%')
+      ORDER BY products DESC, key
+      LIMIT v_limit_keys
+    ) s;
 
   ELSIF v_type = 'spec_distribution' THEN
     IF v_category_id IS NULL OR v_spec_key IS NULL THEN
       RAISE EXCEPTION 'category_id and spec_key required';
     END IF;
+    -- jsonb_numeric_magnitude unifica number y number_array (los arrays cuentan por su máximo).
     SELECT jsonb_build_object(
       'min', MIN(metric), 'max', MAX(metric), 'avg', AVG(metric),
       'with_key', COUNT(*) FILTER (WHERE has_key), 'total', COUNT(*)
     )
     INTO v_result
     FROM (
-      SELECT CASE WHEN jsonb_typeof(ps.specs_normalized->v_spec_key) = 'number'
-                  THEN (ps.specs_normalized->>v_spec_key)::numeric
-                  ELSE NULL END AS metric,
+      SELECT jsonb_numeric_magnitude(ps.specs_normalized->v_spec_key) AS metric,
              (ps.specs_normalized ? v_spec_key) AS has_key
       FROM products p
       JOIN product_specs ps ON ps.product_id = p.id
@@ -1081,6 +1276,7 @@ Las funciones PL/pgSQL comunican fallas de dos formas:
 | `filter` no es objeto | `filter must be a json object` | — |
 | `category_id` faltante donde es obligatorio | `category_id is required` | — |
 | `spec_key` inexistente en la categoría | `spec_key <X> not found in category <N>` | `Valid keys: <lista>` |
+| `op` inválido en `filter_products_by_specs` | `unsupported op <X> for spec_key <K>` | `Valid ops: >=, <=, >, <, =, between, contains, is_true` |
 | `product_slug` no resuelve | `product_slug <X> not found` | — |
 | `reference_product_slug` no resuelve | `reference_product_slug <X> not found` | — |
 | `software_id` no existe | `software_id <N> not found` | — |
@@ -1113,7 +1309,7 @@ Cada tool es una función PL/pgSQL en Supabase. El cuerpo SQL completo está inl
 - [ ] Desplegar las 6 funciones vía `apply_migration` o migración manual.
 - [ ] Verificar que `STABLE` y `SET search_path = public, extensions` estén en cada una.
 - [ ] Permisos: `GRANT EXECUTE ON FUNCTION ... TO authenticated, anon` según corresponda.
-- [ ] Smoke test por función contra el catálogo real (74 productos): que cada modo/branch retorne data.
+- [ ] Smoke test por función contra el catálogo real (73 productos): que cada modo/branch retorne data.
 
 **Capa caller (n8n / backend):**
 
@@ -1130,6 +1326,61 @@ Cada tool es una función PL/pgSQL en Supabase. El cuerpo SQL completo está inl
 - [ ] No introducir lógica de orquestación (reintentos, fallbacks multi-step) dentro de la función — eso vive en el caller.
 
 ---
+
+## 6.1 Estado desplegado y correcciones (2026-06-23)
+
+Las 6 funciones + `match_rag_chunks` están **desplegadas en Supabase**, todas
+`SECURITY INVOKER` + `STABLE` + `SET search_path = public, extensions`, con
+`GRANT EXECUTE` a `anon`, `authenticated` y `service_role`. El SQL inline de §2.x ya
+refleja el estado desplegado tras estas correcciones (la **fuente canónica es la BD**;
+verificar con `pg_get_functiondef` ante cualquier duda):
+
+- **`filter_products_by_specs`** (corregido):
+  1. **Guards de tipo en los casts.** Los ops numéricos solo castean a `numeric` cuando
+     `jsonb_typeof = 'number'`; `is_true` solo a `boolean` cuando `jsonb_typeof = 'boolean'`.
+     Antes, una clave válida con valor no numérico (p.ej. `certifications`, que es array)
+     hacía que `::numeric` **abortara toda la query**. Ahora ese producto se trata como
+     "no cumple" (`ELSE true`) y se excluye, sin romper.
+  2. **Clave ausente excluye.** `NOT (specs_normalized ? key)` → un producto sin la clave
+     no pasa el filtro (antes podía colarse por el guard débil `<> 'null'`).
+  3. **Validación de `op`.** Un `op` fuera del set permitido lanza
+     `unsupported op …` con HINT (antes el `CASE` devolvía `NULL` y el filtro se ignoraba en silencio).
+  4. **`order_by` implementado** (`{spec_key, dir}`): ordena por una spec numérica antes
+     del LIMIT; valida que `spec_key` exista (anti-alucinación) y `dir ∈ {asc, desc}`.
+     Cubre B4 ("el más rápido/de mayor X"). Antes el contrato lo anunciaba pero la
+     función lo ignoraba.
+- **`search_products` / `semantic_search` / `match_rag_chunks`**: un grupo de
+  `attribute_filters` con `option_slugs` vacío **se ignora** (`jsonb_array_length > 0`),
+  en vez de excluir todos los productos.
+- **`get_product_narrative`**: la rama de software devuelve `{id, name}` (no existe
+  `software.dedupe_group_id`).
+- **`match_rag_chunks`**: gemelo de `semantic_search` con forma estándar
+  `(id, content, metadata, similarity)` para el nodo Vector Store de n8n (ver §2.5).
+
+## 6.2 Correcciones del set de pruebas `pr` (2026-06-25)
+
+Tras ejecutar el set [pr](pr) contra la BD live se desplegaron estos fixes (migración
+`fix_catalog_tool_findings` + normalización de datos). La **fuente canónica sigue siendo
+la BD** (verificar con `pg_get_functiondef`):
+
+- **`get_product_narrative`**: `info_types:["description"]` ahora incluye también
+  `overview`. El "qué es" canónico es el chunk `overview` (73/73 productos); `description`
+  solo existe en 11/73. Antes, "¿qué es el EG5100?" devolvía `chunks: []`.
+- **`search_products` / `filter_products_by_specs` / `get_catalog_metadata`**: aceptan
+  `category_ids` (arreglo) además de `category_id` (escalar). Resuelve el split de "routers"
+  = {516 Módems y routers, 1641 Módems y Routers 5G}: antes, filtrar solo por 516 dejaba
+  fuera los routers 5G (R5020). `category_ids` tiene prioridad sobre `category_id` escalar;
+  el escalar sigue funcionando (back-compat verificada).
+- **`filter_products_by_specs`**: `metric_values` ahora incluye también la clave de
+  `order_by` (antes salía `{}` al ordenar sin `spec_filters`, p.ej. "el router más rápido").
+- **Datos (Accesorios 1554)**: la antena de 3.9 dBi usaba `gain_max_dbi`; se normalizó a
+  `gain_dbi` (clave canónica de ganancia). Las 6 antenas se filtran ahora por `gain_dbi`;
+  `gain_max_dbi` desaparece de la categoría 1554.
+- **Límites de datos (deuda de ingesta, ver [SOLUCION.md](SOLUCION.md))**:
+  `product_recommendations` es producto-a-producto dentro de la misma categoría (no hay
+  aristas hacia accesorios); la compatibilidad está poblada solo en 3/73 productos.
+  "Accesorios para X" se atiende con workaround en el agente (`compatibility_query` →
+  fallback a categoría 1554 con disclaimer), no es un bug de SQL.
 
 ## 7. Referencias cruzadas
 
