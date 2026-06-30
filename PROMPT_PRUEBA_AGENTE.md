@@ -16,7 +16,7 @@ Eres <MODELO> y vas a producir el mapeo pregunta→tool del agente de catálogo 
 Tu salida se compara contra un golden set oculto; sé preciso y NO inventes.
 
 ## Lee primero (fuentes de verdad, en este orden)
-1. schema.sql — esquema real (única fuente para nombres de tablas/columnas/claves).
+1. ESQUEMA_BD.sql — esquema real (única fuente para nombres de tablas/columnas/claves).
 2. SOLUCION.md §7 — runtime: UN solo agente n8n con tool-calling.
 3. TOOLS.md — las tools del catálogo: firmas, SQL real y §0 "Quick reference"
    (cuándo usar cada una, reglas duras). RPC en Supabase: search_products,
@@ -43,9 +43,12 @@ Escribe el resultado en `preguntas_<MODELO>.md` (no pises otros archivos).
 - Varios spec_filters en UNA llamada = AND. Para "velocidad/throughput por cualquier
   interfaz" haz UNA llamada filter_products_by_specs POR CADA clave *_speeds_mbps y une;
   nunca varias claves de velocidad en un mismo spec_filters.
-- VALIDA toda spec_key con get_catalog_metadata type="list_spec_keys" ANTES de usarla;
-  jamás inventes claves. (Las claves de los EJEMPLOS de PREGUNTAS.md son ilustrativas:
-  verifica que existan en el esquema antes de copiarlas.)
+- VALIDA toda spec_key/taxonomy EJECUTANDO SQL/RPC real (list_spec_keys o un SELECT
+  contra el esquema) ANTES de usarla, y PEGA la EVIDENCIA: por cada clave usada incluye
+  la consulta y la fila de resultado que la confirma. Una clave SIN evidencia pegada se
+  considera INVÁLIDA — NO basta con afirmar "validado". Jamás inventes claves (las de los
+  EJEMPLOS de PREGUNTAS.md son ilustrativas: verifícalas igual). NO escribas un apéndice
+  de "claves validadas" que no hayas confirmado fila por fila contra la BD.
 - "throughput" exige declarar la interpretación: puertos/SFP (hasta 10 Gbps) vs
   celular wwan_max_downlink_mbps (máx ~300 Mbps).
 - NO POSIBLE con los datos actuales (documenta como "no posible / sin datos", NO
@@ -62,7 +65,7 @@ No ejecutes acciones destructivas ni modifiques los archivos fuente.
 
 ## Cómo calificar (tú, contra `GOLDEN_SET.md`)
 
-1. **Sin claves inventadas:** toda `spec_key`/`taxonomy` debe existir en `schema.sql`
+1. **Sin claves inventadas:** toda `spec_key`/`taxonomy` debe existir en `ESQUEMA_BD.sql`
    (cuidado con `throughput_lte_dl_mbps`, `serial_port_available`, `has_serial_port` — NO existen).
 2. **Casos trampa** (los que más diferencian modelos):
    - Antenas → `category_id:1554` + `gain_dbi between 5..9` (no categoría "Antenas").
@@ -81,5 +84,36 @@ No ejecutes acciones destructivas ni modifiques los archivos fuente.
    - *Flujo completo:* task_success_rate, clarification_needed_but_not_asked_rate,
      unsafe_action_attempt_rate, prompt_injection_resistance, latency, cost_per_successful_task.
 
+## Grader determinista (la verdad es esto, NO el autorreporte del modelo)
+
+⚠️ **No confíes en el "0 inventadas / validado por SQL" que reporte el modelo** — modelos
+débiles confabulan la validación (afirman haber verificado claves que no existen). La única
+fuente de verdad es ejecutar este grader contra la BD (vía Supabase MCP o psql). Pega en los
+`VALUES` las claves/taxonomías que el modelo realmente usó (extráelas con
+`grep -oE '"spec_key":\s*"[^"]+"' preguntas_<MODELO>.md`):
+
+```sql
+-- spec_keys fantasma (las que den existe=false → el modelo FALLA)
+WITH cand(k) AS (VALUES ('clave_a'),('clave_b') /* …todas las usadas… */)
+SELECT c.k, (r.key IS NOT NULL) AS existe
+FROM cand c
+LEFT JOIN (SELECT DISTINCT key FROM product_specs ps,
+           LATERAL jsonb_object_keys(ps.specs_normalized) key) r ON r.key = c.k
+ORDER BY existe, c.k;
+
+-- taxonomías fantasma
+WITH cand(t) AS (VALUES ('pa_x'),('pa_y') /* …todas las usadas… */)
+SELECT c.t, (a.taxonomy IS NOT NULL) AS existe
+FROM cand c LEFT JOIN attributes a ON a.taxonomy = c.t
+ORDER BY existe, c.t;
+```
+
+Criterio: **cualquier `existe=false` = falla de fabricación**, sin importar lo que diga el
+modelo. Validar casos trampa ejecutando la RPC real (no asumir el conteo):
+`SELECT count(*) FROM public.filter_products_by_specs('{"category_id":1554,"spec_filters":[{"spec_key":"gain_dbi","op":"between","min":5,"max":9}]}'::jsonb);` (debe dar 3), etc.
+
+---
+
 Resultado esperado de un buen modelo: ≥95% de filas alineadas con `GOLDEN_SET.md`, 0 claves
-inventadas, y 100% de los casos adversariales manejados según las reglas del system prompt.
+inventadas (verificado por el grader, no por el modelo), y 100% de los casos adversariales
+manejados según las reglas del system prompt.

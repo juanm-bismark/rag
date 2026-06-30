@@ -6,11 +6,11 @@ Documento de referencia con todas las decisiones tomadas. El pipeline operativo 
   completo: scrapea WooCommerce, parsea HTML de specs/features, deduplica software
   canónico, resuelve productos recomendados por fuzzy alias matching, normaliza specs
   con LLM, calcula fingerprints para idempotencia, carga en las tablas de
-  [schema.sql](schema.sql) con upsert incremental (INSERT/UPDATE/DELETE por entidad),
+  [ESQUEMA_BD.sql](ESQUEMA_BD.sql) con upsert incremental (INSERT/UPDATE/DELETE por entidad),
   genera los embeddings de los chunks con Gemini y registra cada corrida en
   `ingestion_runs`. La carga ya no es un "loader" externo pendiente: vive dentro del
   mismo workflow.
-- **[schema.sql](schema.sql)** — DDL destino: 14 tablas + 4 vistas (catálogo + EAV de
+- **[ESQUEMA_BD.sql](ESQUEMA_BD.sql)** — DDL destino: 14 tablas + 4 vistas (catálogo + EAV de
   atributos + capa RAG), más la tabla de staging `embedding_rag_chunk_upload` y su
   trigger de sincronización a `rag_chunks`.
 
@@ -46,7 +46,7 @@ es bajo a propósito: la regla de chunking de §6 omite ese chunk cuando solapa
 fuertemente con `overview`. 8 `category_id`, 11 marcas,
 36 atributos filtrables válidos, 92 opciones válidas, 80 productos recomendados
 (edges dirigidos), 6 grupos canónicos de software y 70/74 productos con specs
-normalizadas (4 accesorios sin normalizar). En este snapshot `is_new` viene en 0.
+normalizadas (4 accesorios sin normalizar). En este snapshot `is_new` está poblado: **19 productos nuevos** (7 de ellos en routers 516/1641).
 **Techo planeado:** <500 productos → ~3300 chunks. PostgreSQL + pgvector en una
 sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrado
 < 10 ms — ver §12 para la justificación cuantitativa y la migración a
@@ -73,7 +73,7 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 
 ## 3. Esquema de base de datos
 
-14 tablas + 4 vistas derivadas. DDL completo y comentado en [schema.sql](schema.sql).
+14 tablas + 4 vistas derivadas. DDL completo y comentado en [ESQUEMA_BD.sql](ESQUEMA_BD.sql).
 
 **Núcleo del catálogo**
 
@@ -122,12 +122,12 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 - `chunk_owner_xor` en `rag_chunks` — un chunk no puede pertenecer a producto Y software a la vez.
 - FK circular `products` ↔ `software` cerrada con `ALTER TABLE` después de crear `products`.
 
-### Incongruencias actuales en `schema.sql` frente al output del flujo (`flujo.json`)
+### Incongruencias actuales en `ESQUEMA_BD.sql` frente al output del flujo (`flujo.json`)
 
 No se cambia el DDL automáticamente; estas son las diferencias que el ETL debe
 resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 
-| Punto | En el output del flujo (`flujo.json`) | En `schema.sql` | Impacto / decisión |
+| Punto | En el output del flujo (`flujo.json`) | En `ESQUEMA_BD.sql` | Impacto / decisión |
 |---|---|---|---|
 | Categorías | Solo existe `category_id` | `categories.name` y `categories.slug` son `NOT NULL` | El loader necesita lookup externo de Woo o valores sintéticos (`categoria-516`) antes de insertar productos. |
 | Atributo inválido | 1 producto trae atributo `id = 0`, `taxonomy = null` | `attributes.taxonomy` es `NOT NULL` | Debe saltarse y registrarse como warning. |
@@ -261,7 +261,7 @@ dependencias distintas; respetarlas evita fallos de FK:
 - **Estructura + n8n** — el `.sql` solo crea tabla/función; los datos los genera
   un flujo n8n aparte.
 
-**Nota sobre `schema.sql`:** hace `DROP ... CASCADE` (líneas 12–27) y recrea las
+**Nota sobre `ESQUEMA_BD.sql`:** hace `DROP ... CASCADE` (líneas 12–27) y recrea las
 tablas del pipeline. **No toca `solution_pages_table`** (no está en esa lista; la
 gobierna `solution_pages.sql`, que es idempotente por su propio `drop ... if exists`).
 
@@ -283,15 +283,15 @@ después** — porque el segundo referencia por FK lo que la ingesta crea en el 
 
 ## 5. Prompt de normalización de specs (paso 9)
 
-El **prompt vivo y autoritativo es [prompt.md](prompt.md)**; esta sección describe
+El **prompt vivo y autoritativo es [PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md)**; esta sección describe
 cómo el loader lo invoca, qué le pasa y cómo valida la salida. El detalle de reglas
 (unidades canónicas, dedup contra el vocabulario, certificaciones, rangos, narrativa
-vs enum, etc.) vive en [prompt.md](prompt.md) — no se duplica aquí.
+vs enum, etc.) vive en [PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md) — no se duplica aquí.
 
 Una llamada LLM por producto. Modelo recomendado: `claude-sonnet-4-6` o
 `gpt-4o-mini` (no necesita Opus). Costo total estimado para 74 productos: <$1.
 
-**Input por producto** (ver `<context>` en [prompt.md](prompt.md)):
+**Input por producto** (ver `<context>` en [PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md)):
 `{ category_name, specs: [{name, value, section?}], keys_context }`. El aplanado de
 items anidados y la limpieza previa los hace `code.js` antes del LLM, de modo que
 `specs` llega siempre con ≥1 ítem plano. `keys_context` es el vocabulario canónico
@@ -311,7 +311,7 @@ los productos con shape inválido a una cola `needs_review` en vez de insertarlo
   (`"<padre> - <hijo>"`) para que el LLM vea una lista plana sin ambigüedad.
 - **Garantiza `specs` no vacío.** La limpieza/relleno se hace aguas arriba, de modo
   que el LLM siempre recibe `specs` con ≥1 ítem.
-- **Variantes multi-SKU.** El prompt ([prompt.md](prompt.md) §5/§13) emite una clave
+- **Variantes multi-SKU.** El prompt ([PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md) §5/§13) emite una clave
   calificada por etiqueta/variante (`input_voltage_poe_pd_min_v`,
   `input_current_eth_gprs_max_a`, una pareja min/max por banda), en vez de aplanar al
   primer valor. El loader puede registrar `{product_id, variant_count}` en
@@ -335,7 +335,7 @@ rápido (10–15 productos por categoría son suficientes para estabilizar).
 
 ### Reglas del system prompt
 
-El system prompt **completo y autoritativo vive en [prompt.md](prompt.md)**: define
+El system prompt **completo y autoritativo vive en [PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md)**: define
 las reglas de comportamiento del LLM (forma del JSON, unidades canónicas, dedup
 contra `keys_context`, rangos/escalares, narrativa vs enum, padre/hijas, identidad,
 certificaciones, higiene de salida) y termina con ejemplos I/O. El system prompt no
@@ -345,7 +345,7 @@ datos del producto van en el **text input** de cada llamada (abajo).
 ### Input en runtime (text input por llamada)
 
 El text input es el `user message` de cada llamada: los datos reales del producto.
-Forma (ver `<context>` en [prompt.md](prompt.md)):
+Forma (ver `<context>` en [PROMPT_NORMALIZACION.md](PROMPT_NORMALIZACION.md)):
 
 ```json
 {
@@ -515,7 +515,7 @@ IS NULL`" ya no existe.
 2. Si el chunk es nuevo o su `content` cambió → se embeddea con Gemini
    (`gemini-embedding-001`, 3072 dims) y la fila aterriza en la tabla de staging
    `embedding_rag_chunk_upload` (`content`, `metadata`, `embedding` NOT NULL).
-3. El trigger `sync_embedding_upload_to_rag_chunks` (schema.sql §8b) parsea la
+3. El trigger `sync_embedding_upload_to_rag_chunks` (ESQUEMA_BD.sql §8b) parsea la
    `metadata`, hace el **UPSERT por `source_key`** (`ON CONFLICT`) en `rag_chunks`
    ya con embedding, y **drena** la fila de staging en el acto. Así `rag_chunks`
    queda siempre con embedding, desde un único escritor (sin doble escritura ni el
@@ -947,7 +947,7 @@ SD-WAN?", no "¿qué router 5G tiene throughput > X?". DDL en
   iot 8, sim-card 7}.
 - ⚠️ La `metadata` se guarda **plana, con el ruido del loader LangChain** (`loc`, `blobType`,
   `source`, `lines`, junto a `page_key`, `doc_type`, `canonical_url`…) — al contrario del
-  catálogo, donde el trigger de §8b de [schema.sql](schema.sql) limpia ese ruido. Es una
+  catálogo, donde el trigger de §8b de [ESQUEMA_BD.sql](ESQUEMA_BD.sql) limpia ese ruido. Es una
   inconsistencia de diseño entre los dos RAG; funciona (la función lee
   `metadata->>'page_key'`), pero conviene saberlo.
 
@@ -1174,8 +1174,8 @@ WHERE p.software_id = (SELECT id FROM software WHERE name = $1);
 
 | Fase | Trabajo | Salida | Esfuerzo |
 |---|---|---|---|
-| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `schema.sql` y ETL alineados con el output del flujo (`flujo.json`) | medio día |
-| 1 | Crear DB y ejecutar `schema.sql` | DB lista | <1 h |
+| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `ESQUEMA_BD.sql` y ETL alineados con el output del flujo (`flujo.json`) | medio día |
+| 1 | Crear DB y ejecutar `ESQUEMA_BD.sql` | DB lista | <1 h |
 | 2 | ETL pasos 1–3 (taxonomía + atributos) | `categories`, `attributes`, `attribute_options`, `category_attributes` | medio día |
 | 3 | ETL pasos 4–7 (software + productos + atributos por producto) | `software`, `products`, `product_attribute_values` | 1 día |
 | 4 | ETL paso 8 (specs crudas) | `product_specs` con JSONB crudo | medio día |
@@ -1311,7 +1311,7 @@ El sistema es idempotente por diseño. n8n calcula los fingerprints antes de esc
 | `product_specs` | `specs_fingerprint` | Todo EXCEPTO `specs_normalized` (derivado del LLM): `specs`, `table_specs`, `variants`, `compatibility`, `specs_text`, `features_text` | `'specs:<json>\|table_specs:<json>\|variants:<json>\|compatibility:<json>\|specs_text:<text>\|features_text:<text>'` |
 | `rag_chunks` | — (idempotencia por `source_key`) | `content` (sin columna separada) | comparar `content` por `source_key` antes del Vector Store |
 
-**Señal de re-embedding en chunks:** n8n compara el `content` por `source_key` **antes** del nodo Vector Store. Solo los chunks nuevos o con `content` cambiado se embeben (Gemini) y aterrizan en `embedding_rag_chunk_upload`; el trigger `sync_embedding_upload_to_rag_chunks` (schema.sql §8b) hace el UPSERT por `source_key` dejando `rag_chunks` siempre con embedding. Ya no existe el camino `embedding = NULL` + backfill.
+**Señal de re-embedding en chunks:** n8n compara el `content` por `source_key` **antes** del nodo Vector Store. Solo los chunks nuevos o con `content` cambiado se embeben (Gemini) y aterrizan en `embedding_rag_chunk_upload`; el trigger `sync_embedding_upload_to_rag_chunks` (ESQUEMA_BD.sql §8b) hace el UPSERT por `source_key` dejando `rag_chunks` siempre con embedding. Ya no existe el camino `embedding = NULL` + backfill.
 
 **Forzar re-normalización tras cambio de prompt LLM:** `UPDATE product_specs SET specs_fingerprint = NULL`. En el próximo run, n8n ve fingerprint distinto y re-procesa todo el pipeline (normalize + gen-text + chunks).
 
@@ -1440,7 +1440,7 @@ CREATE TABLE product_spec_values (
 
 ### 14.3 Qué cubre exactamente `jsonb_path_ops` y qué no
 
-El índice GIN en [schema.sql:249](schema.sql#L249):
+El índice GIN en [ESQUEMA_BD.sql:249](ESQUEMA_BD.sql#L249):
 
 ```sql
 CREATE INDEX idx_specs_normalized ON product_specs USING gin (specs_normalized jsonb_path_ops);

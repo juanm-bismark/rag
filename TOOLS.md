@@ -1413,7 +1413,7 @@ la BD** (verificar con `pg_get_functiondef`):
 
 - Contrato del extractor NLU que produce los params de estas tools: [SOLUCION.md §7](SOLUCION.md).
 - Catálogo completo de intents con SQL ejecutable: [PREGUNTAS.md](PREGUNTAS.md).
-- Schema de DB que sustenta cada tool: [schema.sql](schema.sql).
+- Schema de DB que sustenta cada tool: [ESQUEMA_BD.sql](ESQUEMA_BD.sql).
 - Políticas globales de fallback: [PREGUNTAS.md §4](PREGUNTAS.md).
 - Reglas de inclusión/exclusión del retrieval (dedup, exclusión de `software`
   chunks, etc.): [PREGUNTAS.md §5](PREGUNTAS.md).

@@ -15,12 +15,12 @@ ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describ
 2. Patrones de lenguaje natural que la disparan.
 3. Qué entidades debe extraer el NLU.
 4. Qué ruta de retrieval ejecutar (SQL puro, RAG, híbrido).
-5. SQL o pipeline ejecutable contra el esquema actual de [schema.sql](schema.sql).
+5. SQL o pipeline ejecutable contra el esquema actual de [ESQUEMA_BD.sql](ESQUEMA_BD.sql).
 6. Criterios de fallback y anti-patrones.
 
 **Premisas:**
 
-- Esquema fuente: [schema.sql](schema.sql). Solo se usan columnas/índices que existen ahí.
+- Esquema fuente: [ESQUEMA_BD.sql](ESQUEMA_BD.sql). Solo se usan columnas/índices que existen ahí.
 - Volumen: 74 productos, 8 categorías, 11 marcas, 92 opciones de atributo, 80 recomendaciones, 6 grupos canónicos de software.
 - Embedding model: `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain). Sin índice vectorial: seq scan + prefiltrado.
 - `product_recommendations` es **mono-tipo** (solo `recommended_product`); no hay columna `relation_type`. **En los datos actuales (2026-06-25) las 80 aristas son 100% intra-categoría** (`cross_cat_edges = 0`): no hay recomendaciones router→accesorio. Afecta C4/E3 (ver notas).
@@ -216,7 +216,7 @@ WHERE p.slug = $1;
 - **Ruta:** SQL puro con fuzzy match.
 
 ```sql
--- search_text se materializa en minúscula (trigger en schema.sql).
+-- search_text se materializa en minúscula (trigger en ESQUEMA_BD.sql).
 -- pg_trgm es case-sensitive: hay que bajar $1 a minúscula para que matchee.
 -- search_aliases no se usa por ahora (columna reservada para uso futuro).
 SELECT id, name, brand, slug, category_id,
@@ -290,7 +290,7 @@ ORDER BY a.name, products DESC, ao.name;
 -- Convención: aliases cargados en minúscula por el ETL. pg_trgm es
 -- case-sensitive; bajar $1 a minúscula garantiza el match.
 -- Si el ETL no normalizara, usar `lower(aoa.alias)` y crear un índice
--- GIN sobre `lower(alias) gin_trgm_ops` (no existe hoy en schema.sql).
+-- GIN sobre `lower(alias) gin_trgm_ops` (no existe hoy en ESQUEMA_BD.sql).
 SELECT ao.id, ao.slug, a.taxonomy, a.name AS attribute_name
 FROM attribute_option_aliases aoa
 JOIN attribute_options ao ON ao.id = aoa.attribute_option_id
