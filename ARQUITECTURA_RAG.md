@@ -256,7 +256,7 @@ Runbook para reconstruir la BD tras un wipe. Hay **tres clases** de tablas, con
 dependencias distintas; respetarlas evita fallos de FK:
 
 - **Seeds curados SQL** — datos reales viven en el archivo `.sql`.
-- **Ingesta n8n** — las puebla el pipeline (`pipeline_ingesta.json`), pasos 1–11
+- **Ingesta n8n** — las puebla el pipeline (`INGESTA_N8N.json`), pasos 1–11
   de la tabla de arriba.
 - **Estructura + n8n** — el `.sql` solo crea tabla/función; los datos los genera
   un flujo n8n aparte.
@@ -271,7 +271,7 @@ Orden de ejecución:
 |---|---|---|---|---|
 | 0 | Recrear esquema (solo si dropeaste tablas; **no** si solo borraste filas) | todas las del pipeline | — | `DROP/CREATE`; incluye el fix `products_software_id_fkey ON DELETE SET NULL` |
 | 1 | `reference_aliases_seed.sql` | `reference_aliases` | nada | Texto puro (`kind, alias, canonical`), sin FK a datos → corre apenas exista el esquema |
-| 2 | Ingesta n8n completa (`pipeline_ingesta.json`) | `categories` … `rag_chunks` | esquema | Pasos 1–11 de §4 |
+| 2 | Ingesta n8n completa (`INGESTA_N8N.json`) | `categories` … `rag_chunks` | esquema | Pasos 1–11 de §4 |
 | 3 | `attribute_option_aliases_seed.sql` | `attribute_option_aliases` | **paso 2** | ⚠️ Inserta IDs literales (`498`, `1586`…) con FK a `attribute_options(id)`. Si `attribute_options` está vacía, **las 226 filas fallan** con `violates foreign key constraint`. Solo corre tras la ingesta |
 | 4 | `solution_pages.sql` (estructura) + flujo n8n de solution pages (datos) | `solution_pages_table` | independiente | El `.sql` solo crea tabla + `match_solution_pages`; los embeddings los puebla el flujo n8n de páginas de solución |
 
