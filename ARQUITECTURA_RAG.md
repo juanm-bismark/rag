@@ -2,7 +2,7 @@
 
 Documento de referencia con todas las decisiones tomadas. El pipeline operativo es:
 
-- **[flujo.json](flujo.json)** — workflow n8n (152 nodos) que implementa el pipeline
+- **[INGESTA_N8N.json](INGESTA_N8N.json)** — workflow n8n (152 nodos) que implementa el pipeline
   completo: scrapea WooCommerce, parsea HTML de specs/features, deduplica software
   canónico, resuelve productos recomendados por fuzzy alias matching, normaliza specs
   con LLM, calcula fingerprints para idempotencia, carga en las tablas de
@@ -122,12 +122,12 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 - `chunk_owner_xor` en `rag_chunks` — un chunk no puede pertenecer a producto Y software a la vez.
 - FK circular `products` ↔ `software` cerrada con `ALTER TABLE` después de crear `products`.
 
-### Incongruencias actuales en `ESQUEMA_BD.sql` frente al output del flujo (`flujo.json`)
+### Incongruencias actuales en `ESQUEMA_BD.sql` frente al output del flujo (`INGESTA_N8N.json`)
 
 No se cambia el DDL automáticamente; estas son las diferencias que el ETL debe
 resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 
-| Punto | En el output del flujo (`flujo.json`) | En `ESQUEMA_BD.sql` | Impacto / decisión |
+| Punto | En el output del flujo (`INGESTA_N8N.json`) | En `ESQUEMA_BD.sql` | Impacto / decisión |
 |---|---|---|---|
 | Categorías | Solo existe `category_id` | `categories.name` y `categories.slug` son `NOT NULL` | El loader necesita lookup externo de Woo o valores sintéticos (`categoria-516`) antes de insertar productos. |
 | Atributo inválido | 1 producto trae atributo `id = 0`, `taxonomy = null` | `attributes.taxonomy` es `NOT NULL` | Debe saltarse y registrarse como warning. |
@@ -142,7 +142,7 @@ resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 
 El "ETL" tiene dos etapas claramente separadas:
 
-**Etapa 1: extracción y transformación (n8n, [flujo.json](flujo.json))** — ya
+**Etapa 1: extracción y transformación (n8n, [INGESTA_N8N.json](INGESTA_N8N.json))** — ya
 implementada. Produce, en memoria del workflow, un objeto por producto que ya
 contiene:
 
@@ -1174,7 +1174,7 @@ WHERE p.software_id = (SELECT id FROM software WHERE name = $1);
 
 | Fase | Trabajo | Salida | Esfuerzo |
 |---|---|---|---|
-| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `ESQUEMA_BD.sql` y ETL alineados con el output del flujo (`flujo.json`) | medio día |
+| 0 | Cerrar incongruencias DDL ↔ JSON listadas en §3 (categorías sin `name`/`slug`, atributo `id=0`, fuente de productos recomendados) | `ESQUEMA_BD.sql` y ETL alineados con el output del flujo (`INGESTA_N8N.json`) | medio día |
 | 1 | Crear DB y ejecutar `ESQUEMA_BD.sql` | DB lista | <1 h |
 | 2 | ETL pasos 1–3 (taxonomía + atributos) | `categories`, `attributes`, `attribute_options`, `category_attributes` | medio día |
 | 3 | ETL pasos 4–7 (software + productos + atributos por producto) | `software`, `products`, `product_attribute_values` | 1 día |
