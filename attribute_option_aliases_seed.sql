@@ -3,7 +3,7 @@
 -- =============================================================================
 -- Mapea términos en lenguaje natural -> attribute_option correcta. Lo consume
 -- get_catalog_metadata(type=resolve_alias) y la resolución de attribute_filters.
--- Proceso/gobernanza: ver SOLUCION.md §7.1. Alias SIEMPRE en minúscula
+-- Proceso/gobernanza: ver ARQUITECTURA_RAG.md §7.1. Alias SIEMPRE en minúscula
 -- (resolve_alias baja el término con lower(); pg_trgm es case-sensitive).
 --
 -- Estado: 226 alias sobre 76 opciones (revisado 2026-06-23). Idempotente.

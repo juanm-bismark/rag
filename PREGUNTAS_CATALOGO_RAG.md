@@ -9,7 +9,7 @@
 
 Referencia operativa del **router de retrieval** y **contrato lógico/evaluable** de
 extracción (no una etapa runtime en v1 — el agente único lo produce implícitamente;
-ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describe:
+ver [ARQUITECTURA_RAG.md §7 "Arquitectura runtime"](ARQUITECTURA_RAG.md)). Cada entrada describe:
 
 1. Qué pregunta del usuario resuelve.
 2. Patrones de lenguaje natural que la disparan.
@@ -32,10 +32,10 @@ ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describ
 ## 1. Contrato de extracción (lógico / evaluable)
 
 > **Runtime v1**: esto NO es una etapa separada. El agente único
-> ([agente.json](agente.json)) produce este contrato de forma **implícita** al elegir y
+> ([AGENTE_RAG_N8N.json](AGENTE_RAG_N8N.json)) produce este contrato de forma **implícita** al elegir y
 > parametrizar las tools; se conserva como contrato de diseño/evaluación (golden-set) y
 > como base para el logging estructurado de cada tool-call. Ver
-> [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md).
+> [ARQUITECTURA_RAG.md §7 "Arquitectura runtime"](ARQUITECTURA_RAG.md).
 
 Forma del objeto (lo que el agente expresa implícitamente en cada tool-call):
 
@@ -942,8 +942,8 @@ ORDER BY a.taxonomy, ao.slug;
 ## 4. Política global de fallback
 
 > **[DIFERIDO en runtime v1]** Esta cascada determinista en el caller se difirió: en v1
-> el reintento/relajación lo decide el propio agente (ver [SOLUCION.md §7 "Arquitectura
-> runtime"](SOLUCION.md)). Se conserva como contrato de diseño y como lo que el logging
+> el reintento/relajación lo decide el propio agente (ver [ARQUITECTURA_RAG.md §7 "Arquitectura
+> runtime"](ARQUITECTURA_RAG.md)). Se conserva como contrato de diseño y como lo que el logging
 > de tool-calls debe registrar (`fallback_aplicado`).
 
 Aplicada **después** de ejecutar la ruta principal y **antes** de devolver al LLM final.

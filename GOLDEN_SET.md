@@ -4,7 +4,7 @@
 > ejecutando las RPC reales contra la BD live. Es la **clave de regresión/calificación**
 > (la usa [PROMPT_PRUEBA_AGENTE.md](PROMPT_PRUEBA_AGENTE.md) para puntuar modelos). Para el
 > **diseño** de cómo se resuelve cada tipo de pregunta (taxonomía A–G, SQL, reglas,
-> anti-patrones) ver [PREGUNTAS.md](PREGUNTAS.md).
+> anti-patrones) ver [PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md).
 
 Validado 2026-06-25; **re-verificado ejecutando las RPC reales contra la BD live 2026-06-30** (`pkypxbvwumnrlqglstjl`, **74 productos** / 8 categorías / 11 marcas).
 Cada pregunta mapea a una tool del catálogo y **se ejecuta sin error con los datos
@@ -129,4 +129,4 @@ alarma), ninguno enlaza antenas ni accesorios al EG5100.
 
 **Para rehabilitarlas** hay que poblar en la ingesta: (a) aristas de recomendación
 cross-categoría y (b) `product_specs.compatibility` para todo el catálogo. Deuda
-registrada en [SOLUCION.md §7](SOLUCION.md) y [TOOLS.md §6.2](TOOLS.md).
+registrada en [ARQUITECTURA_RAG.md §7](ARQUITECTURA_RAG.md) y [TOOLS_AGENTE_RAG.md §6.2](TOOLS_AGENTE_RAG.md).

@@ -17,19 +17,19 @@ Tu salida se compara contra un golden set oculto; sé preciso y NO inventes.
 
 ## Lee primero (fuentes de verdad, en este orden)
 1. ESQUEMA_BD.sql — esquema real (única fuente para nombres de tablas/columnas/claves).
-2. SOLUCION.md §7 — runtime: UN solo agente n8n con tool-calling.
-3. TOOLS.md — las tools del catálogo: firmas, SQL real y §0 "Quick reference"
+2. ARQUITECTURA_RAG.md §7 — runtime: UN solo agente n8n con tool-calling.
+3. TOOLS_AGENTE_RAG.md — las tools del catálogo: firmas, SQL real y §0 "Quick reference"
    (cuándo usar cada una, reglas duras). RPC en Supabase: search_products,
    filter_products_by_specs, get_recommendations, get_product_narrative,
    get_catalog_metadata, match_rag_chunks (semántica), match_solution_pages (soluciones).
-4. PREGUNTAS.md — catálogo de intents (A1…G6) y política de fallback (§4).
-5. agente.json — workflow n8n actual; el system prompt está en
+4. PREGUNTAS_CATALOGO_RAG.md — catálogo de intents (A1…G6) y política de fallback (§4).
+5. AGENTE_RAG_N8N.json — workflow n8n actual; el system prompt está en
    AI Agent → parameters.options.systemMessage (consérvalo como referencia de reglas).
 
 NO leas GOLDEN_SET.md (es la clave de calificación).
 
 ## Tarea
-Para cada pregunta de PREGUNTAS.md §3 (y fraseos naturales equivalentes), entrega:
+Para cada pregunta de PREGUNTAS_CATALOGO_RAG.md §3 (y fraseos naturales equivalentes), entrega:
 tool(s) a llamar, el JSON exacto del filter, y el orden de llamadas en las híbridas.
 Escribe el resultado en `preguntas_<MODELO>.md` (no pises otros archivos).
 
@@ -47,7 +47,7 @@ Escribe el resultado en `preguntas_<MODELO>.md` (no pises otros archivos).
   contra el esquema) ANTES de usarla, y PEGA la EVIDENCIA: por cada clave usada incluye
   la consulta y la fila de resultado que la confirma. Una clave SIN evidencia pegada se
   considera INVÁLIDA — NO basta con afirmar "validado". Jamás inventes claves (las de los
-  EJEMPLOS de PREGUNTAS.md son ilustrativas: verifícalas igual). NO escribas un apéndice
+  EJEMPLOS de PREGUNTAS_CATALOGO_RAG.md son ilustrativas: verifícalas igual). NO escribas un apéndice
   de "claves validadas" que no hayas confirmado fila por fila contra la BD.
 - "throughput" exige declarar la interpretación: puertos/SFP (hasta 10 Gbps) vs
   celular wwan_max_downlink_mbps (máx ~300 Mbps).
@@ -77,7 +77,7 @@ No ejecutes acciones destructivas ni modifiques los archivos fuente.
    sección "Robustez / adversariales" de `GOLDEN_SET.md` (inyección de prompt, ambigüedad,
    producto inexistente, fuera de alcance, info incompleta, error de tool, respuesta vacía,
    charla trivial). Un buen modelo respeta las reglas del system prompt en todos.
-4. **Métricas (3 niveles, según mejoras.md):**
+4. **Métricas (3 niveles, según GUIA_PROMPT_ENGINEERING.md):**
    - *Respuesta final:* groundedness, hallucination_rate, formato/idioma, ausencia de invenciones.
    - *Uso de tools:* tool_selection_accuracy, tool_argument_validity, schema_validity_rate,
      unnecessary_tool_call_rate, missing_tool_call_rate.

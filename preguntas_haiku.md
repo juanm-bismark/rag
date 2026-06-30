@@ -21,7 +21,7 @@ Se ejecutaron 9 consultas SQL contra Supabase (project_id: `pkypxbvwumnrlqglstjl
 
 ---
 
-## Tabla: Preguntas del catálogo (PREGUNTAS.md §3) — Mapeo con evidencia
+## Tabla: Preguntas del catálogo (PREGUNTAS_CATALOGO_RAG.md §3) — Mapeo con evidencia
 
 | Intent ID | Pregunta (ejemplo) | Tool(s) a usar | Filter JSON | Notas |
 |-----------|-------------------|----------------|-------------|-------|

@@ -37,7 +37,7 @@ En **runtime v1** esto lo ejecuta **un solo agente n8n con tool-calling** (ver �
 agente clasifica la pregunta de forma implícita al elegir y parametrizar las tools,
 dispara ambas rutas y compone la respuesta sobre el merge. El "extractor NLU" **no es
 una etapa runtime separada** — quedó como contrato lógico/evaluable (ver §7
-"Arquitectura runtime" y [PREGUNTAS.md §1](PREGUNTAS.md)).
+"Arquitectura runtime" y [PREGUNTAS_CATALOGO_RAG.md §1](PREGUNTAS_CATALOGO_RAG.md)).
 
 **Volumen (snapshot contra la base en Supabase — las cifras cambian en cada reload del ETL):** 74 productos →
 **317 chunks** (74 overview + 11 description + 70 features + 115 spec_section
@@ -550,9 +550,9 @@ fase 1 solo escribe `content` + owner (`product_id` **o** `software_id`) +
 
 ### Arquitectura runtime: agente único (v1) — decisión oficial
 
-**Runtime v1 = un solo agente n8n con tool-calling** ([agente.json](agente.json)),
+**Runtime v1 = un solo agente n8n con tool-calling** ([AGENTE_RAG_N8N.json](AGENTE_RAG_N8N.json)),
 NO un pipeline "NLU separado → LLM final → tools". El AI Agent (modelo con
-function-calling, configurado en [agente.json](agente.json) — hoy gpt-5.x-mini, temp
+function-calling, configurado en [AGENTE_RAG_N8N.json](AGENTE_RAG_N8N.json) — hoy gpt-5.x-mini, temp
 baja) entiende la intención, elige las tools, rellena los `filter` con `$fromAI()` y
 compone la respuesta,
 todo en un loop. Es el patrón nativo de n8n (AI Agent + herramientas conectadas) y el
@@ -564,7 +564,7 @@ la extracción de intención + filtros.
 por mecanismo, sin rerank ni índice vectorial. No hay volumen ni ambigüedad que pague
 un NLU separado + caller con cascada de fallback.
 
-**El contrato NLU de [PREGUNTAS.md §1](PREGUNTAS.md) NO desaparece**: queda como
+**El contrato NLU de [PREGUNTAS_CATALOGO_RAG.md §1](PREGUNTAS_CATALOGO_RAG.md) NO desaparece**: queda como
 **contrato lógico / de evaluación**, no como etapa runtime obligatoria. El agente lo
 produce de forma implícita en cada tool-call.
 
@@ -579,8 +579,8 @@ alrededor de un NLU previo + LLM final + tools. Lo que se difiere en v1:
 - `confidence` explícito de extracción y **eco al usuario** por baja confianza
   (ver "Política de confianza del NLU").
 - **Fallback determinista en el caller** (cascada relajar `spec_filters` →
-  `attribute_filters` → `category_id`; ver "Política de fallback", [PREGUNTAS.md §4](PREGUNTAS.md),
-  [TOOLS.md §5](TOOLS.md)). En v1 el reintento lo decide el propio agente.
+  `attribute_filters` → `category_id`; ver "Política de fallback", [PREGUNTAS_CATALOGO_RAG.md §4](PREGUNTAS_CATALOGO_RAG.md),
+  [TOOLS_AGENTE_RAG.md §5](TOOLS_AGENTE_RAG.md)). En v1 el reintento lo decide el propio agente.
 - **Logging estructurado del contrato** (intent, filtros, ruta, fallback) para el
   golden-set/eval (§9 gate, §10).
 - **Budget de merge cruzado** (≤3 chunks/producto, ≤10 total, ≤4000 tokens). En v1 el
@@ -603,7 +603,7 @@ de SQL (las tools devuelven lo que el dato permite), sino huecos de ingesta a po
   la BD a `gain_dbi` (clave canónica). La ingesta debe emitir `gain_dbi` para no
   reintroducir el split de claves en la próxima corrida.
 - **Split de categoría "routers" {516, 1641}.** Resuelto a nivel de tool con `category_ids`
-  (arreglo) — ver [TOOLS.md §6.2](TOOLS.md). Si a futuro se decide consolidar la taxonomía,
+  (arreglo) — ver [TOOLS_AGENTE_RAG.md §6.2](TOOLS_AGENTE_RAG.md). Si a futuro se decide consolidar la taxonomía,
   hacerlo en el source (Woo/`category_worker`), no en la BD del RAG.
 
 **Siguiente mejora obligatoria (antes de medir calidad en serio)**: loggear cada
@@ -804,12 +804,12 @@ En runtime v1 el **extractor NLU y el "LLM final" son el mismo agente** (ver
 "Arquitectura runtime" arriba): no recibe un contrato NLU precomputado, sino que llama
 directamente a un set acotado de **tools** que envuelven SQL/embeddings y devuelven
 payloads tipados. Diseño completo (firmas, composición de híbridas, errores y
-warnings) en [TOOLS.md](TOOLS.md).
+warnings) en [TOOLS_AGENTE_RAG.md](TOOLS_AGENTE_RAG.md).
 
 Decisión: **6 tools agrupadas por mecanismo de retrieval**, no una mega-tool ni una
 tool por intent.
 
-| Tool | Cubre intents de [PREGUNTAS.md](PREGUNTAS.md) | Mecanismo |
+| Tool | Cubre intents de [PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md) | Mecanismo |
 |---|---|---|
 | `search_products` | A1, A2, A4, A5, A10 | SQL puro sobre `products` + `product_attribute_values` |
 | `filter_products_by_specs` | B1–B6 | SQL JSONB sobre `product_specs.specs_normalized` |
@@ -832,7 +832,7 @@ Anti-patrones rechazados:
 
 Los fallbacks de §7 ("Política de fallback") viven **dentro** del adapter de cada
 tool, no en el LLM. El LLM solo ve el resultado final + warnings tipados
-(`fallback_applied`, `spec_key_unknown`, etc. — ver [TOOLS.md §5](TOOLS.md)).
+(`fallback_applied`, `spec_key_unknown`, etc. — ver [TOOLS_AGENTE_RAG.md §5](TOOLS_AGENTE_RAG.md)).
 
 ---
 
@@ -841,7 +841,7 @@ tool, no en el LLM. El LLM solo ve el resultado final + warnings tipados
 **Qué es.** Tabla `(attribute_option_id, alias)` que mapea términos en lenguaje natural
 del usuario a la `attribute_option` correcta. La consumen:
 
-- `get_catalog_metadata({type:"resolve_alias", term})` (intent A8 de [PREGUNTAS.md](PREGUNTAS.md)).
+- `get_catalog_metadata({type:"resolve_alias", term})` (intent A8 de [PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md)).
 - La resolución de `attribute_filters` dentro de `search_products` / `semantic_search`
   cuando el usuario escribe un término coloquial ("móvil") en vez del slug (`pa_red-celular:4g`).
 
@@ -963,15 +963,15 @@ SD-WAN?", no "¿qué router 5G tiene throughput > X?". DDL en
 - **Threshold desactivado a propósito** (las 3 líneas — declaración, asignación y `WHERE` —
   comentadas; riesgo de resultados vacíos). El parámetro `match_threshold` permanece en la
   firma por compatibilidad con el nodo Vector Store, pero **no se aplica** (ni en el SQL ni
-  desde el agente — ver TOOLS.md / agente.json: se quitó esa guía).
+  desde el agente — ver TOOLS_AGENTE_RAG.md / AGENTE_RAG_N8N.json: se quitó esa guía).
 - **`match_documents`**: shim que reenvía a `match_solution_pages` (el nodo LangChain por
   defecto invoca `match_documents`). **`match_solution_pages_debug`**: variante de
   depuración, no para producción.
 
-**En el agente** ([agente.json](agente.json)): la tool **`classify_bismark_search_scope`**
+**En el agente** ([AGENTE_RAG_N8N.json](AGENTE_RAG_N8N.json)): la tool **`classify_bismark_search_scope`**
 (nodo Vector Store en modo retrieve-as-tool, `queryName=match_solution_pages`, con su nodo
 de embeddings Gemini) ES esta superficie. El agente la usa para consultas de solución de
-alto nivel y usa las 6 tools del catálogo ([TOOLS.md](TOOLS.md)) para producto concreto. El
+alto nivel y usa las 6 tools del catálogo ([TOOLS_AGENTE_RAG.md](TOOLS_AGENTE_RAG.md)) para producto concreto. El
 modelo decide internamente `search_mode`/`page_keys`; no se exponen al usuario.
 
 **Ingesta**: las páginas se cargan vía n8n (Gemini + LangChain) a `solution_pages_table`.
@@ -1539,7 +1539,7 @@ Los `attribute_filters` del NLU vienen agrupados por `taxonomy`. La semántica
 correcta es **OR dentro del grupo, AND entre grupos** ("5G **o** 4G" **y** "WiFi=sí").
 
 El backend la materializa con **un `EXISTS` sobre `product_attribute_values` por
-cada grupo** (ver query 7 en §8 y `semantic_search` en [TOOLS.md](TOOLS.md)): el
+cada grupo** (ver query 7 en §8 y `semantic_search` en [TOOLS_AGENTE_RAG.md](TOOLS_AGENTE_RAG.md)): el
 `ao.slug IN (...)` interno da el OR del grupo; el AND entre los EXISTS da el AND
 entre grupos. El EAV (`product_attribute_values`) es la fuente de verdad del filtro.
 

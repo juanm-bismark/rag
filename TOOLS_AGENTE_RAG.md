@@ -2,15 +2,15 @@
 
 Define la **superficie de tools** que el agente invoca para responder preguntas del
 catálogo. Es la capa pública que envuelve el filter-then-rank de
-[SOLUCION.md §7](SOLUCION.md) y consume el catálogo de intents de
-[PREGUNTAS.md](PREGUNTAS.md).
+[ARQUITECTURA_RAG.md §7](ARQUITECTURA_RAG.md) y consume el catálogo de intents de
+[PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md).
 
-**Runtime v1: un solo agente n8n con tool-calling** ([agente.json](agente.json)). El
+**Runtime v1: un solo agente n8n con tool-calling** ([AGENTE_RAG_N8N.json](AGENTE_RAG_N8N.json)). El
 agente entiende la pregunta, elige y parametriza las tools (rellenando el `filter` con
 `$fromAI()`) y compone la respuesta — todo en un loop. **No** hay un extractor NLU
 separado ni un "LLM final" aparte; el "NLU" queda **implícito en el tool-call**. El
-contrato de [PREGUNTAS.md §1](PREGUNTAS.md) es un **contrato lógico/evaluable**, no una
-etapa runtime. Ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md) para la decisión
+contrato de [PREGUNTAS_CATALOGO_RAG.md §1](PREGUNTAS_CATALOGO_RAG.md) es un **contrato lógico/evaluable**, no una
+etapa runtime. Ver [ARQUITECTURA_RAG.md §7 "Arquitectura runtime"](ARQUITECTURA_RAG.md) para la decisión
 y la deuda diferida (confidence/eco, fallback determinista, logging del contrato).
 
 ```
@@ -32,7 +32,7 @@ runtime v1 se refiere a **ese mismo agente** / a su extracción implícita.)
 > **Alcance de este documento:** las **6 tools del CATÁLOGO** de productos. El agente tiene
 > además una **segunda superficie**, la tool `classify_bismark_search_scope` (RAG de
 > páginas de solución de alto nivel: conectividad/iot/sdwan/sim-card), documentada en
-> [SOLUCION.md §7.2](SOLUCION.md). No se detalla aquí porque no es una tool del catálogo.
+> [ARQUITECTURA_RAG.md §7.2](ARQUITECTURA_RAG.md). No se detalla aquí porque no es una tool del catálogo.
 
 ---
 
@@ -87,13 +87,13 @@ Las 6 tools disponibles y cómo invocarlas. Cada una recibe `filter jsonb`. Las 
 Las **híbridas E1–E4 no tienen tool propia** — el LLM las compone llamando 2-3 de las
 anteriores. Ver §3.
 
-**G* (operación)** no es tool del LLM — son queries de operador que viven en [PREGUNTAS.md §G](PREGUNTAS.md) y se ejecutan directo contra la BD.
+**G* (operación)** no es tool del LLM — son queries de operador que viven en [PREGUNTAS_CATALOGO_RAG.md §G](PREGUNTAS_CATALOGO_RAG.md) y se ejecutan directo contra la BD.
 
 ---
 
 ## 2. Firmas concretas
 
-Sintaxis TypeScript del input/output porque mapea 1:1 a JSON Schema para tool-use de la API. Debajo de cada firma va la **implementación SQL real** de la función PL/pgSQL. Los fallbacks (cuando aplican) los maneja el caller (n8n), no la función — ver [PREGUNTAS.md §4](PREGUNTAS.md).
+Sintaxis TypeScript del input/output porque mapea 1:1 a JSON Schema para tool-use de la API. Debajo de cada firma va la **implementación SQL real** de la función PL/pgSQL. Los fallbacks (cuando aplican) los maneja el caller (n8n), no la función — ver [PREGUNTAS_CATALOGO_RAG.md §4](PREGUNTAS_CATALOGO_RAG.md).
 
 ### 2.1 `search_products`
 
@@ -131,7 +131,7 @@ type SearchProductsOutput = Array<{
 - Si vienen ambos `name_query` y filtros estructurales, ambos se aplican (AND).
 
 **Anti-patrón:** no aceptar `category_slug` o `category_name`. Solo `category_id`
-(ver [PREGUNTAS.md §5](PREGUNTAS.md)).
+(ver [PREGUNTAS_CATALOGO_RAG.md §5](PREGUNTAS_CATALOGO_RAG.md)).
 
 **Implementación SQL:**
 
@@ -273,7 +273,7 @@ type FilterProductsBySpecsOutput = Array<{
 
 - La función consulta las claves reales de la categoría (F1) y **rechaza** `spec_keys`
   no existentes con `RAISE EXCEPTION`. No silenciar — el LLM debe reformular.
-- Para `op` numéricos, usar `jsonb_typeof` guard como en [PREGUNTAS.md F2](PREGUNTAS.md)
+- Para `op` numéricos, usar `jsonb_typeof` guard como en [PREGUNTAS_CATALOGO_RAG.md F2](PREGUNTAS_CATALOGO_RAG.md)
   para no crashear con valores no numéricos.
 - **Specs numéricas multivalor** (`number_array`, p.ej. `ethernet_port_speeds_mbps`,
   `sfp_supported_speeds_mbps`, `wifi_channel_bandwidths_mhz`): los umbrales se
@@ -801,7 +801,7 @@ type SemanticSearchOutput = Array<{
 3. **El embedding lo calcula el caller (n8n)**, no el LLM. Nunca exponer vectores en
    la firma pública.
 
-**Fallback interno (ver [PREGUNTAS.md §4.3](PREGUNTAS.md)):**
+**Fallback interno (ver [PREGUNTAS_CATALOGO_RAG.md §4.3](PREGUNTAS_CATALOGO_RAG.md)):**
 
 La función SQL **no implementa fallbacks** — devuelve lo que el filter permite. El caller (n8n / backend) detecta `<3 productos con similarity > 0.55` y reintenta con parámetros relajados:
 
@@ -1287,8 +1287,8 @@ intermedio y decide el siguiente paso. Una mega-tool tendría que hardcodear tod
 - **No** una tool `answer_with_rag(query)` que envuelva todo. Pierdes composición y trazabilidad.
 - **No** tools por intent (`a1_new_products`, `a2_attr_combo`…). El LLM se confunde y el surface crece.
 - **No** exponer `embedding`/`vector` en interfaces hacia el LLM. El `query_embedding` lo calcula el caller (n8n) con Gemini (`gemini-embedding-001`) antes del RPC; el LLM nunca ve vectores.
-- **No** mezclar G* (operación) con las tools. Las queries G1–G6 viven en [PREGUNTAS.md](PREGUNTAS.md) y se ejecutan directo contra la BD por el operador.
-- **No** aceptar `category_slug`/`category_name` como filtros — solo `category_id` (ver [PREGUNTAS.md §5](PREGUNTAS.md): `categories.name`/`slug` pueden ser placeholders).
+- **No** mezclar G* (operación) con las tools. Las queries G1–G6 viven en [PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md) y se ejecutan directo contra la BD por el operador.
+- **No** aceptar `category_slug`/`category_name` como filtros — solo `category_id` (ver [PREGUNTAS_CATALOGO_RAG.md §5](PREGUNTAS_CATALOGO_RAG.md): `categories.name`/`slug` pueden ser placeholders).
 
 ---
 
@@ -1323,7 +1323,7 @@ El LLM lee `message + HINT` y **reformula** — no reintenta con el mismo input.
 | `resolve_alias` sin match | `{type, data: []}` | El LLM informa "no entiendo el término" y pide reformulación. |
 | `search_products` 0 productos | `[]` | Relajar `attribute_filters` o `is_new`. |
 
-**Quién aplica los fallbacks:** el caller (n8n), no la función. La función expone un solo SELECT; el caller decide la cascada según [PREGUNTAS.md §4](PREGUNTAS.md).
+**Quién aplica los fallbacks:** el caller (n8n), no la función. La función expone un solo SELECT; el caller decide la cascada según [PREGUNTAS_CATALOGO_RAG.md §4](PREGUNTAS_CATALOGO_RAG.md).
 
 ---
 
@@ -1341,9 +1341,9 @@ Cada tool es una función PL/pgSQL en Supabase. El cuerpo SQL completo está inl
 **Capa caller (n8n / backend):**
 
 - [ ] Cómputo de `query_embedding` con Gemini (`gemini-embedding-001`) **antes** del RPC en `semantic_search` y `get_product_narrative` (cuando aplica). Nunca se delega ese costo a la DB.
-- [ ] Fallback escalonado de `semantic_search` ([PREGUNTAS.md §4.3](PREGUNTAS.md)) vive **en el caller**, no en la función. La función expone un solo SELECT; el caller reintenta con parámetros relajados y acumula `warnings`.
+- [ ] Fallback escalonado de `semantic_search` ([PREGUNTAS_CATALOGO_RAG.md §4.3](PREGUNTAS_CATALOGO_RAG.md)) vive **en el caller**, no en la función. La función expone un solo SELECT; el caller reintenta con parámetros relajados y acumula `warnings`.
 - [ ] Mapear `RAISE EXCEPTION` de plpgsql a `errors` estructurados del contrato §5. El mensaje + HINT contiene la info útil (claves válidas, modos válidos).
-- [ ] Logging por RPC call con `intent_id` (si el NLU lo emitió), duración, params del filter, tamaño del resultado y fallbacks aplicados — alimenta el golden set de [SOLUCION.md §9](SOLUCION.md).
+- [ ] Logging por RPC call con `intent_id` (si el NLU lo emitió), duración, params del filter, tamaño del resultado y fallbacks aplicados — alimenta el golden set de [ARQUITECTURA_RAG.md §9](ARQUITECTURA_RAG.md).
 - [ ] No exponer `query_embedding` en interfaces públicas hacia el LLM final — siempre se inyecta del lado del caller.
 
 **Anti-patrones a evitar en plpgsql:**
@@ -1403,7 +1403,7 @@ la BD** (verificar con `pg_get_functiondef`):
 - **Datos (Accesorios 1554)**: la antena de 3.9 dBi usaba `gain_max_dbi`; se normalizó a
   `gain_dbi` (clave canónica de ganancia). Las 6 antenas se filtran ahora por `gain_dbi`;
   `gain_max_dbi` desaparece de la categoría 1554.
-- **Límites de datos (deuda de ingesta, ver [SOLUCION.md](SOLUCION.md))**:
+- **Límites de datos (deuda de ingesta, ver [ARQUITECTURA_RAG.md](ARQUITECTURA_RAG.md))**:
   `product_recommendations` es producto-a-producto dentro de la misma categoría (no hay
   aristas hacia accesorios); la compatibilidad está poblada solo en 3/74 productos.
   "Accesorios para X" se atiende con workaround en el agente (`compatibility_query` →
@@ -1411,9 +1411,9 @@ la BD** (verificar con `pg_get_functiondef`):
 
 ## 7. Referencias cruzadas
 
-- Contrato del extractor NLU que produce los params de estas tools: [SOLUCION.md §7](SOLUCION.md).
-- Catálogo completo de intents con SQL ejecutable: [PREGUNTAS.md](PREGUNTAS.md).
+- Contrato del extractor NLU que produce los params de estas tools: [ARQUITECTURA_RAG.md §7](ARQUITECTURA_RAG.md).
+- Catálogo completo de intents con SQL ejecutable: [PREGUNTAS_CATALOGO_RAG.md](PREGUNTAS_CATALOGO_RAG.md).
 - Schema de DB que sustenta cada tool: [ESQUEMA_BD.sql](ESQUEMA_BD.sql).
-- Políticas globales de fallback: [PREGUNTAS.md §4](PREGUNTAS.md).
+- Políticas globales de fallback: [PREGUNTAS_CATALOGO_RAG.md §4](PREGUNTAS_CATALOGO_RAG.md).
 - Reglas de inclusión/exclusión del retrieval (dedup, exclusión de `software`
-  chunks, etc.): [PREGUNTAS.md §5](PREGUNTAS.md).
+  chunks, etc.): [PREGUNTAS_CATALOGO_RAG.md §5](PREGUNTAS_CATALOGO_RAG.md).
