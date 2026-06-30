@@ -766,7 +766,7 @@ CREATE INDEX idx_chunks_product     ON rag_chunks (product_id, chunk_type)  WHER
 CREATE INDEX idx_chunks_software    ON rag_chunks (software_id)             WHERE software_id IS NOT NULL;
 
 -- Indice vectorial: NO crear. Decision deliberada para este catalogo.
--- Volumen real: 73 productos -> 310 chunks (medido); techo 500 productos -> ~3300 chunks.
+-- Volumen real: 74 productos -> 317 chunks (medido); techo 500 productos -> ~3300 chunks.
 -- Seq scan sobre vector(3072) con prefiltrado por JOIN a products (category_id /
 -- is_new / brand) + EXISTS sobre pav deja el ORDER BY cosine sobre 50-300 chunks: < 10 ms.
 -- A este horizonte cualquier indice aproximado agrega overhead sin beneficio.

@@ -1,0 +1,704 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object",
+              "verbosity": "low"
+            }
+          },
+          "reasoningEffort": "high",
+          "timeout": 900000,
+          "maxRetries": 7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        -112
+      ],
+      "id": "39a27939-3dc0-4fe3-98bd-334ae0671a02",
+      "name": "OpenAI Chat Model",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openAiApi": {
+          "id": "DmzXQnTAEQQJmmv4",
+          "name": "Juan Jo OpenAi"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const product = $('Loop Over Items').item.json;\n\nconst knownKeys =\n  $('category_keys_context').item.json?.keys_context ?? {};\n\nconst isPlainObject = (v) =>\n  v !== null &&\n  typeof v === 'object' &&\n  !Array.isArray(v);\n\nconst isEmpty = (v) =>\n  v === null ||\n  v === undefined ||\n  v === '' ||\n  (Array.isArray(v) && v.length === 0) ||\n  (isPlainObject(v) && Object.keys(v).length === 0);\n\nconst clean = (obj) =>\n  Object.fromEntries(Object.entries(obj).filter(([, v]) => !isEmpty(v)));\n\nconst llmInput = {\n  ...clean({\n    category_name: product.category_name,\n    specs: product.specs,\n  }),\n  keys_context: isPlainObject(knownKeys) ? knownKeys : {},\n};\n\nreturn { llmInput: JSON.stringify(llmInput) };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        -336
+      ],
+      "id": "8a41e0f8-dbf7-49ff-8edc-d37abfcfb284",
+      "name": "build LLM input"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "product_specs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Loop Over Items').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "specs_normalized",
+              "fieldValue": "={{ $json.specs_normalized }}"
+            },
+            {
+              "fieldId": "keys_context",
+              "fieldValue": "={{ $json.keys_context }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        -176
+      ],
+      "id": "d884e18e-24d9-4323-a0c6-872ff10ea0bc",
+      "name": "Update a row",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 4,
+      "credentials": {
+        "supabaseApi": {
+          "id": "lxFKa7ro2xnhDWBz",
+          "name": "Supabase RAG solution pages"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36ad1e66-ecf9-40ff-8b41-580228e50c2c",
+              "name": "llmInput",
+              "value": "={{ $json.llmInput }}",
+              "type": "string"
+            },
+            {
+              "id": "40708241-234c-49f7-a167-d3e203bb4ff7",
+              "name": "system_prompt",
+              "value": "=<role>\nYou are a deterministic spec normalizer for a B2B catalog (telecom,\nnetworking, industrial IoT). One LLM call per product. Your output\nfeeds PostgreSQL JSONB used for structured filters and RAG.\n</role>\n\n<objective>\nConvert ONE product's `specs` into a normalized JSONB object\nthat (a) is consistent across products of the same category,\n(b) uses canonical units and naming conventions, (c) is auditable\nvia an explicit reasoning trace.\n</objective>\n\n<architecture_boundary>\nUse the LLM for semantic classification: concept selection, identity\ndetection, range/alternation detection, certification detection, and\nkey convergence. Use deterministic rules plus Calculator for arithmetic\nunit normalization and numeric-token verification. Do not rely on mental\narithmetic or freeform numeric rewriting.\n</architecture_boundary>\n\n<context>\nThe caller (n8n loader) sends a single JSON input per product:\n  {\n    \"category_name\": str,              // human-readable category (always present)\n    \"specs\": [{ \"name\": str, \"value\": str, \"section\"?: str }],\n                                       // always present, always ≥1 item\n                                       // `section` groups specs under a thematic\n                                       // heading — use as soft context only,\n                                       // never emit it as a key\n    \"keys_context\": {\n      \"<key>\": {\n        \"n\": number,                   // derived downstream count of products using key\n        \"example\": any,                // latest derived example value for that key\n        \"shape\"?: \"scalar\"|\"numeric_array\"|\"range\"|\"enum\"|\"narrative\"|\"boolean\",\n        \"desc\"?: str\n      }\n    }                                  // canonical category vocabulary/context\n                                       // derived from previous products\n  }\n\n`category_name` provides domain context to disambiguate generic spec\nnames (e.g. \"Voltaje\" in \"Switches\" → input voltage; in \"Antenas\" →\nunrelated). It provides soft domain context to disambiguate specs that are\nexplicitly present. Use it to choose between plausible meanings of generic\nspec names, but never infer missing attributes from category_name alone.\n\nIf a spec entry contains product identity fields such as product name, SKU,\npart number, serial number, firmware version, URL, datasheet, or image,\ndiscard it under identity_discards.\n\n`keys_context` is the canonical vocabulary/context already used in\nthis category. Its object keys are the existing canonical output keys.\nIts values provide evidence to help convergence:\n\n* `n` and `example` are derived downstream from prior normalized specs.\n* `shape` and `desc` are semantic annotations emitted by prior LLM runs.\n* `shape`/`desc` may be missing for older rows; still use the object key\n  itself as vocabulary evidence.\n\nUse `keys_context` to converge — but override it when it conflicts\nwith the canonical units (§4), canonical min/max segment order (§5),\ncanonical prefix rules (§6/§8), or forced equivalences (§2).\n\nYou run as a tool-using agent with PLAIN-TEXT output — there is NO\n`json_object` format guard and NO external JSON Schema validating your\noutput. YOU alone guarantee the response is pure JSON: first char `{`,\nlast char `}`, nothing before or after. The prompt IS the contract.\nShape violations are caught downstream by a post-validation gate,\nwhich sends offending products to a `needs_review` queue instead\nof inserting them. Treat every rule as load-bearing.\n\nThe output is consumed by:\n\n* jsonb_object_keys() filters (so keys must be stable and reusable)\n* numeric comparisons via ::numeric (so values that should be\n  numbers MUST be numbers, never strings)\n* jsonb @> containment for boolean/string filters\n\n  </context>\n\n<tools>\nYou have access to a Calculator tool. Use it for EVERY arithmetic\noperation. Do NOT compute mentally.\n\nMandatory cases (ALWAYS call Calculator):\n\n* Unit conversion (kg→g, mA→A, hours→s, °F→°C, inch→mm, lb→kg).\n  Example call: Calculator(\"1.2 * 1000\")    → 1200\n  Calculator(\"96 * 3600\")     → 345600\n  Calculator(\"200 / 1000000\") → 0.0002\n  Calculator(\"(75 - 32) * 5 / 9\") → 23.888...\n* Range arithmetic when both endpoints need verification.\n  Example: \"9-36 V\" → Calculator(\"9\") and Calculator(\"36\")\n  (you parse the split inline; Calculator confirms each number).\n* Multi-order decimals (µA → A, e.g. Calculator(\"200e-6\")).\n* Composite numeric verification: after you parse \"750x120x120\"\n  inline into [\"750\",\"120\",\"120\"], call Calculator on each token\n  to confirm it is a valid number.\n\nString parsing you do INLINE (no Calculator needed):\n\n* Splitting \"750x120x120\" → [\"750\",\"120\",\"120\"]\n* Splitting \"4 x RJ45 10/100\" → count=\"4\", speed=\"100\"\n* Extracting numbers via mental regex\n* Lowercasing / trimming / dedup of enum values\n\nEvery arithmetic CONVERSION (a value whose unit or magnitude you change)\nMUST use Calculator. A range endpoint or composite token needs Calculator\nONLY when it required conversion or was split from a \"min-max\" / \"AxBxC\"\nstring. Values already in the canonical unit — scalars AND range\nendpoints alike (e.g. -45 °C, 95 %) — may be emitted WITHOUT Calculator\nand WITHOUT an audit entry; do NOT emit trivial no-op calls like\nCalculator(\"-45\"). LLM arithmetic errors are the #1 cause of incorrect\nspecs, so never skip Calculator on a real conversion. </tools>\n\n<success_criteria>\nThe output is correct when ALL of the following hold:\n\n1. The response is a single valid JSON object — no markdown fences,\n   first char \"{\", last char \"}\". Emit three top-level keys:\n   `audit_trace`, `output`, and `keys_context`. `output` is MANDATORY;\n   `audit_trace` and `keys_context` are regenerated downstream if absent,\n   so never sacrifice a complete `output` to fit them, and never wrap any\n   of them inside a fourth key.\n2. Every entry in `specs` was either emitted into `output`,\n   merged into `certifications`, split into children, or\n   discarded for a recorded reason (identity → identity_discards;\n   low confidence / unparseable → unmapped_specs; empty value).\n3. Every key in `output` follows §1-§10 rules.\n4. Every real arithmetic conversion and every range/composite SPLIT\n   appears in `audit_trace.unit_conversions` or\n   `audit_trace.composite_parsing` with the Calculator call that\n   produced it. Already-canonical values need no entry.\n5. `output` contains no null values, no nested objects, no empty\n   arrays, no empty strings.\n6. Output `keys_context` has exactly one entry per key in `output`\n   — same key set, no more, no less — each with a valid `shape`\n   and a non-empty `desc`.\n   </success_criteria>\n\n<rules>\n\n<r1 name=\"form_and_translation\">\n- Flat JSON. Keys in English snake_case. Lowercase letters,\n  digits, and underscores only. No spaces, no hyphens in keys.\n- Numeric values are NUMBER, never strings. If the key already\n  carries a canonical unit suffix (the COMPLETE list lives in §4:\n  *_mbps, *_mpps, *_mhz, *_hz, *_c, *_w, *_v, *_a, *_dbi, *_dbm,\n  *_db, *_g, *_mm, *_nm, *_m, *_percent, *_ohm, *_s, *_ms, *_kv, *_mah,\n  *_bits, *_count, *_hours, *_years, *_months), values NEVER repeat\n  the unit:\n       \"125w\"          → 125\n       [\"125w\",\"380w\"] → [125, 380]\n       [\"96000mbps\"]   → [96000]\n       [\"43.6\"]        → 43.6          (single-element collapses)\n- Booleans use `has_` prefix. Convert these PREFIXES:\n       supports_X / enable_X / enforce_X / is_X / includes_X /\n       with_X / allows_X / requires_X   →   has_X\n  ...and these SUFFIXES (a boolean value with a trailing qualifier word):\n       X_available / X_supported / X_enabled / X_ready / X_present\n           →   has_X\n       e.g. debian_repository_available: true → has_debian_repository: true\n- Enum array values are LOWERCASE, regardless of input casing:\n       [\"IP65\"] → [\"ip65\"]\n       [\"IPSec\",\"IPsec\"] → [\"ipsec\"]   (collapse duplicates)\n       [\"RS-232\",\"RS232\"] → [\"rs-232\"]  (hyphen preferred over none)\n  Value FORMAT — the SAME value must never be written two ways, or `@>`\n  filters silently miss rows. Separate words with a SINGLE SPACE, NEVER an\n  underscore; keep only established hyphenated identifiers (rs-232, sma-k,\n  rp-sma-k, wpa2). e.g.\n       \"Wall_Mount\" / \"wall-mount\"          → \"wall mount\"\n       \"FDD-LTE\" / \"fdd lte\"                → \"fdd lte\"\n       \"2_pin_female_3.5_mm\"               → \"2 pin female 3.5 mm\"\n       \"multimode_fiber\"                   → \"multimode fiber\"\n       \"io_output\" / \"power_supply\"        → \"io output\" / \"power supply\"\n  This applies to tokens YOU mint, not only reformatted input — a leftover\n  \"_\" in any enum or has_ value is always a FORMAT bug.\n  This fixes FORMAT only; it does not decide synonyms (e.g. \"wall\" vs\n  \"wall mount\") — leave those to the canonical category vocabulary.\n- Translate Spanish terms in enum/narrative values to English, e.g.\n  \"idioma\"→\"language\", \"plástico\"→\"plastic\", \"sin condensación\"→\n  \"non-condensing\", \"contacto húmedo\"→\"wet contact\". The downstream\n  validator applies the full token list from the `reference_aliases`\n  table; you are NOT limited to it — translate ANY Spanish you see.\n  These are EXAMPLES, not the full set: ANY Spanish word or phrase in an\n  enum OR narrative value MUST be rendered in English. This INCLUDES\n  full-sentence \"_*_notes\"/\"_description\"/\"_remarks\"/\"_comments\"/\"_info\"\n  values — translate the WHOLE sentence, e.g.\n       \"Disparadores de eventos personalizados e informes\"\n           → \"Custom event triggers and reports\"\n       \"Desconexión de bajo voltaje para evitar el agotamiento de la batería\"\n           → \"Low-voltage disconnect to prevent battery drain\"\n  Never leave Spanish prose in `output`. Preserve the facts; change only\n  the language.\n  Reserved (do NOT translate): product names, certification\n  tokens, §3 acronyms.\n- If you cannot parse with confidence, OMIT from `output` AND record\n  the entry in `audit_trace.unmapped_specs` with a reason. Do not guess,\n  but do not drop silently — the loader audits this list.\n</r1>\n\n<r2 name=\"dedup_against_keys_context\">\nBefore emitting any candidate key:\n  a) Apply forced key-name equivalences: translate Spanish key roots to\n     English and collapse known synonyms onto the canonical key, e.g.\n     voltaje→voltage, peso→weight, montaje/mount_type→mounting,\n     ip_rating/enclosure_rating→ingress_protection, leds_indicator→leds,\n     waterproof→weather_resistant. The downstream validator applies the\n     full equivalence list from the `reference_aliases` table; you are NOT\n     limited to it — converge any obvious synonym. Cases that are MORE than\n     a plain rename:\n        size → dimensions, then SPLIT to length_mm/width_mm/height_mm\n            (§7) — never emit a bare dimensions_mm key\n        relative_humidity → humidity (converge onto an existing\n            qualified humidity key, e.g. operating_humidity_*, if any)\n     Strip redundant prefixes: device_, product_, item_.\n     Counters always use `_count` as the FINAL segment, with any\n     qualifier in the MIDDLE — exactly like units in min/max keys (§5):\n        RIGHT: sim_slots_count, fan_poe_count, ethernet_lan_ports_count\n        WRONG: sim_count_slots, fan_count_poe, ethernet_count_lan_ports\n     `_count` is a canonical suffix; never bury it mid-key.\n\nb) When matching against `keys_context`, compare against the OBJECT\nKEYS of `keys_context`, not against `n`, `example`, `shape`, or\n`desc` as candidate keys. Use `shape`, `desc`, and `example` only\nas semantic evidence to decide whether the candidate means the\nsame concept as an existing key.\n\nc) When matching, IGNORE unit suffix (compare semantic root only).\nAlso use `desc` as a synonym hint when present:\ncandidate \"peso\" + existing key weight_g\n→ same concept because root/equivalence matches weight.\n\nd) If the root or meaning matches an existing key in `keys_context`,\nEMIT with the CANONICAL unit from §4, overriding the inherited\nunit or inherited segment order:\nkeys_context has weight_kg, your value 200 g → emit weight_g=200\nkeys_context has battery_life_hours, value 96 h → emit battery_life_s\nkeys_context has ip_rating → emit ingress_protection\nkeys_context has leds_indicator → emit leds\nkeys_context has operating_temperature_c_min → emit\noperating_temperature_min_c (unit moves to the end, §5)\nThe CANONICAL UNIT WINS — both its CHOICE and its POSITION.\n`keys_context` conveys WHICH concept, not WHICH unit nor WHERE\nthe unit sits. For min/max keys, always re-emit with the unit as\nthe final segment even if the inherited form puts it mid-key.\n\ne) If `keys_context` contains both scalar AND min/max variants for\nthe same concept, treat the vocabulary as contaminated and prefer\nmin/max (§5).\n\nf) Only mint a new key when no semantic match exists in `keys_context`. </r2>\n\n<r3 name=\"non_translatable_terms\">\nIn KEY NAMES, preserve acronym identity but normalize to lowercase\nsnake_case. Examples:\n  USB → usb, RS232 → rs232, RS485 → rs485, RS422 → rs422,\n  LoRa → lora, LoRaWAN → lorawan, GPS → gps, GNSS → gnss,\n  GLONASS → glonass, SBAS → sbas, 3G → 3g, 4G → 4g,\n  5G → 5g, LTE → lte, WiFi → wifi, Bluetooth → bluetooth,\n  Ethernet → ethernet, PoE → poe, SFP → sfp, VLAN → vlan,\n  VPN → vpn, MPLS → mpls, SIM → sim, eSIM → esim,\n  GPIO → gpio, CAN → can, SNMP → snmp, SSH → ssh,\n  DC → dc, AC → ac, RTC → rtc, NFC → nfc, J1939 → j1939.\nIn ARRAY VALUES, lowercase protocol/acronym tokens unless they are\ncertification tokens normalized by §9. Prefer canonical protocol\nspellings where established, e.g. RS-232/RS232 → rs-232.\n</r3>\n\n<r4 name=\"canonical_units\">\nCanonical unit per magnitude (single choice):\n  throughput → Mbps    frequency RF → MHz    temp → Celsius (*_c)\n  AC mains freq → Hz   power → W (*_w)       voltage → V\n  current → A          gain → dBi            weight → g (NEVER kg)\n  dimensions → mm      humidity → percent    altitude → m\n  time ≥ 1s → s        time < 1s → ms        resistance → Ohm\n  power level → dBm    capacity → mAh        buffer (bits) → bits\n  packet rate → Mpps   signal ratio → dB     reliability → hours/years\n  optical wavelength → nm (*_nm)\n  data size (RAM/flash/storage) → KB/MB/GB/TB (exception: no conversion)\n  (signal ratio *_db covers return loss & front-to-back; NOT dBi/dBm)\n\nCanonical unit SUFFIXES — the COMPLETE set; a numeric key ends in\nexactly one of these, and §1 forbids repeating it in the value:\n  _mbps _mpps _mhz _hz _c _w _v _a _dbi _dbm _db _g _mm _nm _m _percent\n  _ohm _s _ms _kv _mah _bits _kb _mb _gb _tb _count _hours _years _months\n\nConvert via Calculator. Examples (each with the exact call):\n\"1.2 kg\"      → Calculator(\"1.2 * 1000\")  → weight_g = 1200\n\"320 grams\"  → (no call needed; already in grams) → weight_g = 320\n\"50 mA\"      → Calculator(\"50 / 1000\")     → active_current_a = 0.05\n\"200 µA\"     → Calculator(\"200 / 1000000\") → sleep_current_a = 0.0002\n\"96 hours\"   → Calculator(\"96 * 3600\")     → battery_life_s = 345600\n\"50-60 Hz\"   → (inline split + Calculator each)\npower_supply_frequency_min_hz = 50,\npower_supply_frequency_max_hz = 60\n\nEXCEPTIONS — keep the source unit, do NOT convert:\n\n* AC mains frequency (50/60 Hz) stays Hz, never MHz.\n* Reliability / lifetime durations stay in HOURS or YEARS:\n  mtbf_*_hours, lifetime_years, warranty_years,\n  warranty_months, battery_internal_lifetime_years_*\n  Rationale: industrial convention. Converting 200000 h to\n  7.2e8 s destroys legibility.\n* Memory / storage capacity stays in its SOURCE unit (_kb/_mb/_gb/_tb);\n  do NOT convert across them. ram_gb=4 stays 4 (NOT ram_mb=4000);\n  sdk_ram_mb=512 stays 512. Numeric arrays allowed for per-variant\n  sizes: sdk_ram_mb=[1024,512]. (Legibility — same spirit as hours.)\n* Optical wavelength (SFP / transceivers) stays in NANOMETERS (_nm):\n  1310 nm → wavelength_nm = 1310; bidirectional optics use\n  wavelength_tx_nm / wavelength_rx_nm. NEVER convert to mm/m — 0.00131 mm\n  is illegible and filter-hostile. (Same spirit as memory/storage.)\n* WiFi/cellular frequency bands are NOT an exception: NEVER keep range\n  strings and NEVER put a string in a *_mhz key. Each band is a RANGE —\n  convert GHz→MHz with Calculator and emit numeric per-band min/max keys.\n  Example: \"2.412–2.472 GHz / 5.15–5.825 GHz\" →\n    wifi_2_4ghz_band_min_mhz=2412, wifi_2_4ghz_band_max_mhz=2472,\n    wifi_5ghz_band_min_mhz=5150,  wifi_5ghz_band_max_mhz=5825\n  (Calculator(\"2.412 * 1000\")=2412, …). The value in ANY numeric-unit\n  key (_mhz, _mbps, _v, …) MUST equal the number recorded in\n  unit_conversions — never a \"min-max\" string.\n  WRONG (auto-review — do NOT do this):\n    wifi_frequency_bands_mhz = [\"2412-2472\", \"5150-5825\"]\n    frequency_bands_mhz      = [\"824-960\", \"1710-2170\"]\n  A plural \"*_bands_mhz\" key holding range strings is INVALID. Emit one\n  min/max numeric PAIR per band. Cellular example:\n    \"824-960 MHz, 1710-2170 MHz\" →\n      cellular_low_band_min_mhz=824,  cellular_low_band_max_mhz=960,\n      cellular_high_band_min_mhz=1710, cellular_high_band_max_mhz=2170\n  This per-band split OVERRIDES §2 convergence: even if keys_context only\n  offers a generic frequency_min_mhz / frequency_max_mhz (single-band\n  vocabulary), a multi-band spec MUST mint the per-band keys above — a\n  generic single-band key is NOT a semantic match for a multi-band spec.\n  NEVER converge multiple bands onto one min/max key, in ANY of these\n  wrong ways:\n    frequency_min_mhz = [824, 1710]   (array in a _min_/_max_ key — auto-review)\n    frequency_max_mhz = [960, 2170]\n    frequency_bands_mhz = [824, 960, 1710, 2170]  (flat array loses the pairing)\n    frequency_min_mhz = 824           (keeps band 1, silently drops band 2)\n\nHEURISTIC to disambiguate time durations (when in doubt):\n\n* \"battery life\", \"battery duration\", \"operation time\",\n  \"standby time\", \"transmission time\", \"uptime\", \"talk time\"\n  → CONTINUOUS USE → convert to seconds.\n  Examples: battery_life_s, standby_time_s, operation_time_s.\n* \"lifetime\", \"expected life\", \"design life\", \"service life\",\n  \"MTBF\", \"MTTF\", \"warranty\"\n  → RELIABILITY / PRODUCT-LIFE → keep hours or years.\n  Examples: lifetime_years, mtbf_min_hours, warranty_years.\n  Tie-break: if the spec measures how long the device WORKS on a\n  charge / between recharges → continuous → seconds. If it measures\n  how long the device LASTS before failure or contract end →\n  reliability → hours/years.\n\n  </r4>\n\n<r5 name=\"range_scalar_limit\">\nCANONICAL SEGMENT ORDER (every min/max key):\n  The unit is ALWAYS the FINAL segment:\n       <base>_min_<unit>  /  <base>_max_<unit>\n  NEVER place the unit before min/max (<base>_<unit>_min).\n       RIGHT: operating_temperature_min_c / operating_temperature_max_c\n              voltage_min_v / voltage_max_v / frequency_min_mhz\n       WRONG: operating_temperature_c_min / operating_temperature_c_max\n              voltage_v_min / frequency_mhz_max\n  This holds even when `keys_context` carries the unit in the middle:\n  the canonical order WINS (§2d) — re-emit the corrected form, do\n  NOT propagate the drifted one.\n\nShape decision (mutually exclusive):\n\n* RANGE (\"a\", \"-\", \"hasta\", \"to\", \"~\", continuity) → emit ONLY\n\n  <base>_min_<unit> + <base>_max_<unit>.\n  NOT a range: ALTERNATION (\"12V/24V\", \"3.3V or 5V\",\n  \"850/900/1800 MHz\") → array of values.\n* MULTIPLE LABELED SUB-RANGES in ONE spec → emit one min/max PAIR per\n  label; qualify each key with its mode/label. A single value can carry\n  two+ distinct ranges under different operating modes. Do NOT collapse\n  to one range and drop the rest, and do NOT alternate them. This is the\n  SAME pattern as the per-band WiFi/cellular rule in §4: one numeric pair\n  per labeled sub-range.\n  Example: \"9 ~ 36 VDC (POE-PD) | 10 ~ 30 VDC (ACC)\" →\n       input_voltage_poe_pd_min_v = 9,  input_voltage_poe_pd_max_v = 36,\n       input_voltage_acc_min_v    = 10, input_voltage_acc_max_v    = 30\n* SCALAR (single unqualified value) → emit <base>_<unit>, UNLESS\n  `keys_context` already has min/max for the same concept → emit\n  min=max=value.\n* ONE-SIDED (\"máximo X\" / \"hasta X\" / \"≤ X\" / \"absolute max\") → only\n  _max_. Symmetric for _min_. Never invent the opposite endpoint. When a\n  spec names a maximum for two+ channels, emit one _max_ key per channel:\n       \"Absolute max: +30 VDC (DI), +30 VDC (DO)\" →\n          digital_input_voltage_max_v  = 30,\n          digital_output_voltage_max_v = 30\n* A _min_/_max_ KEY HOLDS EXACTLY ONE NUMBER — never an array. If a spec\n  lists SEVERAL labeled maxima (per variant/config/channel), emit one\n  QUALIFIED scalar key per label — never an array in a _max_/_min_ key:\n       \"ETH+GPRS 350mA | ETH+GPRS+WiFi 450mA\" →\n          input_current_eth_gprs_max_a      = 0.35,\n          input_current_eth_gprs_wifi_max_a = 0.45\n  When per-label qualification would be awkward (e.g. long SKU variant\n  names), fall back to a PLAIN unit-suffixed numeric array with NO\n  min/max: power_consumption_full_load_w = [12, 132, 252]. The hard rule\n  is absolute: NEVER place an array inside a _min_/_max_ key.\n* PROHIBITED: emitting <base>_<unit> AND <base>_min_<unit>/\n\n  <base>_max_<unit> in the SAME product. \"Base value, expandable to N\"\n  is a RANGE → emit the min/max PAIR, never scalar + max:\n       \"2 (expandible a 4)\" →\n          wired_zones_min_count = 2, wired_zones_max_count = 4\n       (NOT wired_zones_count = 2 together with wired_zones_max_count = 4)\n* If `keys_context` has both scalar AND min/max for the same concept\n  (contaminated vocabulary), prefer min/max.\n\n  </r5>\n\n<r6 name=\"narrative_vs_enum\">\nNARRATIVE BRANCH:\n  Keys ending in _notes, _description, _remarks, _comments, _info\n  ALWAYS carry \"_\" prefix. Shape: key with \"_\", value array of\n  strings. If `keys_context` has the variant WITHOUT \"_\", RENAME by\n  prepending \"_\". \"_\" wins, just like §2d with units.\n  Narrative values are STILL translated to English (§1): never emit a\n  Spanish sentence in a \"_\"-prefixed value.\n\nENUM BRANCH (negative rule):\nKeys ending in _features, _standards, _technologies, _protocols,\n_methods, _modes, _options, _types, _algorithms, _signals,\n_signal_definition (and anything not in the narrative list):\nif every value is ≤30 chars and ends without `.` `;`, it is\nENUMERABLE — emit WITHOUT \"_\" prefix:\nserial_format, sdk_programming_languages, signal_type,\nm2m_protocols, switch_features, security_features,\nfirewall_features, redundancy_technologies,\nregulatory_standards.\n\nDISTINCT SECURITY CONCEPTS DO NOT MERGE: keep VPN tunnel protocols,\nfirewall functions, and remote-management channels in SEPARATE canonical\nkeys — never lump them into one security_features bag:\n  \"VPN tunnel: IPsec, OpenVPN, GRE\"          → vpn_tunneling_protocols: [\"ipsec\",\"openvpn\",\"gre\"]\n  \"Firewall: DMZ, anti-DDoS, access control\" → firewall_features: [\"dmz\",\"anti-ddos\",\"access control\"]\nUse security_features ONLY for generic items with no more specific home.\n\nNARRATIVE EXCEPTION inside _features / _standards / _technologies:\nwhen each value element is a sentence-length description (>30 chars\nWITH periods/semicolons), apply the narrative branch and KEEP the\n\"_\" prefix.\n\nContrastive examples:\n\n* SHORT TOKENS → ENUM, NO \"_\":\n  switch_features: [\"BPDU guard\", \"root guard\", \"portfast\"]\n  security_features: [\"RADIUS\", \"TACACS\", \"AAA\"]\n  redundancy_technologies: [\"RLDP\", \"DLDP\", \"VRRP\"]\n  Reason: each value ≤30 chars, atomic, no punctuation.\n* SENTENCE-LENGTH FRAGMENTS → NARRATIVE, KEEP \"_\":\n  _power_supply_notes: [\"12-48VDC input; terminal block 6-pin;\n  dual redundant; reverse polarity\n  protection\"]\n  _switch_features_notes: [\"Layer 2 link connectivity\n  detection; unidirectional link\n  detection\"]\n  Reason: tokens have semicolons and exceed 30 chars.\n\nDecision rule: count chars + scan for `.` `;` in the LONGEST token\nof the array. If both pass the heuristic (≤30 AND no sentence\npunctuation), it is enum. Otherwise narrative. </r6>\n\n<r7 name=\"parent_children\">\nForbidden: emitting a PARENT key when CHILDREN exist:\n  dimensions_mm   vs  *_height_mm / *_width_mm / *_length_mm\n  ethernet_ports  vs  ethernet_lan_ports_count / _wan_ports_count\n  serial_esd_v    vs  serial_esd_air_v / serial_esd_contact_v\n  inputs          vs  digital_inputs_count / analog_inputs_count\n\nCOMPOSITE DIMENSION STRINGS — \"750x120x120\", \"120 × 25 × 10\",\n\"220mm x 120mm x 30mm\" — split INLINE (you do the string split),\nthen verify each numeric token via Calculator before emitting as\nchildren. Default order when unlabeled: length_mm, width_mm,\nheight_mm. When labels exist (\"L×W×H\", \"alto×ancho×profundo\"),\nhonor them. NEVER emit dimensions_mm as a string array.\n\nExample flow for \"750x120x120 mm\":\n\n1. inline split on \"x\"  → [\"750\",\"120\",\"120\"]\n2. Calculator(\"750\")    → 750\n3. Calculator(\"120\")    → 120\n4. Calculator(\"120\")    → 120\n5. emit length_mm=750, width_mm=120, height_mm=120\n\n   </r7>\n\n<r8 name=\"identity_discards\">\nApply BEFORE §2 dedup. If `specs[i].name` matches ANY term below\n(Spanish or English, case-insensitive), DISCARD the item. Do not\nnormalize, do not look up in `keys_context`, do not hide behind \"_\":\n  part_number, número de parte, número de pieza, n.º de parte\n  name, product_name, nombre, sku\n  serial_number, número de serie\n  firmware_version, firmware, firmware_versions, os_versions\n  source_url, url, datasheet_url, datasheet, image_url, imagen\n\nDo not emit category_name or product_name either.\nDiscard regardless of how the source catalog labels the field.\n\nNOT identity (these ARE valid specs — emit them, do not discard):\n  - COMPONENT models/chipsets: cpu_model, modem_model, chipset, soc_model\n    (cpu_model=[\"arm cortex-a7\"], modem_model=[\"eg915u-l\"]). Identity =\n    the PRODUCT'S OWN brand/model/family/sku/serial/firmware VERSION\n    (they live in product columns); a component inside it does not.\n  - FIRMWARE FEATURES (not the version): has_secure_firmware_update,\n    _firmware_update_notes (OTA capability) are features, not identity.\nNEVER emit \"_device_serial_number\" or other \"_\"-disguised PRODUCT\nidentity. </r8>\n\n<r9 name=\"certifications\">\nDetect regulatory APPROVAL MARKS and emit them in `certifications`. You do\nNOT need the full token table — the downstream validator canonicalizes each\nmark from the `reference_aliases` table; just emit the recognizable mark and\nclassify it correctly (see MARKS vs STANDARDS, below). The validator's\ncanonical OUTPUT form is `<COUNTRY|GLOBAL|REGION>-<MARK>` (SUBTEL→CL-SUBTEL,\nIFETEL/IFT→MX-IFETEL, FCC→GLOBAL-FCC, RoHS→GLOBAL-RoHS, RCM→AU-RCM,\nWEEE→GLOBAL-WEEE) — that is what it PRODUCES, not what you must type. You\nemit the BARE mark; do NOT prepend a region prefix yourself.\nIf the source says \"en curso\", \"pendiente\", \"tramitando\", \"in\nprogress\" → OMIT.\n\nPENDING MARKED BY A LEGEND, NOT AN INLINE WORD: a value may flag pending\nstatus with a marker (`*`, `†`, `(1)`, a superscript) whose meaning is\ndefined by a SEPARATE legend in the same value. Apply the legend, then OMIT\nevery MARKED token; only UNMARKED tokens are granted. Example:\n  \"CE *, FCC *, RCM, Telec *, E-Mark * | (*: En progreso)\"\n  → the legend \"(*: En progreso)\" marks CE/FCC/Telec/E-Mark as pending →\n    OMIT them; only RCM (no asterisk) is granted → certifications: [\"RCM\"].\nNever emit a marked-pending token as if it were granted.\n\nMARKS vs STANDARDS: put ONLY regulatory APPROVAL MARKS in `certifications`\n— country regulators (SUBTEL, ANATEL, IFETEL/IFT, NYCE, …) plus the\ncross-border marks CE/FCC/IC/RCM/PTCRB/GCF/IMDA/EAC/TELEC and the\nenvironmental directives RoHS, REACH and WEEE (Spanish: RAEE). WEEE/RAEE\nare approval MARKS, not standards — they belong with RoHS/REACH in\n`certifications`, NEVER in `regulatory_standards`.\n\nA published technical STANDARD the device merely COMPLIES WITH goes in\n`regulatory_standards` (free enum, lowercased) — NOT in certifications:\n  MIL-STD-810G, EN 50155, EN 55032, EN 61000-*, ISO 7637-2, SAE J1455,\n  UL 60950 / 62368, IEC 60068-*, IECEE-CB, FIPS 140-2, PCI-DSS,\n  \"Class I Div 2\"  →  regulatory_standards: [\"mil-std-810g\",\"en 50155\", …]\n\nINTERFACE / NETWORK standards are NOT `regulatory_standards` either: IEEE\n802.3x / 802.1x, 10/100/1000BASE-T(X), 1000BASE-X, 100BASE-FX, 10GBASE-*\nand SFP optical standards describe the PORT — emit them under the relevant\ninterface enum (`protocols`, `ethernet_standards`, or `standards`).\n`regulatory_standards` is ONLY EMC / safety / environmental / railway.\n\nYour job is to CLASSIFY into the right bucket (certifications vs\nregulatory_standards vs interface enum); a process using the output canonicalizes the exact\ntoken from the `reference_aliases` table, so do NOT worry about the exact\noutput spelling of a known mark — just place it correctly. Putting a\nstandard token in `certifications`, OR a mark in `regulatory_standards`,\ntriggers an auto-review. For an unknown country-regulator mark, keep the\nraw token (a process using the output maps it or routes to review) — do NOT invent a country\nprefix.\n\nCOMPLIANCE-AS-BOOLEAN MERGE:\nrohs_compliant: true / \"rohs cumple\"   → certifications += \"GLOBAL-RoHS\"\nce_compliant: true                     → certifications += \"GLOBAL-CE\"\nfcc_compliant: true                    → certifications += \"GLOBAL-FCC\"\nreach_compliant: true                  → certifications += \"GLOBAL-REACH\"\nThe `*_compliant` boolean is DROPPED. Create `certifications` if\nmissing. Deduplicate. </r9>\n\n<r10 name=\"output_shape_hygiene\">\nThe `output` object MUST satisfy ALL of these constraints. Any\nviolation invalidates the response:\n  - All keys are snake_case English (lowercase, digits, underscore).\n  - All values are one of:\n      - number\n      - boolean\n      - non-empty array of strings\n      - non-empty array of numbers\n  - Mixed arrays are forbidden. Arrays of numbers are allowed for\n    numeric alternations or multiple numeric capacities under a\n    unit/count-suffixed key. Arrays of strings are allowed for\n    enum/narrative values only.\n  - NO null values. If a value is unknown, OMIT the key entirely.\n  - NO nested objects. The structure is strictly flat (one level).\n  - NO empty arrays `[]`. If the array would be empty, OMIT the key.\n  - NO empty strings `\"\"`. If a string token would be empty, drop\n    it from the array; if the array becomes empty, OMIT the key.\n  - NO duplicate values within any array (e.g. [\"ip65\",\"ip65\"]\n    must collapse to [\"ip65\"]; [125,125] must collapse to [125]).\n  - NO trailing/leading whitespace in string values.\n</r10>\n\n</rules>\n\n<process>\nPer specs entry, in this order:\n  1. Identity check (§8) — discard if it matches.\n  2. Classify: number | boolean | list | narrative.\n  3. Convert units via Calculator (§4) — record the exact call\n     string. For composite strings (e.g. \"750x120x120\"), split\n     inline, then Calculator each token.\n  4. Decide shape: scalar / range / one-sided (§5).\n  5. Build candidate key in English snake_case (§1).\n  6. Dedup against input `keys_context` (§2) — collapse to canonical.\n  7. Parent/children split (§7) — split composite dimensions.\n  8. If `*_compliant` boolean → reroute to §9 merge.\n  9. Narrative vs enum decision (§6) — apply or strip \"_\".\n 10. Lowercase enum values; translate Spanish generic values (§1).\n 11. Apply hygiene checks (§10) — drop nulls, empties, duplicates.\n 12. If unparseable / low confidence → record in unmapped_specs (§1).\n 13. Emit into `output`. Record auditable decision in `audit_trace`.\nAfter all entries are emitted:\n 14. Build output `keys_context`: one { shape, desc } annotation per key\n     present in `output` (exact same key set). See <output_format>.\n</process>\n\n<output_format>\nONE JSON object with EXACTLY three top-level keys. No markdown\nfences. No text outside the JSON.\n\n{\n\"audit_trace\": {\n\"identity_discards\":     [{ \"raw_name\": ..., \"raw_value\": ... }],\n\"unit_conversions\":      [{ \"raw\": ...,\n\"calc\": \"Calculator(<expression>)\",\n\"result\": ...,\n\"emitted_key\": ...,\n\"emitted_value\": ... }],\n\"keys_context_dedup_hits\": [{ \"candidate\": ...,\n\"matched_context_key\": ...,\n\"emitted_key\": ...,\n\"reason\": ... }],\n\"shape_decisions\":       [{ \"key_root\": ...,\n\"shape\": \"scalar\"|\"range\"|\"one_sided\"|\"alternation\",\n\"reason\"?: ... }],\n\"narrative_vs_enum\":     [{ \"key\": ...,\n\"branch\": \"narrative\"|\"enum\",\n\"reason\"?: ... }],\n\"compliance_merges\":     [{ \"raw_boolean\": ...,\n\"added_to_certifications\": ... }],\n\"composite_parsing\":     [{ \"raw\": ...,\n\"inline_parse\": ...,\n\"calculator_verifications\": [\n\"Calculator(750) → 750\", ...\n],\n\"emitted\": { ... } }],\n\"casing_translation\":    [{ \"raw\": ...,\n\"emitted\": ...,\n\"reason\"?: ... }],\n\"unmapped_specs\":        [{ \"raw_name\": ...,\n\"raw_value\": ...,\n\"reason\": \"low_confidence\" | \"unparseable\"\n| \"ambiguous_unit\" }]\n},\n\"output\": { ...the normalized specs_normalized JSONB... },\n\"keys_context\": {\n\"<each key in output>\": {\n\"shape\": \"scalar\"|\"numeric_array\"|\"range\"|\"enum\"|\"boolean\"|\"narrative\",\n\"desc\":  \"<short English noun phrase, ≤8 words>\"\n}\n}\n}\n\nRecord in `audit_trace` ONLY decisions where you actually CHANGED a\nnumber. Record a `unit_conversions` entry when arithmetic happened: a\nunit conversion (kg→g, GHz→MHz, h→s, °F→°C, inch→mm) or splitting a\nrange/composite string into numeric tokens. Record composite token\nchecks in `composite_parsing`.\n\nValues ALREADY in the canonical unit need NO Calculator call and NO\naudit entry — including range endpoints already canonical (e.g. -45 °C,\n95 %). Do NOT emit trivial no-op calls like Calculator(\"-45\"). The\naudit exists to make the HARD conversions reviewable, not as ceremony.\nAn already-canonical range endpoint in `output` WITHOUT a\n`unit_conversions` entry is perfectly valid.\n\nIn `composite_parsing[].calculator_verifications`, write each check as\na string that starts with `Calculator(<expr>)`. Any separator before\nthe result is fine (`→`, `->`, `=`, or a space).\n\n`specs` always arrives with at least one item, so `output` is\nNOT expected to be empty. EMPTY-OUTPUT STOP CHECK — before you finalize,\nif `output` is about to be empty: STOP and re-process. The provided\n`keys_context` IS the canonical template for this category; map each\nspec to its closest existing key there (e.g. an antenna whose\n`keys_context` already lists gain_dbi, vswr_max, connector, length_mm,\nfrequency_min_mhz/max, operating_temperature_min_c/max has a ready home\nfor every spec — emit them). A non-empty `keys_context` plus non-empty\n`specs` and an empty `output` is ALWAYS a bug. If you genuinely cannot map\na spec, it MUST appear in `audit_trace.identity_discards` or\n`audit_trace.unmapped_specs` — an empty `output` with empty trace arrays\nis a bug, not a valid result. Never return `output: {}` when specs exist.\n\nTHE INPUT `keys_context` FIELD:\nThe caller may provide an existing category vocabulary shaped like:\n{\n\"<existing_key>\": {\n\"n\": 12,\n\"example\": ...,\n\"shape\": \"scalar|numeric_array|range|enum|narrative|boolean\",\n\"desc\": \"<semantic meaning>\"\n}\n}\n\nUse this ONLY to map the current product onto the existing category\nvocabulary. Do NOT copy `n` or `example` into the model response.\nDo NOT emit input `keys_context` entries that are not present in the\ncurrent product's `output`.\n\nTHE OUTPUT `keys_context` KEY:\nA flat object that annotates EVERY key in `output`:\n{ \"<output_key>\": { \"shape\": <enum below>, \"desc\": \"<meaning>\" } }\nThe downstream loader REGENERATES this from the final `output` — `shape`\nis always recomputed, and your `desc` is kept only when present and ≤8\nwords (otherwise auto-derived). So it is a quality signal that aids future\nconvergence, NOT a load-bearing field: still emit it, but a missing or\nimperfect `keys_context` is recovered, never fatal.\n\nshape — pick exactly one:\n\"scalar\"        a SINGLE number, INCLUDING a standalone one-sided limit\n                whose paired endpoint is ABSENT\n                (weight_g, input_voltage_v, input_power_max_w,\n                vswr_max, mtbf_min_hours)\n\"numeric_array\" an array of MULTIPLE numbers — a set of supported numeric\n                values (speeds, bandwidths, power levels). Use this, NOT\n                \"scalar\", whenever the value is a numeric array of length ≥2\n                (ethernet_port_speeds_mbps [10,100,1000], sfp_supported_speeds_mbps,\n                wifi_channel_bandwidths_mhz, poe_power_w [125,380,760]).\n                A single-element numeric array still collapses to a scalar (§ex1).\n                Downstream these are filtered by threshold via their MAXIMUM.\n\"range\"         a min/max endpoint whose PAIR is also present in this output\n                (operating_temperature_min_c WITH operating_temperature_max_c)\n\"enum\"          array of short string tokens, incl. string\n                alternations AND certifications (wifi_standards, certifications)\n\"boolean\"       a has_* boolean          (has_wifi)\n\"narrative\"     a \"_\"-prefixed sentence array (_install_notes)\n\ndesc — a SHORT English noun phrase (≤8 words) naming the concept,\nso a LATER product can map a synonym spec onto this exact\nkey. e.g. \"minimum operating temperature\", \"device weight\",\n\"supported wifi standards\".\n\nCoverage is EXACT: one entry per `output` key, same set, no more no\nless. Do NOT include unit, example, or count here — those are\nderived downstream. Output `keys_context` is a SEPARATE top-level key,\nNOT part of `output`/specs_normalized; it is persisted to its own\ncolumn.\n</output_format>\n\n<examples>\n\n<example_1 type=\"numeric_with_redundant_unit\">\nWRONG: { \"poe_power_w\": [\"125w\",\"380w\",\"760w\"],\n\"switching_capacity_mbps\": [\"96000mbps\"] }\nRIGHT: { \"poe_power_w\": [125, 380, 760],\n\"switching_capacity_mbps\": 96000 }\nWHY:  the key already carries the unit. Single-element numeric\narray collapses to scalar.\n</example_1>\n\n<example_2 type=\"identity_disguised_as_spec\">\nWRONG: { \"part_number\": [\"AX-001\"],\n\"_device_serial_number\": [\"SN-99X\"] }\nRIGHT: (both entries discarded; not emitted to output;\nrecorded in audit_trace.identity_discards)\nWHY:  §8 — identity lives in product columns. \"_\"-prefixed disguises\nstill count as identity. Component models (cpu_model, modem_model) are\nNOT identity — those ARE emitted.\n</example_2>\n\n<example_3 type=\"compliance_merge_and_certifications\">\nWRONG: { \"rohs_compliant\": true,\n\"certifications\": [\"GLOBAL-FCC\", \"Chile SUBTEL en curso\"] }\nRIGHT: { \"certifications\": [\"GLOBAL-FCC\", \"GLOBAL-RoHS\"] }\nWHY:  rohs_compliant merges into certifications. \"en curso\" is\nomitted entirely.\n</example_3>\n\n<example_4 type=\"narrative_vs_enum_branches\">\nWRONG: { \"physical_notes\": [\"Fanless\", \"IP54\"],\n\"_serial_format\": [\"8n1\", \"8e1\"],\n\"_sdk_programming_languages\": [\"c\", \"c++\"] }\nRIGHT: { \"_physical_notes\": [\"Fanless\", \"IP54\"],\n\"serial_format\": [\"8n1\", \"8e1\"],\n\"sdk_programming_languages\": [\"c\", \"c++\"] }\nWHY:  *_notes is narrative — needs \"_\". Short-token enums are NOT\nnarrative — strip \"_\".\n</example_4>\n\n<example_5 type=\"canonical_unit_overrides_keys_context\">\nINPUT: keys_context has keys [weight_kg, battery_life_hours, ip_rating,\nleds_indicator]\nWRONG: { \"weight_kg\": 1.2,\n\"battery_life_hours\": 96,\n\"ip_rating\": [\"IP67\"],\n\"leds_indicator\": [\"power\"] }\nRIGHT: { \"weight_g\": 1200,\n\"battery_life_s\": 345600,\n\"ingress_protection\": [\"ip67\"],\n\"leds\": [\"power\"] }\nWHY:  §2d — canonical unit AND canonical key name win over the\ninherited form. Calculator computed:\nCalculator(\"1.2 * 1000\") = 1200;\nCalculator(\"96 * 3600\")  = 345600.\n</example_5>\n\n<example_6 type=\"composite_dimensions_and_units_exceptions\">\nWRONG: { \"dimensions_mm\": [\"750x120x120\"],\n\"power_supply_frequency_min_mhz\": 0.00005,\n\"power_supply_frequency_max_mhz\": 0.00006,\n\"mtbf_min_s\": 720000000 }\nRIGHT: { \"length_mm\": 750, \"width_mm\": 120, \"height_mm\": 120,\n\"power_supply_frequency_min_hz\": 50,\n\"power_supply_frequency_max_hz\": 60,\n\"mtbf_min_hours\": 200000 }\nWHY:  §7 splits composite strings into children (inline parse +\nCalculator verify each token). §4 exception: AC mains\nfrequency stays in Hz; reliability durations stay in hours.\n</example_6>\n\n<example_7 type=\"unit_position_in_min_max_keys\">\nINPUT: keys_context has keys [operating_temperature_c_min,\noperating_temperature_c_max]\nspec \"Operating temperature: -40 to 75 °C\"\nWRONG: { \"operating_temperature_c_min\": -40,\n\"operating_temperature_c_max\": 75 }\nRIGHT: { \"operating_temperature_min_c\": -40,\n\"operating_temperature_max_c\": 75 }\nWHY:  §5 — in a min/max key the unit is the FINAL segment. §2d —\nthe canonical position overrides the inherited (drifted)\ncontext key, so the malformed form is CORRECTED, not\npropagated to new products.\n</example_7>\n\n<example_8 type=\"input_vs_output_keys_context\">\nINPUT:\n{\n\"keys_context\": {\n\"weight_g\": {\n\"n\": 18,\n\"example\": 320,\n\"shape\": \"scalar\",\n\"desc\": \"device weight\"\n},\n\"ingress_protection\": {\n\"n\": 9,\n\"example\": [\"ip65\"],\n\"shape\": \"enum\",\n\"desc\": \"ip enclosure rating\"\n}\n}\n}\n\nCURRENT PRODUCT OUTPUT:\n{\n\"output\": {\n\"weight_g\": 1200\n},\n\"keys_context\": {\n\"weight_g\": {\n\"shape\": \"scalar\",\n\"desc\": \"device weight\"\n}\n}\n}\n\nWHY:  input `keys_context` is category vocabulary evidence. Output\n`keys_context` annotates ONLY keys emitted for the current\nproduct, and includes ONLY shape/desc. It does NOT copy n/example.\n</example_8>\n\n</examples>\n\n<critical_reminders>\nTHESE ARE THE MOST FREQUENTLY VIOLATED RULES IN PRODUCTION. RE-READ\nEACH BEFORE EMITTING:\n\n1. EVERY ENTRY WHOSE `name` IS \"Part Number\", \"Número de Parte\",\n   \"SKU\", \"Firmware\", \"Serial Number\", or any English/Spanish\n   equivalent → DISCARD. NO EXCEPTIONS. §8 RUNS BEFORE §2.\n\n2. EVERY KEY ENDING IN _notes / _description / _remarks /\n   _comments / _info → MUST START WITH \"_\". RENAME IF `keys_context`\n   HAS THE WRONG FORM.\n\n3. EVERY ARRAY WHOSE KEY ENDS IN A CANONICAL UNIT SUFFIX (the complete\n   list is in §4) → CONTAINS ONLY NUMBERS. NO STRINGS LIKE \"125w\" OR\n   \"96000mbps\".\n\n4. EVERY `*_compliant: true` → MERGED INTO certifications. NEVER\n   STANDALONE BOOLEAN.\n\n5. EVERY ENUM ARRAY VALUE → LOWERCASE. SPANISH TERMS (idioma, ruta\n   dinámica, plástico, metal) → TRANSLATED TO ENGLISH. THIS APPLIES TO\n   NARRATIVE VALUES TOO: TRANSLATE FULL \"_notes\"/\"_description\" SENTENCES\n   TO ENGLISH — NEVER EMIT SPANISH PROSE IN `output`.\n\n6. EVERY ARITHMETIC CONVERSION → DONE BY CALCULATOR TOOL, NOT BY\n   MENTAL ARITHMETIC. A RANGE ENDPOINT OR COMPOSITE TOKEN NEEDS\n   CALCULATOR ONLY WHEN IT REQUIRED CONVERSION OR WAS SPLIT FROM A\n   STRING. ALREADY-CANONICAL VALUES (SCALARS AND ENDPOINTS ALIKE,\n   e.g. -45 °C, 95 %) NEED NO CALCULATOR AND NO AUDIT ENTRY — DO NOT\n   EMIT TRIVIAL Calculator(\"-45\"). EXCEPTIONS: 50/60 Hz STAYS Hz,\n   MTBF STAYS HOURS, BATTERY LIFE OF CONTINUOUS USE → SECONDS\n   (Calculator(\"hours * 3600\")).\n\n7. `output` IS FLAT. NO NULLS, NO NESTED OBJECTS, NO EMPTY\n   ARRAYS, NO EMPTY STRINGS. IF A VALUE WOULD BE EMPTY OR NULL,\n   OMIT THE KEY ENTIRELY.\n\n8. ANYTHING YOU CANNOT PARSE WITH CONFIDENCE — INCLUDING OCR-GARBLED\n   VALUES (e.g. \"100 mA (OD) DENTRO, FUERA, IGNDM OGND\") → EXTRACT THE\n   CLEARLY-VALID PART (Calculator(\"100 / 1000\") → digital_io_current_max_a\n   = 0.1) AND RECORD THE REMAINDER IN audit_trace.unmapped_specs WITH A\n   REASON. DO NOT GUESS, AND NEVER DROP A NUMERIC SPEC SILENTLY.\n\n9. THE RESPONSE MUST BE A SINGLE JSON OBJECT WITH EXACTLY THREE\n   TOP-LEVEL KEYS: \"audit_trace\", \"output\", AND \"keys_context\".\n   NOTHING ELSE OUTSIDE THE JSON. NO MARKDOWN FENCES. THE FIRST\n   CHARACTER OF YOUR RESPONSE IS \"{\" AND THE LAST IS \"}\".\n   NEVER emit ANY OTHER top-level key — no \"analysis\", \"reasoning\",\n   \"thinking\", \"plan\", \"notes\", or \"comment\" scratchpad key, and do NOT\n   write prose before the JSON. ALL reasoning goes INSIDE `audit_trace`\n   (that IS your reasoning record). Emit `output` and `keys_context` as\n   separate top-level keys — never nest one inside the other. `output` is\n   the one you must NEVER omit or leave empty when specs exist;\n   `keys_context` is regenerated downstream, so under length pressure\n   finish a complete `output` first.\n\n10. EVERY min/max KEY → THE UNIT IS THE FINAL SEGMENT\n    (operating_temperature_min_c, voltage_max_v). NEVER PUT THE\n    UNIT IN THE MIDDLE (operating_temperature_c_min). IF input\n    `keys_context` CARRIES THE DRIFTED FORM, RE-EMIT THE CORRECTED\n    ONE (§5/§2d).\n\n11. OUTPUT `keys_context` HAS EXACTLY ONE ENTRY PER `output` KEY —\n    SAME SET, NO MORE, NO LESS — EACH WITH A VALID \"shape\" AND A\n    NON-EMPTY \"desc\". IT IS A SEPARATE TOP-LEVEL KEY, NOT PART OF\n    `output`.\n\n12. INPUT `keys_context` MAY CONTAIN `n`, `example`, `shape`, AND\n    `desc`. OUTPUT `keys_context` MUST CONTAIN ONLY `shape` AND\n    `desc` PER EMITTED OUTPUT KEY. NEVER COPY `n` OR `example` INTO\n    THE MODEL RESPONSE.\n\n13. A SINGLE SPEC CAN ENCODE MULTIPLE NUMERIC FACTS — MULTIPLE LABELED\n    RANGES (\"9~36V POE-PD | 10~30V ACC\"), MULTIPLE LABELED MAXIMA\n    (\"350mA ETH+GPRS | 450mA +WiFi\"), MULTIPLE CHANNELS (\"+30V DI, +30V\n    DO\"), OR MULTIPLE BANDS. EMIT EACH AS ITS OWN QUALIFIED KEY (§4/§5).\n    NEVER KEEP ONLY THE FIRST, AND NEVER CRAM THEM INTO A _min_/_max_ KEY\n    AS AN ARRAY — A _min_/_max_ KEY IS ALWAYS A SINGLE NUMBER.\n\n14. NEVER DROP A WHOLE SOFTWARE/FEATURE/SERVICE/PROTOCOL SPEC. Dense feature\n    blocks — \"Servicios IP\", \"Calidad de Servicio (QoS)\", \"Seguridad\",\n    \"Gestión\", \"Telefonía sobre IP\", \"Redes SD-WAN\", \"Protocolo IP\",\n    \"Multicast\" — MUST each be emitted as an enum array (§6), lowercased, one\n    key per distinct concept (ip_services, qos_features, security_features,\n    management_features, voip_protocols, sdwan_features, ip_protocols,\n    multicast_features). Split the \"|\"-separated value into tokens; keep the\n    atomic ones. A spec named \"X (2)\" is the CONTINUATION of spec \"X\" — merge\n    both into the same key, do not skip it. Emitting nothing for a feature\n    section is silent data loss and triggers a coverage_gap auto-review.\n\n15. WEIGHT IS SCALAR weight_g. Never weight_max_g for a plain weight (\"10 kg\"\n    → weight_g = 10000). Use weight_max_g ONLY for an explicit upper bound\n    (\"≤ 0.78 kg\"). Multiple per-variant weights → a weight_g NUMERIC ARRAY\n    ([2000, 2500, 2800]) — NEVER an array inside weight_max_g (a _min_/_max_\n    key always holds a single number, §5).\n\n16. Do NOT emit a has_X boolean when an enum key for the SAME concept already\n    carries a real value: ingress_protection = [\"ip54\"] ⇒ do NOT also emit\n    has_ingress_protection; and never emit a degenerate enum whose only token\n    repeats its key (vlan = [\"vlan\"]). Use has_X ONLY when the source states\n    presence with no usable value (e.g. \"Grado de protección IP: Sí\").\n\n</critical_reminders>\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1648,
+        -336
+      ],
+      "id": "130e37ea-cb55-4e55-8ba5-7e16716bc42a",
+      "name": "llm input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.llmInput }}",
+        "options": {
+          "systemMessage": "={{ $json.system_prompt }}",
+          "maxIterations": 20
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1872,
+        -336
+      ],
+      "id": "32cbd7c5-9ad6-4fc2-9378-77a44cf8d6f7",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 4
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        -112
+      ],
+      "id": "fd04bb20-95e0-4a87-b229-c64b36e6cc01",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const product = $('Loop Over Items').item.json\nconst raw = $input.item.json\n\nconst reviewOut = (error_type, detail) => ({\n  json: {\n    status: 'review',\n    success: false,\n    product_id: product.id,\n    category_id: product.category_id,\n    product_slug: product.slug,\n    error_type,\n    error_detail: detail,\n  }\n})\n\nconst tryParse = (s) => {\n  try {\n    return JSON.parse(s)\n  } catch {\n    return null\n  }\n}\n\nconst tryParseLoose = (s) => {\n  if (typeof s !== 'string') return null\n  let t = s.trim()\n  const fence = t.match(/^```(?:json)?\\s*([\\s\\S]*?)\\s*```$/i)\n  if (fence) t = fence[1].trim()\n  let p = tryParse(t)\n  if (p) return p\n  const a = t.indexOf('{'), b = t.lastIndexOf('}')\n  if (a !== -1 && b > a) p = tryParse(t.slice(a, b + 1))\n  return p\n}\n\nconst isPlainObj = (o) => o && typeof o === 'object' && !Array.isArray(o)\nconst uniq = (arr) => [...new Set(arr)\n]\nconst preview = (x, n = 800) => {\n  try {\n    return JSON.stringify(x).slice(0, n)\n  } catch {\n    return String(x).slice(0, n)\n  }\n}\n\nconst autoFixes = []\nconst violations = []\nconst keyAliases = new Map()\n\nconst addFix = (s) => autoFixes.push(s)\nconst addViolation = (s) => violations.push(s)\n\n// ------------------------------------------------------------------\n// 1) Parse OpenAI/n8n wrapper, then enforce prompt-level contract:\n//    exactly { audit_trace, output, keys_context }.\n// ------------------------------------------------------------------\nlet parsed\n\nif (typeof raw === 'string') {\n  parsed = tryParseLoose(raw)\n} else if (typeof raw?.output === 'string') {\n  parsed = tryParseLoose(raw.output)\n} else if (typeof raw?.text === 'string') {\n  parsed = tryParseLoose(raw.text)\n} else if (typeof raw?.message?.content === 'string') {\n  parsed = tryParseLoose(raw.message.content)\n} else if (\n  isPlainObj(raw?.output) &&\n  isPlainObj(raw.output.audit_trace) &&\n  isPlainObj(raw.output.output) &&\n  isPlainObj(raw.output.keys_context)\n) {\n  parsed = raw.output\n} else {\n  parsed = raw\n}\n\nif (!isPlainObj(parsed)) {\n  return reviewOut('invalid_json',\n    {\n      raw_preview: preview(raw)\n    })\n}\n\nconst expectedTop = ['audit_trace', 'keys_context', 'output'\n]\nconst actualTop = Object.keys(parsed).sort()\nconst contractOk =\n  actualTop.length === expectedTop.length &&\n  actualTop.every((k, i) => k === expectedTop[i\n  ])\n\n// Tolerant recovery instead of a hard reject. code.js re-derives keys_context\n// from the final specs, auto-initializes audit_trace, and recovers a missing\n// output from raw specs (empty-output net below) — only `output` is truly\n// load-bearing. A response that renames/omits top-level keys is RECOVERED and\n// logged; genuinely empty results still route to review downstream\n// (empty_normalization / coverage_gap).\nif (!contractOk) {\n  const missingTop = expectedTop.filter((k) => !isPlainObj(parsed[k\n  ]))\n  addFix('contract_deviation_recovered:actual=' + (actualTop.join('+') || 'none') + ':missing=' + (missingTop.join('+') || 'none'))\n}\n\nconst auditTrace = isPlainObj(parsed.audit_trace) ? {\n  ...parsed.audit_trace\n} : {}\nlet specs = isPlainObj(parsed.output) ? {\n  ...parsed.output\n} : {}\nconst llmKeysContext = isPlainObj(parsed.keys_context) ? {\n  ...parsed.keys_context\n} : {}\n\n// Recover a keys_context the model nested INSIDE output (contract drift): lift it\n// into llmKeysContext so it is not later flagged as a nested_object inside specs.\nif (!isPlainObj(parsed.keys_context) && isPlainObj(specs.keys_context)) {\n  Object.assign(llmKeysContext, specs.keys_context)\n  delete specs.keys_context\n  addFix('lifted_nested_keys_context_from_output')\n}\n\nconst AUDIT_ARRAY_KEYS = [\n  'identity_discards',\n  'unit_conversions',\n  'keys_context_dedup_hits',\n  'shape_decisions',\n  'narrative_vs_enum',\n  'compliance_merges',\n  'composite_parsing',\n  'casing_translation',\n  'unmapped_specs',\n]\n\nfor (const k of AUDIT_ARRAY_KEYS) {\n  if (!Array.isArray(auditTrace[k\n  ])) {\n    auditTrace[k\n    ] = []\n    addFix(`audit_array_initialized:${k\n      }`)\n  }\n}\n\nif (!isPlainObj(auditTrace.self_check)) {\n  auditTrace.self_check = {}\n  addFix('audit_self_check_initialized')\n}\n\nconst pushAudit = (k, entry) => {\n  if (!Array.isArray(auditTrace[k\n  ])) auditTrace[k\n  ] = []\n  auditTrace[k\n  ].push(entry)\n}\n\n// ------------------------------------------------------------------\n// Constants from prompt rules.\n// ------------------------------------------------------------------\nconst CERT_MAP_FALLBACK = {\n  subtel: 'CL-SUBTEL',\n  'chile subtel': 'CL-SUBTEL',\n  'cl-subtel': 'CL-SUBTEL',\n  ursec: 'UY-URSEC',\n  'uruguay ursec': 'UY-URSEC',\n  'uy-ursec': 'UY-URSEC',\n  enacom: 'AR-ENACOM',\n  'argentina enacom': 'AR-ENACOM',\n  'ar-enacom': 'AR-ENACOM',\n  anatel: 'BR-ANATEL',\n  'brasil anatel': 'BR-ANATEL',\n  'brazil anatel': 'BR-ANATEL',\n  'br-anatel': 'BR-ANATEL',\n  ifetel: 'MX-IFETEL',\n  'mexico ifetel': 'MX-IFETEL',\n  'méxico ifetel': 'MX-IFETEL',\n  'mx-ifetel': 'MX-IFETEL',\n  fcc: 'GLOBAL-FCC',\n  'global-fcc': 'GLOBAL-FCC',\n  ce: 'GLOBAL-CE',\n  'global-ce': 'GLOBAL-CE',\n  rohs: 'GLOBAL-RoHS',\n  'global-rohs': 'GLOBAL-RoHS',\n  reach: 'GLOBAL-REACH',\n  'global-reach': 'GLOBAL-REACH',\n  raee: 'GLOBAL-WEEE',\n  weee: 'GLOBAL-WEEE',\n  'global-weee': 'GLOBAL-WEEE',\n  nyce: 'MX-NYCE',\n  'mexico nyce': 'MX-NYCE',\n  'méxico nyce': 'MX-NYCE',\n  'mx-nyce': 'MX-NYCE',\n  ic: 'CA-IC',\n  'ca-ic': 'CA-IC',\n  ptcrb: 'GLOBAL-PTCRB',\n  rcm: 'AU-RCM',\n  'au-rcm': 'AU-RCM',\n  gcf: 'GLOBAL-GCF',\n  imda: 'SG-IMDA',\n  eac: 'EAEU-EAC',\n  telec: 'JP-TELEC',\n  'r&tte': 'EU-RTTE',\n  ift: 'MX-IFETEL',\n  'rohs2': 'GLOBAL-RoHS',\n  'rohs 2.0': 'GLOBAL-RoHS',\n  'rohs2.0': 'GLOBAL-RoHS',\n  'e-mark': 'ECE-EMARK',\n  'emark': 'ECE-EMARK',\n  'e mark': 'ECE-EMARK',\n  'global-rcm': 'AU-RCM',\n}\n\nconst PENDING_CERT_RE = /\\b(en\\s*curso|pendiente|tramitando|in\\s*progress)\\b/i\n\nconst COMPLIANT_MAP = {\n  rohs_compliant: 'GLOBAL-RoHS',\n  ce_compliant: 'GLOBAL-CE',\n  fcc_compliant: 'GLOBAL-FCC',\n  reach_compliant: 'GLOBAL-REACH',\n}\n\n// Published technical STANDARDS the LLM sometimes drops into `certifications`\n// (prompt §9 says they belong in regulatory_standards). When an UNKNOWN cert\n// token matches one of these families, reroute it to regulatory_standards\n// instead of hard-failing with unknown_certification_token.\nconst STANDARD_TOKEN_RE = /^(mil-?\\s*std|en\\s*\\d|iso\\s*\\d+|sae\\s*j|ul\\s*\\d|iec\\s*\\d|iecee|fips|pci[\\s-]?dss|class\\s+[i\\d]+\\s+div)/i\n\nconst IDENTITY_KEYS_FALLBACK = new Set([\n  'brand',\n  'marca',\n  'manufacturer',\n  'fabricante',\n  'vendor',\n  'device_brand',\n  'model',\n  'modelo',\n  'device_model',\n  'model_name',\n  'device_family',\n  'part_number',\n  'numero_de_parte',\n  'número_de_parte',\n  'numero_de_pieza',\n  'número_de_pieza',\n  'n_de_parte',\n  'name',\n  'product_name',\n  'nombre',\n  'sku',\n  'serial_number',\n  'numero_de_serie',\n  'número_de_serie',\n  'firmware_version',\n  'firmware',\n  'firmware_versions',\n  'os_versions',\n  'source_url',\n  'url',\n  'datasheet_url',\n  'datasheet',\n  'image_url',\n  'imagen',\n])\n\n// Bare `model`/`modelo`/`firmware` are caught by the IDENTITY_KEYS exact set,\n// NOT here — so component specs (cpu_model, modem_model) and firmware FEATURES\n// (has_secure_firmware_update, _firmware_update_notes) are NOT flagged as identity.\nconst IDENTITY_SEGMENT_RE =\n  /(^|_)(brand|marca|manufacturer|fabricante|vendor|part_number|sku|serial_number|datasheet|image_url|source_url|product_name|device_brand|device_model|device_family|model_name)($|_)/\n\nconst NARRATIVE_SUFFIXES = ['_notes', '_description', '_remarks', '_comments', '_info'\n]\n\nconst CANONICAL_UNITS = [\n  'mbps',\n  'mpps',\n  'mhz',\n  'hz',\n  'c',\n  'w',\n  'v',\n  'a',\n  'dbi',\n  'g',\n  'mm',\n  'nm',\n  'percent',\n  'm',\n  's',\n  'ms',\n  'ohm',\n  'kv',\n  'mah',\n  'dbm',\n  'db',\n  'count',\n  'bits',\n  'kb',\n  'mb',\n  'gb',\n  'tb',\n  'hours',\n  'years',\n  'months',\n]\n\nconst UNIT_GROUP = CANONICAL_UNITS.join('|')\nconst NUMERIC_UNIT_RE = new RegExp(`_(${UNIT_GROUP\n  })$`)\nconst RANGE_KEY_RE = new RegExp(`^(.+)_(min|max)_(${UNIT_GROUP\n  })$`)\nconst BAD_RANGE_ORDER_RE = new RegExp(`^(.+)_(${UNIT_GROUP\n  })_(min|max)$`)\n// A `count` counter must be the FINAL segment. Catch a mid-key count followed\n// by a qualifier (fan_count_poe -> fan_poe_count). Same spirit as min/max unit\n// ordering, but for non-range counters where the unit drifted inward.\nconst COUNT_MIDKEY_RE = /^(.+)_count_([a-z0-9_]+)$/\n\nconst NON_CANONICAL_UNIT_RE =\n  /_(kg|kgs|gram|grams|cm|pct|inch|inches|lb|lbs|gbps|kbps|ghz|khz|ua|µa|ma|amp|amps|minute|minutes|day|days)$/\n\nconst RELIABILITY_HOURS_OK_RE = /^(mtbf|mttf|lifetime|warranty|battery_internal_lifetime)(_|$)/\nconst RELIABILITY_YEARS_MONTHS_OK_RE = /^(lifetime|warranty|battery_internal_lifetime)(_|$)/\nconst BAD_BOOL_PREFIX_RE = /^(supports|enable|enforce|is|includes|with|allows|requires)_/\nconst BAD_BOOL_SUFFIX_RE = /_(support|supported|enabled|capable|capability|ready|available|present)$/\n\nconst SELF_CHECK_KEYS = [\n  '1_no_bare_notes',\n  '2_no_bad_bool_prefix',\n  '3_no_non_canonical_unit',\n  '4_no_redundant_unit_in_value',\n  '5_no_scalar_plus_range',\n  '6_no_identity',\n  '7_no_enum_with_underscore',\n  '8_no_standalone_compliant_bool',\n  '9_enum_lowercased_and_translated',\n  '10_no_null_or_empty_or_nested',\n  '11_unit_final_segment_in_min_max',\n  '12_keys_context_matches_output',\n]\n\nconst EXACT_KEY_MAP_FALLBACK = {\n  temp: 'temperature',\n  temperatura: 'temperature',\n  frecuencia: 'frequency',\n  peso: 'weight',\n  largo: 'length',\n  ancho: 'width',\n  alto: 'height',\n  ganancia: 'gain',\n  potencia: 'power',\n  voltaje: 'voltage',\n  corriente: 'current',\n  conector: 'connector',\n  bandas: 'bands',\n  polarizacion: 'polarization',\n  mount_type: 'mounting',\n  mounting_type: 'mounting',\n  mounting_options: 'mounting',\n  montaje: 'mounting',\n  relative_humidity: 'humidity',\n  size: 'dimensions',\n  led_indicators: 'leds',\n  leds_indicator: 'leds',\n  led_status: 'leds',\n  status_leds: 'leds',\n  ip_rating: 'ingress_protection',\n  ip_code: 'ingress_protection',\n  enclosure_rating: 'ingress_protection',\n  waterproof: 'weather_resistant',\n  weatherproof: 'weather_resistant',\n  water_resistant: 'weather_resistant',\n  casing_material: 'enclosure_material',\n  installation: 'mounting',\n  lan_ethernet_usb: 'network_features',\n  serial_connectors: 'serial_port_connectors',\n  reset_buttons_count: 'reset_button_count',\n  has_autonegotiation: 'has_auto_negotiation',\n  sim_voltage_supported_v: 'sim_supported_voltage_v',\n  rs232_signals: 'serial_rs232_signals',\n  rs485_signals: 'serial_rs485_signals',\n  serial_baud_min_mbps: 'serial_baud_rate_min_mbps',\n  serial_baud_max_mbps: 'serial_baud_rate_max_mbps',\n}\n\nconst SEGMENT_MAP = {\n  temp: 'temperature',\n  temperatura: 'temperature',\n  frecuencia: 'frequency',\n  peso: 'weight',\n  largo: 'length',\n  ancho: 'width',\n  alto: 'height',\n  ganancia: 'gain',\n  potencia: 'power',\n  voltaje: 'voltage',\n  corriente: 'current',\n  conector: 'connector',\n  bandas: 'bands',\n  polarizacion: 'polarization',\n  montaje: 'mounting',\n}\n\nconst VALUE_TRANSLATIONS_FALLBACK = {\n  idioma: 'language',\n  'ruta dinámica': 'dynamic routing',\n  'ruta dinamica': 'dynamic routing',\n  'protección de datos': 'data protection',\n  'proteccion de datos': 'data protection',\n  'portal cautivo': 'captive portal',\n  plastico: 'plastic',\n  plástico: 'plastic',\n  metal: 'metal',\n  acero: 'steel',\n  aluminio: 'aluminum',\n  'sin condensación': 'non-condensing',\n  'sin condensacion': 'non-condensing',\n  'horas/minutos': 'hours/minutes',\n  rojo: 'red',\n  verde: 'green',\n  azul: 'blue',\n  negro: 'black',\n  blanco: 'white',\n  temporizador: 'timer',\n  'contacto seco': 'dry contact',\n  'contacto húmedo': 'wet contact',\n  'contacto humedo': 'wet contact',\n  litio: 'lithium',\n  lineal: 'linear',\n}\n\n// ------------------------------------------------------------------\n// Reference data (DB-backed, with in-code fallback).\n// An upstream node exposes the `reference_bundle` view as rows\n// { kind, map }. We MERGE that over the *_FALLBACK literals so an\n// empty/absent bundle reproduces the previous hardcoded behavior\n// EXACTLY. code.js stays the enforcement authority; the prompt keeps\n// its static lists as guidance. SEGMENT_MAP is intentionally NOT\n// externalized (per-segment application of arbitrary equivalences is\n// unsafe); only the whole-key EXACT_KEY_MAP is data-driven.\n// ------------------------------------------------------------------\nconst readReferenceBundle = () => {\n  try {\n    const node = $('Reference Bundle') // <- rename to your reference node\n    const rows = typeof node?.all === 'function' ? node.all() : [node?.first?.()]\n    const out = {}\n    for (const it of rows) {\n      const row = it?.json ?? it\n      if (isPlainObj(row) && typeof row.kind === 'string' && isPlainObj(row.map)) {\n        out[row.kind] = row.map\n      }\n    }\n    return out\n  } catch {\n    return {}\n  }\n}\n\nconst REF_BUNDLE = readReferenceBundle()\nconst pickMap = (k) => (isPlainObj(REF_BUNDLE[k]) ? REF_BUNDLE[k] : {})\n\nconst CERT_MAP = {\n  ...CERT_MAP_FALLBACK, ...pickMap('cert')\n}\nconst CERT_ALLOWED = new Set(Object.values(CERT_MAP))\nconst VALUE_TRANSLATIONS = {\n  ...VALUE_TRANSLATIONS_FALLBACK, ...pickMap('value_translation')\n}\nconst EXACT_KEY_MAP = {\n  ...EXACT_KEY_MAP_FALLBACK, ...pickMap('key_equivalence')\n}\nconst IDENTITY_KEYS = new Set([...IDENTITY_KEYS_FALLBACK, ...Object.keys(pickMap('identity_discard'))\n])\n\naddFix(`reference_bundle:${Object.keys(REF_BUNDLE).length ? Object.keys(REF_BUNDLE).sort().join('+') : 'fallback'\n  }`)\n\nconst ACRONYM_REPLACEMENTS = [\n  [/lorawan/ig, 'lorawan'\n  ],\n  [/lora/ig, 'lora'\n  ],\n  [/rs\\s*[-_]?\\s*232/ig, 'rs232'\n  ],\n  [/rs\\s*[-_]?\\s*485/ig, 'rs485'\n  ],\n  [/rs\\s*[-_]?\\s*422/ig, 'rs422'\n  ],\n  [/usb/ig, 'usb'\n  ],\n  [/gps/ig, 'gps'\n  ],\n  [/gnss/ig, 'gnss'\n  ],\n  [/glonass/ig, 'glonass'\n  ],\n  [/sbas/ig, 'sbas'\n  ],\n  [/lte/ig, 'lte'\n  ],\n  [/wifi|wi-fi/ig, 'wifi'\n  ],\n  [/bluetooth/ig, 'bluetooth'\n  ],\n  [/ethernet/ig, 'ethernet'\n  ],\n  [/poe/ig, 'poe'\n  ],\n  [/sfp/ig, 'sfp'\n  ],\n  [/vlan/ig, 'vlan'\n  ],\n  [/vpn/ig, 'vpn'\n  ],\n  [/mpls/ig, 'mpls'\n  ],\n  [/esim/ig, 'esim'\n  ],\n  [/sim/ig, 'sim'\n  ],\n  [/gpio/ig, 'gpio'\n  ],\n  [/snmp/ig, 'snmp'\n  ],\n  [/ssh/ig, 'ssh'\n  ],\n  [/rtc/ig, 'rtc'\n  ],\n  [/nfc/ig, 'nfc'\n  ],\n  [/j1939/ig, 'j1939'\n  ],\n]\n\n// ------------------------------------------------------------------\n// Generic helpers.\n// ------------------------------------------------------------------\nconst deepEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b)\nconst isFiniteNumber = (x) => typeof x === 'number' && Number.isFinite(x)\n\nconst getUnitSuffix = (k) => {\n  const range = k.match(RANGE_KEY_RE)\n  if (range) return range[\n    3\n  ]\n\n  const m = k.match(NUMERIC_UNIT_RE)\n  return m ? m[\n    1\n  ] : null\n}\n\nconst isRangeKey = (k) => RANGE_KEY_RE.test(k)\n// A min/max key is only a true range endpoint if its opposite endpoint\n// (same root + unit) is also present. Standalone \"_max_<unit>\" keys like\n// wifi_5ghz_max_mbps are scalar capabilities, not range endpoints.\nconst isPairedRangeKey = (k) => {\n  const m = k.match(RANGE_KEY_RE)\n  if (!m) return false\n  const opposite = `${m[1]}_${m[2] === 'min' ? 'max' : 'min'}_${m[3]}`\n  return opposite in specs\n}\nconst hasNarrativeSuffix = (k) => NARRATIVE_SUFFIXES.some((s) => k.endsWith(s))\n\nconst tokenLooksShortEnum = (arr) => {\n  if (!Array.isArray(arr) || !arr.every((x) => typeof x === 'string')) return false\n  if (arr.length === 0) return false\n\n  const longest = arr.reduce((a, b) => (b.length > a.length ? b : a), '')\n  return longest.length <= 30 && !/[.;]/.test(longest)\n}\n\nconst normalizeProtocolToken = (s) => {\n  let t = s.trim().toLowerCase().replace(/[_\\s]+/g, ' ').trim()\n  t = t.replace(/^rs\\s*-?\\s*232$/, 'rs-232')\n  t = t.replace(/^rs\\s*-?\\s*485$/, 'rs-485')\n  t = t.replace(/^rs\\s*-?\\s*422$/, 'rs-422')\n  t = t.replace(/^wi\\s*-?\\s*fi$/, 'wifi')\n  return t\n}\n\nconst translateEnumToken = (s) => VALUE_TRANSLATIONS[s\n] ?? s\n\nconst translateNarrative = (s) => {\n  let out = s.trim()\n\n  for (const [from, to\n  ] of Object.entries(VALUE_TRANSLATIONS)) {\n    const re = new RegExp(`\\\\b${from.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\\\b`, 'gi')\n    out = out.replace(re, to)\n  }\n\n  return out\n}\n\nconst parseBooleanish = (v) => {\n  if (typeof v === 'boolean') return {\n    ok: true, value: v\n  }\n  if (typeof v !== 'string') return {\n    ok: false\n  }\n\n  const t = v.trim().toLowerCase()\n\n  if (['true', 'yes', 'si', 'sí', 'y', '1'\n  ].includes(t)) {\n    return {\n      ok: true, value: true\n    }\n  }\n\n  if (['false', 'no', 'n', '0'\n  ].includes(t)) {\n    return {\n      ok: true, value: false\n    }\n  }\n\n  return {\n    ok: false\n  }\n}\n\nconst numericPattern = '[+-]?(?:\\\\d+(?:\\\\.\\\\d*)?|\\\\.\\\\d+)'\n\nconst unitPatterns = {\n  mbps: ['mbps'\n  ],\n  mpps: ['mpps'\n  ],\n  mhz: ['mhz'\n  ],\n  hz: ['hz'\n  ],\n  c: ['c', '°c'\n  ],\n  w: ['w'\n  ],\n  v: ['v'\n  ],\n  a: ['a'\n  ],\n  dbi: ['dbi'\n  ],\n  g: ['g', 'gram', 'grams'\n  ],\n  mm: ['mm'\n  ],\n  nm: ['nm'\n  ],\n  percent: ['%', 'percent'\n  ],\n  m: ['m'\n  ],\n  s: ['s', 'sec', 'secs', 'second', 'seconds'\n  ],\n  ms: ['ms'\n  ],\n  ohm: ['ohm', 'ohms', 'ω'\n  ],\n  kv: ['kv'\n  ],\n  mah: ['mah'\n  ],\n  dbm: ['dbm'\n  ],\n  db: ['db'\n  ],\n  count: [''\n  ],\n  bits: ['bit', 'bits'\n  ],\n  kb: ['kb'\n  ],\n  mb: ['mb'\n  ],\n  gb: ['gb'\n  ],\n  tb: ['tb'\n  ],\n  hours: ['h', 'hr', 'hrs', 'hour', 'hours'\n  ],\n  years: ['year', 'years'\n  ],\n  months: ['month', 'months'\n  ],\n}\n\nconst parseNumericStringForKey = (k, rawValue) => {\n  if (typeof rawValue !== 'string') return {\n    ok: false\n  }\n\n  const t = rawValue.trim().toLowerCase().replace(',', '.')\n  if (t === '') return {\n    ok: false\n  }\n\n  if (new RegExp(`^${numericPattern\n    }$`).test(t)) {\n    const n = Number(t)\n    return Number.isFinite(n)\n      ? {\n        ok: true, value: n, reason: 'pure_numeric_string'\n      }\n      : {\n        ok: false\n      }\n  }\n\n  const unit = getUnitSuffix(k)\n  if (!unit || !unitPatterns[unit\n  ]) return {\n    ok: false\n  }\n\n  for (const u of unitPatterns[unit\n  ]) {\n    if (u === '') continue\n\n    const re = new RegExp(\n      `^(${numericPattern})\\\\s*${u.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}$`,\n      'i'\n    )\n\n    const m = t.match(re)\n\n    if (m) {\n      const n = Number(m[\n        1\n      ])\n      return Number.isFinite(n)\n        ? {\n          ok: true, value: n, reason: `stripped_redundant_unit:${unit\n            }`\n        }\n        : {\n          ok: false\n        }\n    }\n  }\n\n  return {\n    ok: false\n  }\n}\n\nconst normalizeKeyFormat = (key) => {\n  let k = String(key).trim()\n\n  for (const [re, repl\n  ] of ACRONYM_REPLACEMENTS) {\n    k = k.replace(re, repl)\n  }\n\n  k = k.replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')\n  k = k.replace(/([a-z0-9])([A-Z])/g, '$1_$2')\n  k = k.toLowerCase()\n  k = k.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n  k = k\n    .replace(/[^a-z0-9_]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_+/, key.startsWith('_') ? '_' : '')\n    .replace(/_+$/, '')\n\n  if (k !== '_' && k.startsWith('__')) {\n    k = `_${k.replace(/^_+/, '')\n      }`\n  }\n\n  return k\n}\n\nconst applyKeyEquivalences = (k) => {\n  let nk = k\n\n  if (nk.startsWith('device_')) nk = nk.slice('device_'.length)\n  if (nk.startsWith('product_')) nk = nk.slice('product_'.length)\n  if (nk.startsWith('item_')) nk = nk.slice('item_'.length)\n\n  const bare = nk.startsWith('_') ? nk.slice(1) : nk\n  const prefix = nk.startsWith('_') ? '_' : ''\n\n  if (EXACT_KEY_MAP[bare\n  ]) return prefix + EXACT_KEY_MAP[bare\n  ]\n\n  const mapped = bare\n    .split('_')\n    .map((seg) => SEGMENT_MAP[seg\n    ] ?? seg)\n    .join('_')\n\n  return prefix + mapped\n}\n\nconst fixRangeUnitOrder = (k) => {\n  const m = k.match(BAD_RANGE_ORDER_RE)\n  if (!m) return k\n\n  return `${m[\n    1\n  ]\n    }_${m[\n    3\n    ]\n    }_${m[\n    2\n    ]\n    }`\n}\n\nconst mergeValues = (existing, incoming) => {\n  if (deepEqual(existing, incoming)) return {\n    ok: true, value: existing\n  }\n\n  if (Array.isArray(existing) && Array.isArray(incoming)) {\n    const joined = [...existing, ...incoming\n    ]\n    const types = new Set(joined.map((x) => typeof x))\n\n    if (types.size === 1 && (types.has('string') || types.has('number'))) {\n      return {\n        ok: true, value: uniq(joined)\n      }\n    }\n  }\n\n  if (Array.isArray(existing) && !Array.isArray(incoming)) {\n    const types = new Set(existing.map((x) => typeof x))\n\n    if (\n      types.size === 1 &&\n      types.has(typeof incoming) &&\n      ['string', 'number'\n      ].includes(typeof incoming)\n    ) {\n      return {\n        ok: true, value: uniq([...existing, incoming\n        ])\n      }\n    }\n  }\n\n  if (!Array.isArray(existing) && Array.isArray(incoming)) {\n    const types = new Set(incoming.map((x) => typeof x))\n\n    if (\n      types.size === 1 &&\n      types.has(typeof existing) &&\n      ['string', 'number'\n      ].includes(typeof existing)\n    ) {\n      return {\n        ok: true, value: uniq([existing, ...incoming\n        ])\n      }\n    }\n  }\n\n  return {\n    ok: false\n  }\n}\n\nconst renameKey = (oldKey, newKey, reason) => {\n  if (oldKey === newKey) return true\n  if (!(oldKey in specs)) return true\n\n  if (newKey in specs) {\n    const merged = mergeValues(specs[newKey\n    ], specs[oldKey\n    ])\n\n    if (!merged.ok) {\n      addViolation(`key_collision:${oldKey\n        }->${newKey\n        }`)\n      return false\n    }\n\n    specs[newKey\n    ] = merged.value\n    delete specs[oldKey\n    ]\n    keyAliases.set(oldKey, newKey)\n    addFix(`${reason\n      }:${oldKey\n      }->${newKey\n      }:merged`)\n    return true\n  }\n\n  specs[newKey\n  ] = specs[oldKey\n    ]\n  delete specs[oldKey\n  ]\n  keyAliases.set(oldKey, newKey)\n  addFix(`${reason\n    }:${oldKey\n    }->${newKey\n    }`)\n  return true\n}\n\nconst addCertification = (token, sourceLabel) => {\n  specs.certifications = Array.isArray(specs.certifications)\n    ? specs.certifications\n    : specs.certifications\n      ? [specs.certifications\n      ]\n      : []\n\n  specs.certifications.push(token)\n\n  pushAudit('compliance_merges',\n    {\n      raw_boolean: sourceLabel,\n      added_to_certifications: token,\n    })\n}\n\nconst normalizeCertToken = (rawCert) => {\n  if (typeof rawCert !== 'string') {\n    return {\n      ok: false, violation: `non_string_certification:${String(rawCert)\n        }`\n    }\n  }\n\n  const trimmed = rawCert.trim()\n\n  if (trimmed === '') {\n    return {\n      ok: true, drop: true, reason: 'empty_certification'\n    }\n  }\n\n  if (PENDING_CERT_RE.test(trimmed)) {\n    return {\n      ok: true, drop: true, reason: 'pending_certification'\n    }\n  }\n\n  if (CERT_ALLOWED.has(trimmed)) {\n    return {\n      ok: true, value: trimmed\n    }\n  }\n\n  const low = trimmed.toLowerCase().replace(/\\s+/g, ' ')\n\n  if (CERT_MAP[low\n  ]) return {\n    ok: true, value: CERT_MAP[low\n    ]\n  }\n\n  if (/\\bsubtel\\b/.test(low)) return {\n    ok: true, value: 'CL-SUBTEL'\n  }\n  if (/\\bursec\\b/.test(low)) return {\n    ok: true, value: 'UY-URSEC'\n  }\n  if (/\\benacom\\b/.test(low)) return {\n    ok: true, value: 'AR-ENACOM'\n  }\n  if (/\\banatel\\b/.test(low)) return {\n    ok: true, value: 'BR-ANATEL'\n  }\n  if (/\\bifetel\\b/.test(low)) return {\n    ok: true, value: 'MX-IFETEL'\n  }\n  if (/\\bfcc\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-FCC'\n  }\n  if (/\\bce\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-CE'\n  }\n  if (/\\brohs\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-RoHS'\n  }\n  if (/\\breach\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-REACH'\n  }\n  if (/\\braee\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-WEEE'\n  }\n  if (/\\bweee\\b/.test(low)) return {\n    ok: true, value: 'GLOBAL-WEEE'\n  }\n  if (/\\bnyce\\b/.test(low)) return {\n    ok: true, value: 'MX-NYCE'\n  }\n\n  return {\n    ok: false, violation: `unknown_certification_token:${trimmed\n      }`\n  }\n}\n\n// ------------------------------------------------------------------\n// 1b) Empty-output safety net.\n//     The LLM is the primary extractor. It occasionally returns\n//     output:{} for trivially-mappable products (e.g. an antenna whose\n//     keys_context already contains every target key). When that happens\n//     AND raw specs exist, deterministically map the unambiguous Spanish\n//     labels so the product is not lost to `empty_normalization`. The\n//     recovered object then flows through the SAME key/value normalization\n//     and the SAME hard-validation pass below — this net only re-seeds\n//     `specs`, it does not bypass any rule. Extend FALLBACK_LABEL_MAP with\n//     labels that are unambiguous across categories; keep guessy ones out.\n// ------------------------------------------------------------------\nconst fbLc = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase()\nconst fbFirstNumber = (s) => { const m = String(s).replace(',', '.').match(/[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)/); return m ? Number(m[0]) : null }\nconst fbAllNumbers = (s) => (String(s).replace(/,/g, '.').match(/[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)/g) || []).map(Number).filter(Number.isFinite)\n\nconst FALLBACK_LABEL_MAP = {\n  'ganancia': (v) => ({ gain_dbi: fbFirstNumber(v) }),\n  'vswr': (v) => ({ vswr_max: fbFirstNumber(v) }),\n  'polarizacion': (v) => ({ polarization: [fbLc(v)] }),\n  'impedancia': (v) => ({ impedance_ohm: fbFirstNumber(v) }),\n  'potencia maxima de entrada': (v) => ({ input_power_max_w: fbFirstNumber(v) }),\n  'tipo de cable': (v) => ({ cable_type: [fbLc(v).replace(/[^a-z0-9]+/g, '')] }),\n  'longitud': (v) => { const n = fbFirstNumber(v); if (n == null) return {}; const low = fbLc(v); if (/\\bmm\\b/.test(low)) return { length_mm: n }; if (/\\bcm\\b/.test(low)) return { length_mm: Math.round(n * 10) }; return { length_mm: Math.round(n * 1000) } },\n  'conector': (v) => ({ connector: [fbLc(v).replace(/\\bmacho\\b/, 'male').replace(/\\bhembra\\b/, 'female').replace(/\\s+/g, '-')] }),\n  'rango de frecuencia': (v) => { const ns = fbAllNumbers(v).map(Math.abs); return ns.length ? { frequency_min_mhz: Math.min(...ns), frequency_max_mhz: Math.max(...ns) } : {} },\n  'temperatura de funcionamiento': (v) => { const ns = fbAllNumbers(v); if (ns.length >= 2) return { operating_temperature_min_c: Math.min(...ns), operating_temperature_max_c: Math.max(...ns) }; return ns.length === 1 ? { operating_temperature_max_c: ns[0] } : {} },\n}\n\nconst extractFromRawSpecs = (rawSpecs) => {\n  const out = {}\n\n  for (const sp of rawSpecs) {\n    if (!isPlainObj(sp)) continue\n\n    const handler = FALLBACK_LABEL_MAP[fbLc(sp.name ?? '')]\n\n    if (!handler) {\n      pushAudit('unmapped_specs', { raw_name: sp?.name, raw_value: sp?.value, reason: 'low_confidence' })\n      continue\n    }\n\n    const got = handler(String(sp.value ?? ''))\n\n    for (const [k, val\n    ] of Object.entries(got)) {\n      if (val === null || val === undefined || (Array.isArray(val) && val.length === 0)) continue\n      out[k\n      ] = val\n    }\n  }\n\n  return out\n}\n\nif (Object.keys(specs).length === 0 && Array.isArray(product.specs) && product.specs.length > 0) {\n  const recovered = extractFromRawSpecs(product.specs)\n\n  if (Object.keys(recovered).length > 0) {\n    specs = recovered\n    addFix(`empty_output_fallback_extracted:${Object.keys(recovered).length\n      }`)\n  }\n}\n// ------------------------------------------------------------------\n// 2) Key-level deterministic normalization.\n// ------------------------------------------------------------------\nfor (const originalKey of [...Object.keys(specs)\n]) {\n  const formatted = normalizeKeyFormat(originalKey)\n\n  if (formatted !== originalKey) {\n    renameKey(originalKey, formatted, 'normalized_key_format')\n  }\n}\n\nfor (const currentKey of [...Object.keys(specs)\n]) {\n  const equiv = applyKeyEquivalences(currentKey)\n\n  if (equiv !== currentKey) {\n    renameKey(currentKey, equiv, 'forced_key_equivalence')\n  }\n}\n\nfor (const currentKey of [...Object.keys(specs)\n]) {\n  const fixed = fixRangeUnitOrder(currentKey)\n\n  if (fixed !== currentKey) {\n    renameKey(currentKey, fixed, 'fixed_minmax_unit_order')\n  }\n}\n// Move a mid-key `count` to the final segment (fan_count_poe -> fan_poe_count).\nfor (const currentKey of [...Object.keys(specs)\n]) {\n  const m = currentKey.match(COUNT_MIDKEY_RE)\n\n  if (m) {\n    renameKey(currentKey, `${m[1]\n      }_${m[2]\n      }_count`, 'moved_count_to_final_segment')\n  }\n}\n// Narrative suffixes must carry \"_\" prefix.\nfor (const k of [...Object.keys(specs)\n]) {\n  if (!k.startsWith('_') && hasNarrativeSuffix(k)) {\n    renameKey(k, `_${k\n      }`, 'prefixed_narrative_key')\n  }\n}\n// Boolean prefix normalization and compliance merges.\nfor (const k of [...Object.keys(specs)\n]) {\n  if (!(k in specs)) continue\n\n  const boolish = parseBooleanish(specs[k\n  ])\n\n  if (boolish.ok && typeof specs[k\n  ] !== 'boolean') {\n    specs[k\n    ] = boolish.value\n    addFix(`boolean_string_normalized:${k\n      }`)\n  }\n\n  const bareCompliantKey = k.startsWith('has_') ? k.slice(4) : k\n\n  if (COMPLIANT_MAP[bareCompliantKey\n  ]) {\n    const b = parseBooleanish(specs[k\n    ])\n\n    if (!b.ok) {\n      addViolation(`invalid_compliant_value:${k\n        }`)\n      continue\n    }\n\n    if (b.value === true) {\n      addCertification(COMPLIANT_MAP[bareCompliantKey\n      ], k)\n    }\n\n    delete specs[k\n    ]\n    addFix(`dropped_standalone_compliant:${k\n      }`)\n    continue\n  }\n\n  if (typeof specs[k\n  ] === 'boolean') {\n    const m = k.match(BAD_BOOL_PREFIX_RE)\n\n    if (m) {\n      const newKey = `has_${k.slice(m[\n        0\n      ].length)\n        }`\n      renameKey(k, newKey, 'normalized_boolean_prefix')\n    } else if (BAD_BOOL_SUFFIX_RE.test(k) && !k.startsWith('has_')) {\n      renameKey(k, `has_${k.replace(BAD_BOOL_SUFFIX_RE, '')}`, 'normalized_boolean_suffix')\n    } else if (!k.startsWith('has_') && !k.startsWith('_')) {\n      renameKey(k, `has_${k}`, 'added_has_prefix_to_bare_boolean')\n    }\n  }\n}\n// Counter suffix: deterministic only for obvious numeric counters.\nfor (const k of [...Object.keys(specs)\n]) {\n  if (!(k in specs)) continue\n\n  const v = specs[k\n  ]\n\n  const isNumericLike =\n    isFiniteNumber(v) ||\n    (Array.isArray(v) && v.every(isFiniteNumber))\n\n  if (\n    isNumericLike &&\n    !k.endsWith('_count') &&\n    /(^|_)(ports|slots|interfaces|inputs|outputs|channels|antennas|relays|sockets|cores|contacts)$/.test(k)\n  ) {\n    renameKey(k, `${k\n      }_count`, 'added_counter_suffix')\n  }\n}\n// Split dimensions_mm numeric triple into children.\n// String composites are rejected later unless the model already emitted child keys.\nif (\n  Array.isArray(specs.dimensions_mm) &&\n  specs.dimensions_mm.length === 3 &&\n  specs.dimensions_mm.every(isFiniteNumber)\n) {\n  const [length, width, height\n  ] = specs.dimensions_mm\n\n  delete specs.dimensions_mm\n\n  specs.length_mm = specs.length_mm ?? length\n  specs.width_mm = specs.width_mm ?? width\n  specs.height_mm = specs.height_mm ?? height\n\n  addFix('split_dimensions_mm_numeric_triple:length_mm,width_mm,height_mm')\n}\n// ------------------------------------------------------------------\n// 3) Value-level deterministic normalization.\n// ------------------------------------------------------------------\nconst reroutedStandards = []\n\nfor (const k of [...Object.keys(specs)\n]) {\n  if (!(k in specs)) continue\n\n  let v = specs[k\n  ]\n\n  const emptyPlainObj = isPlainObj(v) && Object.keys(v).length === 0\n\n  if (\n    v === null ||\n    v === undefined ||\n    v === '' ||\n    emptyPlainObj ||\n    (Array.isArray(v) && v.length === 0)\n  ) {\n    delete specs[k\n    ]\n    addFix(`dropped_empty:${k\n      }`)\n    continue\n  }\n\n  if (k === 'certifications') {\n    const arr = Array.isArray(v) ? v : [v\n    ]\n    const out = []\n\n    for (const c of arr) {\n      const normalized = normalizeCertToken(c)\n\n      if (!normalized.ok) {\n        const tok = String(c).trim()\n\n        if (STANDARD_TOKEN_RE.test(tok)) {\n          reroutedStandards.push(tok.toLowerCase())\n          addFix(`rerouted_standard_from_certifications:${tok\n            }`)\n          continue\n        }\n\n        addViolation(normalized.violation)\n        continue\n      }\n\n      if (normalized.drop) {\n        addFix(`dropped_certification:${String(c).trim()\n          }:${normalized.reason\n          }`)\n        continue\n      }\n\n      out.push(normalized.value)\n\n      if (normalized.value !== c) {\n        addFix(`normalized_certification:${String(c).trim()\n          }->${normalized.value\n          }`)\n      }\n    }\n\n    const deduped = uniq(out)\n\n    if (deduped.length === 0) {\n      delete specs[k\n      ]\n    } else {\n      specs[k\n      ] = deduped\n    }\n\n    continue\n  }\n\n  const unit = getUnitSuffix(k)\n\n  if (typeof v === 'string') {\n    const b = parseBooleanish(v)\n\n    if (b.ok && k.startsWith('has_')) {\n      specs[k\n      ] = b.value\n      addFix(`boolean_string_normalized:${k\n        }`)\n      continue\n    }\n\n    const parsedNumber = parseNumericStringForKey(k, v)\n\n    if (parsedNumber.ok && unit) {\n      specs[k\n      ] = parsedNumber.value\n      addFix(`numeric_string_normalized:${k\n        }:${parsedNumber.reason\n        }`)\n      continue\n    }\n\n    const trimmed = v.trim()\n\n    if (trimmed === '') {\n      delete specs[k\n      ]\n      addFix(`dropped_empty_string:${k\n        }`)\n      continue\n    }\n    // R10 forbids scalar strings. Non-numeric scalar strings become single-item arrays.\n    if (k.startsWith('_')) {\n      specs[k\n      ] = [translateNarrative(trimmed)\n        ]\n    } else {\n      specs[k\n      ] = [translateEnumToken(normalizeProtocolToken(trimmed))\n        ]\n    }\n\n    addFix(`scalar_string_wrapped_as_array:${k\n      }`)\n    continue\n  }\n\n  if (Array.isArray(v)) {\n    let arr = v.filter((x) => !(typeof x === 'string' && x.trim() === ''))\n\n    if (unit) {\n      const numericOut = []\n\n      for (const item of arr) {\n        if (isFiniteNumber(item)) {\n          numericOut.push(item)\n          continue\n        }\n\n        const parsedNumber = parseNumericStringForKey(k, item)\n\n        if (parsedNumber.ok) {\n          numericOut.push(parsedNumber.value)\n          addFix(`numeric_array_item_normalized:${k\n            }:${String(item).trim()\n            }`)\n          continue\n        }\n\n        const rng = String(item).trim().toLowerCase().replace(',', '.').match(/^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))\\s*[-–~]\\s*([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))/)\n\n        if (rng && arr.length === 1 && !RANGE_KEY_RE.test(k)) {\n          const base = k.replace(NUMERIC_UNIT_RE, '')\n          specs[`${base\n            }_min_${unit\n            }`] = Number(rng[\n              1\n            ])\n          specs[`${base\n            }_max_${unit\n            }`] = Number(rng[\n              2\n            ])\n          addFix(`split_range_string:${k\n            }->${base\n            }_min_${unit\n            },${base\n            }_max_${unit\n            }`)\n          continue\n        }\n\n        pushAudit('unmapped_specs', {\n          raw_name: k, raw_value: String(item), reason: 'unparseable'\n        })\n        addFix(`dropped_unparseable_numeric:${k\n          }=${String(item)\n          }`)\n      }\n\n      const deduped = uniq(numericOut)\n\n      if (deduped.length === 0) {\n        delete specs[k\n        ]\n      } else {\n        specs[k\n        ] = deduped.length === 1 ? deduped[\n          0\n        ] : deduped\n      }\n\n      continue\n    }\n\n    const types = new Set(arr.map((x) => typeof x))\n\n    if (types.size > 1) {\n      addViolation(`mixed_array:${k\n        }`)\n      continue\n    }\n\n    if (types.has('number')) {\n      if (!arr.every(isFiniteNumber)) {\n        addViolation(`non_finite_number_in_array:${k\n          }`)\n      }\n\n      const deduped = uniq(arr)\n\n      specs[k\n      ] = deduped.length === 1 ? deduped[\n        0\n      ] : deduped\n\n      if (deduped.length !== arr.length) {\n        addFix(`deduped_numeric_array:${k\n          }`)\n      }\n\n      continue\n    }\n\n    if (types.has('string')) {\n      if (k.startsWith('_')) {\n        const out = arr\n          .map((x) => translateNarrative(String(x)))\n          .filter((x) => x !== '')\n\n        specs[k\n        ] = uniq(out)\n      } else {\n        const out = arr\n          .map((x) => translateEnumToken(normalizeProtocolToken(String(x))))\n          .filter((x) => x !== '')\n\n        specs[k\n        ] = uniq(out)\n      }\n\n      if (specs[k\n      ].length === 0) {\n        delete specs[k\n        ]\n        addFix(`dropped_empty_array_after_cleanup:${k\n          }`)\n      }\n\n      continue\n    }\n\n    addViolation(`invalid_array_type:${k\n      }`)\n    continue\n  }\n}\n// Merge any standards rerouted out of `certifications` into regulatory_standards.\nif (reroutedStandards.length) {\n  const existing = Array.isArray(specs.regulatory_standards)\n    ? specs.regulatory_standards\n    : specs.regulatory_standards\n      ? [specs.regulatory_standards\n      ]\n      : []\n\n  specs.regulatory_standards = uniq([\n    ...existing.map((x) => String(x).toLowerCase()),\n    ...reroutedStandards,\n  ])\n\n  addFix(`regulatory_standards_merged_rerouted:${reroutedStandards.length\n    }`)\n}\n// Strip \"_\" from accidental enum keys when values are short atomic tokens.\nfor (const k of [...Object.keys(specs)\n]) {\n  if (!k.startsWith('_')) continue\n  if (hasNarrativeSuffix(k)) continue\n\n  const v = specs[k\n  ]\n  const bare = k.slice(1)\n\n  if (Array.isArray(v) && tokenLooksShortEnum(v)) {\n    renameKey(k, bare, 'stripped_enum_underscore')\n\n    pushAudit('narrative_vs_enum',\n      {\n        key: bare,\n        branch: 'enum',\n        reason: 'short tokens without sentence punctuation',\n      })\n  }\n}\n// Final cleanup of empties after renames.\nfor (const [k, v\n] of Object.entries(specs)) {\n  if (\n    v === null ||\n    v === undefined ||\n    v === '' ||\n    (Array.isArray(v) && v.length === 0) ||\n    (isPlainObj(v) && Object.keys(v).length === 0)\n  ) {\n    delete specs[k\n    ]\n    addFix(`dropped_empty_final:${k\n      }`)\n  }\n}\n// ------------------------------------------------------------------\n// 3b) Relocate regulatory APPROVAL MARKS misfiled under regulatory_standards.\n//     regulatory_standards is a free enum, so a cert token (weee/raee/rohs/\n//     nyce/ift/...) the LLM mistook for a \"standard\" can land there. code.js\n//     owns the canon (CERT_MAP, merged from reference_aliases), so move it\n//     deterministically into certifications. Only EXACT alias matches move —\n//     never the loose word-boundary fallback — so technical standards\n//     (en 55032, iec 61000-*, mil-std-810g) stay put. Pending marks are skipped.\n// ------------------------------------------------------------------\nconst certHit = (tok) => {\n  if (typeof tok !== 'string') return null\n  const t = tok.trim()\n  if (!t || PENDING_CERT_RE.test(t)) return null\n  if (CERT_ALLOWED.has(t)) return t\n  return CERT_MAP[t.toLowerCase().replace(/\\s+/g, ' ')] || null\n}\n\nif (Array.isArray(specs.regulatory_standards)) {\n  const keep = []\n\n  for (const tok of specs.regulatory_standards) {\n    const canon = certHit(tok)\n\n    if (canon) {\n      specs.certifications = Array.isArray(specs.certifications)\n        ? specs.certifications\n        : specs.certifications\n          ? [specs.certifications\n          ]\n          : []\n      specs.certifications.push(canon)\n      addFix(`reclassified_cert_from_regulatory_standards:${String(tok).trim()\n        }->${canon\n        }`)\n    } else {\n      keep.push(tok)\n    }\n  }\n\n  if (keep.length !== specs.regulatory_standards.length) {\n    if (keep.length) specs.regulatory_standards = uniq(keep)\n    else delete specs.regulatory_standards\n  }\n}\n\nif (Array.isArray(specs.certifications)) specs.certifications = uniq(specs.certifications)\n// ------------------------------------------------------------------\n// 4) Hard validation pass. Authority is the real normalized output.\n// ------------------------------------------------------------------\nfor (const [k, v\n] of Object.entries(specs)) {\n  const bare = k.startsWith('_') ? k.slice(1) : k\n\n  if (k.startsWith('_')) {\n    if (!/^_[a-z0-9]+(?:_[a-z0-9]+)*$/.test(k)) {\n      addViolation(`bad_key_shape:${k\n        }`)\n    }\n  } else if (!/^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(k)) {\n    addViolation(`bad_key_shape:${k\n      }`)\n  }\n\n  if (IDENTITY_KEYS.has(bare) || IDENTITY_SEGMENT_RE.test(bare)) {\n    addViolation(`identity_key:${k\n      }`)\n  }\n\n  if (k.startsWith('_') && IDENTITY_SEGMENT_RE.test(bare)) {\n    addViolation(`identity_disguised:${k\n      }`)\n  }\n\n  if (isPlainObj(v)) addViolation(`nested_object:${k\n    }`)\n  if (v === null || v === undefined) addViolation(`null_or_undefined:${k\n    }`)\n  if (typeof v === 'string') addViolation(`scalar_string_forbidden:${k\n    }`)\n  if (Array.isArray(v) && v.length === 0) addViolation(`empty_array:${k\n    }`)\n\n  if (typeof v === 'boolean') {\n    if (!k.startsWith('has_')) addViolation(`boolean_without_has_prefix:${k\n      }`)\n    if (BAD_BOOL_PREFIX_RE.test(k)) addViolation(`bad_bool_prefix:${k\n      }`)\n  }\n\n  if (/^(has_)?(rohs|ce|fcc|reach)_compliant$/.test(k)) {\n    addViolation(`standalone_compliant_key:${k\n      }`)\n  }\n\n  if (hasNarrativeSuffix(k) && !k.startsWith('_')) {\n    addViolation(`bare_narrative_key:${k\n      }`)\n  }\n\n  if (k.startsWith('_')) {\n    if (!Array.isArray(v) || !v.every((x) => typeof x === 'string' && x.trim() !== '')) {\n      addViolation(`narrative_value_must_be_string_array:${k\n        }`)\n    } else if (!hasNarrativeSuffix(k) && tokenLooksShortEnum(v)) {\n      addViolation(`enum_with_underscore:${k\n        }`)\n    }\n  }\n\n  if (Array.isArray(v)) {\n    const types = new Set(v.map((x) => typeof x))\n\n    if (types.size > 1) addViolation(`mixed_array:${k\n      }`)\n\n    if (types.has('string')) {\n      for (const x of v) {\n        if (typeof x !== 'string') {\n          addViolation(`non_string_in_string_array:${k}=${String(x)}`)\n          continue\n        }\n\n        if (x.trim() !== x || x === '') {\n          addViolation(`bad_string_token:${k}=${x}`)\n        }\n\n        if (k !== 'certifications' && !k.startsWith('_') && x !== x.toLowerCase()) {\n          addViolation(`enum_not_lowercase:${k}=${x}`)\n        }\n      }\n    }\n\n    if (types.has('number')) {\n      if (!v.every(isFiniteNumber)) {\n        addViolation(`non_finite_number_in_array:${k\n          }`)\n      }\n\n      if (!getUnitSuffix(k)) {\n        addViolation(`numeric_array_without_unit_or_count_suffix:${k\n          }`)\n      }\n    }\n\n    if (uniq(v).length !== v.length) {\n      addViolation(`duplicate_array_values:${k\n        }`)\n    }\n  }\n\n  if (BAD_RANGE_ORDER_RE.test(k)) {\n    addViolation(`unit_not_final_segment:${k\n      }`)\n  }\n\n  if (isPairedRangeKey(k) && !isFiniteNumber(v)) {\n    addViolation(`range_endpoint_must_be_number:${k\n      }`)\n  }\n\n  if (RANGE_KEY_RE.test(k) && Array.isArray(v)) {\n    addViolation(`array_in_minmax_key:${k\n      }`)\n  }\n\n  if (NON_CANONICAL_UNIT_RE.test(k)) {\n    addViolation(`non_canonical_unit:${k\n      }`)\n  }\n\n  if (k.endsWith('_hours') && !RELIABILITY_HOURS_OK_RE.test(k)) {\n    addViolation(`non_canonical_hours:${k\n      }`)\n  }\n\n  if ((k.endsWith('_years') || k.endsWith('_months')) && !RELIABILITY_YEARS_MONTHS_OK_RE.test(k)) {\n    addViolation(`non_canonical_years_months:${k\n      }`)\n  }\n\n  if (getUnitSuffix(k) && Array.isArray(v) && v.some((x) => typeof x === 'string')) {\n    addViolation(`string_in_numeric_key:${k\n      }`)\n  }\n\n  if (k === 'certifications') {\n    if (!Array.isArray(v) || !v.every((x) => typeof x === 'string' && CERT_ALLOWED.has(x))) {\n      addViolation('invalid_certifications_array')\n    }\n  }\n}\n// Parent/child conflicts and forbidden parents.\nconst hasAny = (...keys) => keys.some((k) => k in specs)\n\nif ('dimensions_mm' in specs && hasAny('length_mm', 'width_mm', 'height_mm', 'depth_mm')) {\n  addViolation('parent_child_conflict:dimensions_mm')\n}\n\nif ('ethernet_ports' in specs && hasAny('ethernet_lan_ports_count', 'ethernet_wan_ports_count')) {\n  addViolation('parent_child_conflict:ethernet_ports')\n}\n\nif ('serial_esd_v' in specs && hasAny('serial_esd_air_v', 'serial_esd_contact_v')) {\n  addViolation('parent_child_conflict:serial_esd_v')\n}\n\nif ('inputs' in specs && hasAny('digital_inputs_count', 'analog_inputs_count')) {\n  addViolation('parent_child_conflict:inputs')\n}\n\nif ('dimensions_mm' in specs) {\n  addViolation('forbidden_parent_key:dimensions_mm')\n}\n// Scalar + range conflict for same base/unit.\nconst scalarKeys = new Set(Object.keys(specs))\n\nfor (const k of Object.keys(specs)) {\n  const m = k.match(RANGE_KEY_RE)\n\n  if (!m) continue\n\n  const scalar = `${m[\n    1\n  ]\n    }_${m[\n    3\n    ]\n    }`\n\n  if (scalarKeys.has(scalar)) {\n    delete specs[scalar]\n    scalarKeys.delete(scalar)\n    addFix(`dropped_scalar_kept_range:${scalar\n      }<->${k\n      }`)\n  }\n}\n// Propagate deterministic key renames into the audit so it stays truthful for downstream RAG/JSONB.\nconst resolveAlias = (k) => { let cur = k, guard = 0; while (keyAliases.has(cur) && guard++ < 50) cur = keyAliases.get(cur); return cur }\n\nfor (const e of auditTrace.unit_conversions) {\n  if (isPlainObj(e) && typeof e.emitted_key === 'string') {\n    const r = resolveAlias(e.emitted_key)\n    if (r !== e.emitted_key) {\n      addFix(`audit_emitted_key_realiased:${e.emitted_key\n        }->${r\n        }`)\n      e.emitted_key = r\n    }\n  }\n}\n// The audit cross-checks below are ADVISORY ONLY. They validate the model's self-narration,\n// not the normalized output (which is fully validated above). They record fixes, never block.\nfor (const k of Object.keys(specs).filter(isPairedRangeKey)) {\n  const found = auditTrace.unit_conversions.some(\n    (e) =>\n      isPlainObj(e) &&\n      e.emitted_key === k &&\n      typeof e.calc === 'string' &&\n      /^Calculator\\(.+\\)$/.test(e.calc)\n  )\n\n  if (!found) {\n    addFix(`range_endpoint_without_calc_audit:${k\n      }`)\n  }\n}\n// Basic unit_conversions shape validation.\nfor (const [i, e\n] of auditTrace.unit_conversions.entries()) {\n  if (!isPlainObj(e)) {\n    addFix(`audit_bad_unit_conversion_entry:${i\n      }`)\n    continue\n  }\n\n  if (typeof e.calc !== 'string' || !/^Calculator\\(.+\\)$/.test(e.calc)) {\n    addFix(`audit_weak_calculator_call:${i\n      }`)\n  }\n\n  if (typeof e.emitted_key !== 'string' || !(e.emitted_key in specs)) {\n    addFix(`audit_emitted_key_orphan:${i\n      }`)\n  }\n}\n// Composite parsing shape validation when present.\nfor (const [i, e\n] of auditTrace.composite_parsing.entries()) {\n  if (!isPlainObj(e)) {\n    addFix(`audit_bad_composite_parsing_entry:${i\n      }`)\n    continue\n  }\n\n  if (\n    !Array.isArray(e.calculator_verifications) ||\n    e.calculator_verifications.some(\n      (x) => typeof x !== 'string' || !/^\\s*Calculator\\(.+\\)/.test(x)\n    )\n  ) {\n    addFix(`audit_weak_composite_verifications:${i\n      }`)\n  }\n\n  if (!isPlainObj(e.emitted)) {\n    addFix(`audit_bad_composite_emitted_object:${i\n      }`)\n  }\n}\n\nconst hadSpecs = Array.isArray(product.specs) && product.specs.length > 0\n\nif (Object.keys(specs).length === 0) {\n  if (!hadSpecs) {\n    return {\n      json: {\n        status: 'skip',\n        success: true,\n        no_specs: true,\n        product_id: product.id,\n        category_id: product.category_id,\n        product_slug: product.slug,\n        specs_normalized: {},\n        keys_context: {},\n        audit_trace: auditTrace,\n        auto_fixes: autoFixes,\n      }\n    }\n  }\n\n  return reviewOut('empty_normalization',\n    {\n      had_specs: product.specs.length,\n      identity_discards: auditTrace.identity_discards,\n      unmapped_specs: auditTrace.unmapped_specs,\n      auto_fixes: autoFixes,\n    })\n}\n// ------------------------------------------------------------------\n// 5) Reconcile output keys_context against final specs.\n//    specs is authority. Context is auxiliary, but final contract must be exact.\n// ------------------------------------------------------------------\nconst VALID_SHAPES = new Set(['scalar', 'range', 'enum', 'boolean', 'narrative'\n])\n\nconst deriveShape = (k, v) => {\n  if (typeof v === 'boolean') return 'boolean'\n  if (k.startsWith('_')) return 'narrative'\n  if (isPairedRangeKey(k)) return 'range'\n  if (k === 'certifications') return 'enum'\n\n  if (Array.isArray(v)) {\n    if (v.every((x) => typeof x === 'number')) return 'scalar'\n    return 'enum'\n  }\n\n  return 'scalar'\n}\n\nconst deriveDesc = (k) => {\n  let bare = k.startsWith('_') ? k.slice(1) : k\n\n  const range = bare.match(RANGE_KEY_RE)\n\n  if (range) {\n    const qualifier = range[\n      2\n    ] === 'min' ? 'minimum' : 'maximum'\n    bare = `${qualifier\n      }_${range[\n      1\n      ]\n      }`\n  }\n\n  bare = bare.replace(NUMERIC_UNIT_RE, '')\n  bare = bare.replace(/_count$/, ' count')\n  bare = bare.replace(/_/g, ' ').replace(/\\s+/g, ' ').trim()\n\n  const words = bare.split(' ').filter(Boolean).slice(0,\n    8)\n\n  return words.length ? words.join(' ') : 'normalized specification'\n}\n\nconst findContextSource = (k) => {\n  if (isPlainObj(llmKeysContext[k\n  ])) return llmKeysContext[k\n  ]\n  if (k.startsWith('_') && isPlainObj(llmKeysContext[k.slice(1)\n  ])) return llmKeysContext[k.slice(1)\n  ]\n  if (!k.startsWith('_') && isPlainObj(llmKeysContext[`_${k\n    }`\n  ])) return llmKeysContext[`_${k\n    }`\n  ]\n\n  for (const [oldKey, newKey\n  ] of keyAliases.entries()) {\n    if (newKey === k && isPlainObj(llmKeysContext[oldKey\n    ])) {\n      return llmKeysContext[oldKey\n      ]\n    }\n  }\n\n  return {}\n}\n\nconst keysContext = {}\n\nfor (const [k, v\n] of Object.entries(specs)) {\n  const src = findContextSource(k)\n  const derivedShape = deriveShape(k, v)\n\n  let shape = src.shape\n\n  if (!VALID_SHAPES.has(shape) || shape !== derivedShape) {\n    shape = derivedShape\n    addFix(`ctx_shape_derived:${k\n      }=${shape\n      }`)\n  }\n\n  let desc = typeof src.desc === 'string' ? src.desc.trim() : ''\n\n  if (desc === '' || desc.split(/\\s+/).filter(Boolean).length > 8) {\n    desc = deriveDesc(k)\n    addFix(`ctx_desc_derived:${k\n      }`)\n  }\n\n  keysContext[k\n  ] = {\n    shape, desc\n  }\n}\n\nconst outputKeys = Object.keys(specs).sort()\nconst contextKeys = Object.keys(keysContext).sort()\n\nif (!deepEqual(outputKeys, contextKeys)) {\n  addViolation('keys_context_keyset_mismatch')\n}\n\nfor (const [k, ctx\n] of Object.entries(keysContext)) {\n  const badExtraKeys = Object.keys(ctx).filter((x) => !['shape', 'desc'\n  ].includes(x))\n\n  if (badExtraKeys.length) {\n    addViolation(`keys_context_extra_fields:${k\n      }:${badExtraKeys.join(',')\n      }`)\n  }\n\n  if (!VALID_SHAPES.has(ctx.shape)) {\n    addViolation(`keys_context_invalid_shape:${k\n      }`)\n  }\n\n  if (typeof ctx.desc !== 'string' || ctx.desc.trim() === '') {\n    addViolation(`keys_context_missing_desc:${k\n      }`)\n  }\n\n  if (ctx.desc.split(/\\s+/).filter(Boolean).length > 8) {\n    addViolation(`keys_context_desc_too_long:${k\n      }`)\n  }\n}\n\nif (violations.length > 0) {\n  return reviewOut('semantic_violations',\n    {\n      violations: uniq(violations),\n      auto_fixes: autoFixes,\n      audit_trace: auditTrace,\n      normalized_preview: specs,\n      keys_context_preview: keysContext,\n    })\n}\n// Final computed self-check. We do not trust the LLM self_check as authority.\nauditTrace.self_check = Object.fromEntries(\n  SELF_CHECK_KEYS.map((k) => [k, 'pass'\n  ])\n)\n\nconst llmCtxOrphans = Object.keys(llmKeysContext).filter((k) => !(k in keysContext))\n\nif (llmCtxOrphans.length) {\n  addFix(`ctx_orphans_dropped:${llmCtxOrphans.join(',')\n    }`)\n}\n// ------------------------------------------------------------------\n// 5b) Coverage gate. code.js cannot re-extract from raw text, but it CAN\n//     detect when the LLM silently dropped WHOLE raw specs and route the\n//     product to review instead of letting the loss vanish. Authority for\n//     content stays the model; this only catches gross omissions. Partial\n//     loss WITHIN one spec (a second labeled sub-range, a second channel)\n//     is handled by the prompt, not here.\n// ------------------------------------------------------------------\nconst COVERAGE_MIN_RATIO = 0.70\nconst COVERAGE_MIN_MISSED = 3\nconst COVERAGE_MIN_RAW = 4\n\nconst rawSpecs = Array.isArray(product.specs) ? product.specs : []\n\nif (rawSpecs.length >= COVERAGE_MIN_RAW) {\n  const lc = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()\n\n  const outputNumbers = []\n  for (const v of Object.values(specs)) {\n    if (isFiniteNumber(v)) outputNumbers.push(v)\n    else if (Array.isArray(v)) for (const x of v) if (isFiniteNumber(x)) outputNumbers.push(x)\n  }\n\n  const outputTokens = new Set()\n  const outputKeyTokens = new Set()\n  for (const [k, v] of Object.entries(specs)) {\n    for (const seg of k.split('_')) if (seg.length >= 3) outputKeyTokens.add(lc(seg))\n    if (Array.isArray(v)) for (const x of v) {\n      if (typeof x !== 'string') continue\n      for (const tok of lc(x).split(/[^a-z0-9]+/)) if (tok.length >= 3) outputTokens.add(tok)\n    }\n  }\n\n  const auditTouched = new Set()\n  const addTouched = (s) => { if (typeof s === 'string' && s.trim()) auditTouched.add(lc(s.trim())) }\n  for (const e of auditTrace.identity_discards) if (isPlainObj(e)) addTouched(e.raw_name)\n  for (const e of auditTrace.unmapped_specs) if (isPlainObj(e)) addTouched(e.raw_name)\n  for (const e of auditTrace.unit_conversions) if (isPlainObj(e)) addTouched(e.raw)\n  for (const e of auditTrace.composite_parsing) if (isPlainObj(e)) addTouched(e.raw)\n  for (const e of auditTrace.casing_translation) if (isPlainObj(e)) addTouched(e.raw)\n  for (const e of auditTrace.keys_context_dedup_hits) if (isPlainObj(e)) addTouched(e.candidate)\n  for (const e of auditTrace.compliance_merges) if (isPlainObj(e)) addTouched(e.raw_boolean)\n\n  const NUM_RE = /[+-]?\\d+(?:[.,]\\d+)?/g\n  const FACTORS = [1, 1000, 0.001, 1e6, 1e-6, 3600]\n  const numApproxEqual = (a, b) => Math.abs(a - b) <= (Math.max(Math.abs(a), Math.abs(b)) * 1e-6 + 1e-9)\n  const rawNumberCovered = (n) => FACTORS.some((f) => outputNumbers.some((o) => numApproxEqual(o, n * f)))\n\n  const specAccounted = (sp) => {\n    const name = lc(String(sp?.name ?? '').trim())\n    const valueRaw = String(sp?.value ?? '')\n    const value = lc(valueRaw)\n\n    if (name && auditTouched.has(name)) return true\n\n    const nums = (valueRaw.match(NUM_RE) || []).map((m) => Number(m.replace(',', '.'))).filter(Number.isFinite)\n    if (nums.some(rawNumberCovered)) return true\n\n    const valTokens = value.split(/[^a-z0-9]+/).filter((t) => t.length >= 3)\n    if (valTokens.some((t) => outputTokens.has(t))) return true\n\n    const nameTokens = name.split(/[^a-z0-9]+/).filter((t) => t.length >= 3)\n    if (nameTokens.some((t) => {\n      const mapped = lc(EXACT_KEY_MAP[t] || SEGMENT_MAP[t] || t)\n      return outputKeyTokens.has(t) || outputKeyTokens.has(mapped)\n    })) return true\n\n    if (value && [...auditTouched].some((a) => a.length >= 4 && (value.includes(a) || a.includes(value)))) return true\n\n    return false\n  }\n\n  const missed = rawSpecs.filter((sp) => !specAccounted(sp))\n  const accounted = rawSpecs.length - missed.length\n  const coverageRatio = rawSpecs.length ? accounted / rawSpecs.length : 1\n\n  addFix(`coverage:${accounted}/${rawSpecs.length}`)\n\n  if (missed.length >= COVERAGE_MIN_MISSED && coverageRatio < COVERAGE_MIN_RATIO) {\n    return reviewOut('coverage_gap', {\n      raw_specs: rawSpecs.length,\n      accounted,\n      missed_count: missed.length,\n      coverage_ratio: Number(coverageRatio.toFixed(3)),\n      missed_specs: missed.slice(0, 20).map((sp) => ({ name: sp?.name, value: sp?.value })),\n      auto_fixes: autoFixes,\n      audit_trace: auditTrace,\n    })\n  }\n}\n// ------------------------------------------------------------------\n// 6) Success.\n// ------------------------------------------------------------------\nreturn {\n  json: {\n    status: 'ok',\n    success: true,\n    product_id: product.id,\n    category_id: product.category_id,\n    product_slug: product.slug,\n    specs_normalized: specs,\n    keys_context: keysContext,\n    audit_trace: auditTrace,\n    auto_fixes: autoFixes,\n    unmapped_specs: auditTrace.unmapped_specs,\n  }\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        -336
+      ],
+      "id": "46e958c2-618d-42d0-b456-724954790a03",
+      "name": "post-OpenAI"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "ok",
+                    "rightValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f41b9e8e-9901-4c97-b040-acf8d5a5c9ce"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ok"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "66d49635-8c84-4565-9761-a87079994cb2",
+                    "leftValue": "skip",
+                    "rightValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "skip"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d8970c63-1bda-44c1-8002-4757324478b3",
+                    "leftValue": "review",
+                    "rightValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "review"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        -352
+      ],
+      "id": "8b73faa6-e7a8-434a-aad5-5c9ac015b67e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst isEmpty = (v) =>\n  v === null ||\n  v === undefined ||\n  v === '' ||\n  (Array.isArray(v) && v.length === 0) ||\n  (typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0);\n\nconst clean = (obj) =>\n  Object.fromEntries(Object.entries(obj).filter(([, v]) => !isEmpty(v)));\n\nfunction flattenSpecs(raw) {\n  const out = [];\n\n  for (const s of raw || []) {\n    let spec = null;\n\n    if (s?.value != null && String(s.value).trim() !== '') {\n      spec = {\n        name: String(s.name ?? '').trim(),\n        value: String(s.value ?? '').trim(),\n      };\n    } else if (Array.isArray(s?.items) && s.items.length > 0) {\n      spec = {\n        name: String(s.name ?? '').trim(),\n        value: s.items\n          .filter(x => typeof x === 'string' && x.trim() !== '')\n          .map(x => x.trim())\n          .join(' | '),\n      };\n    }\n\n    if (spec && spec.name && spec.value) {\n      if (s?.section != null && String(s.section).trim() !== '') {\n        spec.section = String(s.section).trim();\n      }\n\n      out.push(spec);\n    }\n  }\n\n  return out;\n}\n\nreturn items.map(item => {\n  const row = item.json;\n\n  return {\n    json: clean({\n      ...row,\n      specs: flattenSpecs(row.specs),\n    }),\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        -336
+      ],
+      "id": "10eaa9ea-ba75-4a4c-8c52-cb265e566848",
+      "name": "flatten specs"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "category_id"
+            },
+            {
+              "name": "rows"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        0
+      ],
+      "id": "d4938d04-a761-454c-85b7-53cdb7b67e24",
+      "name": "When Executed categories dispatcher",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "67e9b5b5-833e-4bac-8385-9ff3aa6fdbf5",
+              "leftValue": "={{ $('When Executed categories dispatcher').item.json.rows }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        0
+      ],
+      "id": "aa7230cb-e07e-49bc-b84a-254ec4972ac3",
+      "name": "rows filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        0
+      ],
+      "id": "320a72d5-4d4c-447e-beca-f51f1a804e00",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        528,
+        0
+      ],
+      "id": "d7882820-c589-4b21-aded-7efeeb0e5a91",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4a43ad45-ff58-4ceb-87a5-211a5f02adc0",
+              "leftValue": "={{ $json.review.status }}",
+              "rightValue": "review",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        976,
+        -144
+      ],
+      "id": "64757260-d67a-4b16-bb42-e9b25988a52a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nreturn {\n  produtId: $('flatten specs').item.json.id,\n  input: $('llm input').item.json.llmInput,\n  review: $('post-OpenAI').item.json\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        48
+      ],
+      "id": "e3220fc5-1179-48d5-80c0-66c32651f957",
+      "name": "review and input"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "category_keys_context",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "category_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.category_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -336
+      ],
+      "id": "a1e46f56-ce11-4f07-b221-9ffb4228044f",
+      "name": "category_keys_context",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 4,
+      "executeOnce": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "lxFKa7ro2xnhDWBz",
+          "name": "Supabase RAG solution pages"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "reference_bundle",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "66d48f1c-657a-43b1-8655-b83913dfdc84",
+      "name": "Reference Bundle",
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "lxFKa7ro2xnhDWBz",
+          "name": "Supabase RAG solution pages"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('When Executed categories dispatcher').all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "6ed75007-1263-4ac3-9a82-ebbe4e70b40d",
+      "name": "get actual items"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build LLM input": {
+      "main": [
+        [
+          {
+            "node": "llm input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "llm input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "post-OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post-OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "review and input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "flatten specs": {
+      "main": [
+        [
+          {
+            "node": "category_keys_context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed categories dispatcher": {
+      "main": [
+        [
+          {
+            "node": "Reference Bundle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rows filter": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "flatten specs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        []
+      ]
+    },
+    "review and input": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "category_keys_context": {
+      "main": [
+        [
+          {
+            "node": "build LLM input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reference Bundle": {
+      "main": [
+        [
+          {
+            "node": "get actual items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get actual items": {
+      "main": [
+        [
+          {
+            "node": "rows filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9b6ea7510ca8eb4208e0319da2fe1e1641d6974579db8cdb60f90fe8d9b550b"
+  }
+}

@@ -152,6 +152,7 @@ AS $$
 DECLARE
   v_filter        jsonb := COALESCE(filter, '{}'::jsonb);
   v_category_id   int;
+  v_category_ids  int[];
   v_brand         text;
   v_is_new        boolean;
   v_software_id   bigint;
@@ -163,7 +164,18 @@ BEGIN
     RAISE EXCEPTION 'filter must be a json object';
   END IF;
 
-  v_category_id  := NULLIF(v_filter->>'category_id', '')::int;
+  -- category_ids[] (plural) O category_id (escalar; defensivamente también arreglo)
+  IF jsonb_typeof(v_filter->'category_ids') = 'array' THEN
+    SELECT array_agg(t.v::int) INTO v_category_ids
+    FROM jsonb_array_elements_text(v_filter->'category_ids') AS t(v);
+  ELSIF jsonb_typeof(v_filter->'category_id') = 'array' THEN
+    SELECT array_agg(t.v::int) INTO v_category_ids
+    FROM jsonb_array_elements_text(v_filter->'category_id') AS t(v);
+  ELSE
+    v_category_id := NULLIF(v_filter->>'category_id', '')::int;
+    IF v_category_id IS NOT NULL THEN v_category_ids := ARRAY[v_category_id]; END IF;
+  END IF;
+  v_category_ids := NULLIF(v_category_ids, ARRAY[]::int[]);
   v_brand        := NULLIF(trim(v_filter->>'brand'), '');
   v_is_new       := NULLIF(v_filter->>'is_new', '')::boolean;
   v_software_id  := NULLIF(v_filter->>'software_id', '')::bigint;
@@ -175,7 +187,7 @@ BEGIN
   WITH base AS (
     SELECT p.id, p.slug, p.name, p.brand, p.category_id, p.is_new, p.search_text
     FROM products p
-    WHERE (v_category_id IS NULL OR p.category_id = v_category_id)
+    WHERE (v_category_ids IS NULL OR p.category_id = ANY(v_category_ids))
       AND (v_brand       IS NULL OR p.brand       = v_brand)
       AND (v_is_new      IS NULL OR p.is_new      = v_is_new)
       AND (v_software_id IS NULL OR p.software_id = v_software_id)
@@ -300,6 +312,7 @@ AS $$
 DECLARE
   v_filter       jsonb := COALESCE(filter, '{}'::jsonb);
   v_category_id  int;
+  v_category_ids int[];
   v_brand        text;
   v_is_new       boolean;
   v_spec_filters jsonb;
@@ -317,8 +330,20 @@ BEGIN
     RAISE EXCEPTION 'filter must be a json object';
   END IF;
 
-  v_category_id  := NULLIF(v_filter->>'category_id', '')::int;
-  IF v_category_id IS NULL THEN
+  -- Acepta category_ids[] (plural) O category_id (escalar). Defensivo: si el caller
+  -- mete un arreglo bajo la clave escalar category_id, se coacciona igual (NO ::int → 22P02).
+  IF jsonb_typeof(v_filter->'category_ids') = 'array' THEN
+    SELECT array_agg(t.v::int) INTO v_category_ids
+    FROM jsonb_array_elements_text(v_filter->'category_ids') AS t(v);
+  ELSIF jsonb_typeof(v_filter->'category_id') = 'array' THEN
+    SELECT array_agg(t.v::int) INTO v_category_ids
+    FROM jsonb_array_elements_text(v_filter->'category_id') AS t(v);
+  ELSE
+    v_category_id := NULLIF(v_filter->>'category_id', '')::int;
+    IF v_category_id IS NOT NULL THEN v_category_ids := ARRAY[v_category_id]; END IF;
+  END IF;
+  v_category_ids := NULLIF(v_category_ids, ARRAY[]::int[]);
+  IF v_category_ids IS NULL THEN
     RAISE EXCEPTION 'category_id is required';
   END IF;
 
@@ -347,7 +372,7 @@ BEGIN
     FROM product_specs ps
     JOIN products p ON p.id = ps.product_id,
     LATERAL jsonb_object_keys(ps.specs_normalized) AS key
-    WHERE p.category_id = v_category_id;
+    WHERE p.category_id = ANY(v_category_ids);
   END IF;
 
   IF jsonb_typeof(v_spec_filters) = 'array' THEN
@@ -355,7 +380,7 @@ BEGIN
       sk := sf->>'spec_key';
       op := lower(sf->>'op');
       IF NOT (sk = ANY(COALESCE(v_valid_keys, ARRAY[]::text[]))) THEN
-        RAISE EXCEPTION 'spec_key % not found in category %', sk, v_category_id
+        RAISE EXCEPTION 'spec_key % not found in category %', sk, array_to_string(v_category_ids, ',')
           USING HINT = 'Valid keys: ' || COALESCE(array_to_string(v_valid_keys, ', '), '(none)');
       END IF;
       IF op IS NULL OR op NOT IN ('>=','<=','>','<','=','between','contains','is_true') THEN
@@ -366,7 +391,7 @@ BEGIN
   END IF;
 
   IF v_order_key IS NOT NULL AND NOT (v_order_key = ANY(COALESCE(v_valid_keys, ARRAY[]::text[]))) THEN
-    RAISE EXCEPTION 'order_by.spec_key % not found in category %', v_order_key, v_category_id
+    RAISE EXCEPTION 'order_by.spec_key % not found in category %', v_order_key, array_to_string(v_category_ids, ',')
       USING HINT = 'Valid keys: ' || COALESCE(array_to_string(v_valid_keys, ', '), '(none)');
   END IF;
 
@@ -375,7 +400,7 @@ BEGIN
     SELECT p.id, p.slug, p.name, p.brand, ps.specs_normalized, ps.compatibility
     FROM products p
     JOIN product_specs ps ON ps.product_id = p.id
-    WHERE p.category_id = v_category_id
+    WHERE p.category_id = ANY(v_category_ids)
       AND (v_brand  IS NULL OR p.brand  = v_brand)
       AND (v_is_new IS NULL OR p.is_new = v_is_new)
   ),
@@ -534,7 +559,7 @@ BEGIN
     FROM (SELECT p.id, p.slug, p.name, p.brand, COUNT(*)::bigint AS cnt
           FROM product_recommendations pr
           JOIN products p ON p.id = pr.target_product_id
-          WHERE p.category_id = v_category_id
+          WHERE p.category_id = ANY(v_category_ids)
           GROUP BY p.id, p.slug, p.name, p.brand
           ORDER BY COUNT(*) DESC, p.name LIMIT v_limit) sub;
 
@@ -570,11 +595,13 @@ type GetProductNarrativeInput = {
   software_id?: number;         // D4
   info_types: Array<
     | "overview"                // D1 — "qué es" canónico (presente en TODOS los productos)
-    | "description"             // D1 — alias: si lo pides, la función incluye overview (description solo existe en 11/73)
+    | "description"             // D1 — alias: si lo pides, la función incluye overview (description solo existe en 11/74)
     | "specs"                   // D2
     | "spec_section"            // D2
     | "features"                // D3
     | "software"                // D4
+    | "compatibility"           // B6 — chunk de compatibilidad (3/74 productos: Netio / R1520)
+    | "variants"                // chunk de variantes (4/74 productos)
   >;
   query_text?: string;          // opcional: rankea chunks por embedding si viene
   limit_per_type?: number;      // default 3
@@ -1214,7 +1241,7 @@ BEGIN
              (ps.specs_normalized ? v_spec_key) AS has_key
       FROM products p
       JOIN product_specs ps ON ps.product_id = p.id
-      WHERE p.category_id = v_category_id
+      WHERE p.category_id = ANY(v_category_ids)
     ) t;
 
   ELSE  -- categories_with_attribute
@@ -1309,7 +1336,7 @@ Cada tool es una función PL/pgSQL en Supabase. El cuerpo SQL completo está inl
 - [ ] Desplegar las 6 funciones vía `apply_migration` o migración manual.
 - [ ] Verificar que `STABLE` y `SET search_path = public, extensions` estén en cada una.
 - [ ] Permisos: `GRANT EXECUTE ON FUNCTION ... TO authenticated, anon` según corresponda.
-- [ ] Smoke test por función contra el catálogo real (73 productos): que cada modo/branch retorne data.
+- [ ] Smoke test por función contra el catálogo real (74 productos): que cada modo/branch retorne data.
 
 **Capa caller (n8n / backend):**
 
@@ -1364,8 +1391,8 @@ Tras ejecutar el set [pr](pr) contra la BD live se desplegaron estos fixes (migr
 la BD** (verificar con `pg_get_functiondef`):
 
 - **`get_product_narrative`**: `info_types:["description"]` ahora incluye también
-  `overview`. El "qué es" canónico es el chunk `overview` (73/73 productos); `description`
-  solo existe en 11/73. Antes, "¿qué es el EG5100?" devolvía `chunks: []`.
+  `overview`. El "qué es" canónico es el chunk `overview` (74/74 productos); `description`
+  solo existe en 11/74. Antes, "¿qué es el EG5100?" devolvía `chunks: []`.
 - **`search_products` / `filter_products_by_specs` / `get_catalog_metadata`**: aceptan
   `category_ids` (arreglo) además de `category_id` (escalar). Resuelve el split de "routers"
   = {516 Módems y routers, 1641 Módems y Routers 5G}: antes, filtrar solo por 516 dejaba
@@ -1378,7 +1405,7 @@ la BD** (verificar con `pg_get_functiondef`):
   `gain_max_dbi` desaparece de la categoría 1554.
 - **Límites de datos (deuda de ingesta, ver [SOLUCION.md](SOLUCION.md))**:
   `product_recommendations` es producto-a-producto dentro de la misma categoría (no hay
-  aristas hacia accesorios); la compatibilidad está poblada solo en 3/73 productos.
+  aristas hacia accesorios); la compatibilidad está poblada solo en 3/74 productos.
   "Accesorios para X" se atiende con workaround en el agente (`compatibility_query` →
   fallback a categoría 1554 con disclaimer), no es un bug de SQL.
 

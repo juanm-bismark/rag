@@ -1,5 +1,12 @@
 # Catálogo de preguntas — Bismark RAG
 
+> **Rol:** especificación de diseño del retrieval — taxonomía de intents (A–G), SQL/ruta
+> por tipo, contrato de extracción, política de fallback y anti-patrones. Para el **set de
+> validación verificado** (casos concretos con resultado esperado) y los **hallazgos de
+> estado de datos (H1–H9)** ver [GOLDEN_SET.md](GOLDEN_SET.md).
+
+---
+
 Referencia operativa del **router de retrieval** y **contrato lógico/evaluable** de
 extracción (no una etapa runtime en v1 — el agente único lo produce implícitamente;
 ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describe:
@@ -14,10 +21,10 @@ ver [SOLUCION.md §7 "Arquitectura runtime"](SOLUCION.md)). Cada entrada describ
 **Premisas:**
 
 - Esquema fuente: [schema.sql](schema.sql). Solo se usan columnas/índices que existen ahí.
-- Volumen: 73 productos, 8 categorías, 11 marcas, 92 opciones de atributo, 80 recomendaciones, 6 grupos canónicos de software.
+- Volumen: 74 productos, 8 categorías, 11 marcas, 92 opciones de atributo, 80 recomendaciones, 6 grupos canónicos de software.
 - Embedding model: `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain). Sin índice vectorial: seq scan + prefiltrado.
 - `product_recommendations` es **mono-tipo** (solo `recommended_product`); no hay columna `relation_type`. **En los datos actuales (2026-06-25) las 80 aristas son 100% intra-categoría** (`cross_cat_edges = 0`): no hay recomendaciones router→accesorio. Afecta C4/E3 (ver notas).
-- **Compatibilidad** (`product_specs.compatibility`): poblada solo en **3/73** productos — R1520-4L (certificaciones regulatorias), Netio NT-Link 4G y Netio WiFi APP (paneles de alarma). El resto es `[]`. Afecta B6 (ver nota).
+- **Compatibilidad** (`product_specs.compatibility`): poblada solo en **3/74** productos — R1520-4L (certificaciones regulatorias), Netio NT-Link 4G y Netio WiFi APP (paneles de alarma). El resto es `[]`. Afecta B6 (ver nota).
 - `categories.name`/`slug` pueden ser placeholders si el ETL no tiene lookup a Woo; preferir `category_id` en filtros.
 
 ---
@@ -43,7 +50,7 @@ Forma del objeto (lo que el agente expresa implícitamente en cada tool-call):
     {"taxonomy": "pa_red-celular", "option_slugs": ["5g"]}
   ],
   "spec_filters":       [
-    {"spec_key": "throughput_lte_dl_mbps", "op": ">=", "value": 1000}
+    {"spec_key": "wwan_max_downlink_mbps", "op": ">=", "value": 1000}
   ],
   "info_types":         ["specs", "description"],
   "structured_lookups": ["relations"],
@@ -356,6 +363,11 @@ LIMIT 10;
 ### B2 — Rango cerrado
 
 - **Ejemplos:** "antenas entre 5 y 9 dBi", "productos que operen entre −20 y 60 °C".
+- **[DATO BD actual]** Las **antenas NO tienen categoría propia**: son productos de
+  **Accesorios** (`category_id`:1554) con la spec `gain_dbi` (number o number_array;
+  algunos usan `gain_max_dbi`). "Antenas entre 5 y 9 dBi" → `category_id:1554` con
+  `{spec_key:'gain_dbi', op:'between', min:5, max:9}` (devuelve 3: 5, 7 y [7,9] dBi).
+  No buscar una categoría "Antenas" (no existe); ver [GOLDEN_SET.md](GOLDEN_SET.md).
 - **Ruta:** SQL JSONB; dos comparaciones.
 
 ```sql
@@ -431,7 +443,7 @@ WHERE p.category_id = $1
 - **Entidades obligatorias:** `product_refs[0]` (o token a buscar) y/o `category_id`.
 - **Fuente:** `product_specs.compatibility` (JSONB array; estructura depende del crawler).
 - **Ruta:** SQL puro sobre JSONB.
-- **[DATO BD actual 2026-06-25]** Solo 3/73 productos traen `compatibility` no vacía:
+- **[DATO BD actual 2026-06-25]** Solo 3/74 productos traen `compatibility` no vacía:
   `robustel-r1520-4l` (certificaciones regulatorias, no compatibilidad de equipo),
   `netio-nt-link-4g` y `netio-wifi-app` (paneles de alarma Honeywell/DSC/Paradox). El
   EG5100 y las antenas tienen `[]` → **"antenas compatibles con el EG5100" NO es
@@ -742,7 +754,7 @@ WITH filtered AS (
   FROM products p
   JOIN product_specs ps ON ps.product_id = p.id
   WHERE p.category_id = $1
-    AND (ps.specs_normalized->>'throughput_lte_dl_mbps')::numeric >= $2
+    AND (ps.specs_normalized->>'wwan_max_downlink_mbps')::numeric >= $2
     AND EXISTS (
       SELECT 1 FROM product_attribute_values pav
       JOIN attribute_options ao ON ao.id = pav.attribute_option_id
@@ -986,7 +998,7 @@ Después del retrieval, pasar al LLM final un payload con esta forma:
   "filters_applied": {
     "category": {"id": 516, "name": "Modems y Routers"},
     "attributes": [{"taxonomy": "pa_wifi", "options": ["si"]}],
-    "spec_filters": [{"key": "throughput_lte_dl_mbps", "op": ">=", "value": 300}],
+    "spec_filters": [{"key": "wwan_max_downlink_mbps", "op": ">=", "value": 300}],
     "is_new": null,
     "brand": null,
     "fallback_relaxations": []

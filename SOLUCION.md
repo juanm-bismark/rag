@@ -39,13 +39,14 @@ dispara ambas rutas y compone la respuesta sobre el merge. El "extractor NLU" **
 una etapa runtime separada** — quedó como contrato lógico/evaluable (ver §7
 "Arquitectura runtime" y [PREGUNTAS.md §1](PREGUNTAS.md)).
 
-**Volumen real (medido contra la base cargada en Supabase):** 73 productos →
-**310 chunks** (73 overview + 11 description + 69 features + 108 spec_section
-+ 36 specs + 4 variants + 3 compatibility + 6 software). El conteo de `description`
+**Volumen (snapshot contra la base en Supabase — las cifras cambian en cada reload del ETL):** 74 productos →
+**317 chunks** (74 overview + 11 description + 70 features + 115 spec_section
++ 34 specs + 4 variants + 3 compatibility + 6 software). El conteo de `description`
 es bajo a propósito: la regla de chunking de §6 omite ese chunk cuando solapa
-fuertemente con `overview`. 8 `category_id`, 11 marcas, 19 productos nuevos,
-36 atributos filtrables válidos, 92 opciones válidas, 1607 specs crudas,
-80 productos recomendados (edges dirigidos) y 6 grupos canónicos de software.
+fuertemente con `overview`. 8 `category_id`, 11 marcas,
+36 atributos filtrables válidos, 92 opciones válidas, 80 productos recomendados
+(edges dirigidos), 6 grupos canónicos de software y 70/74 productos con specs
+normalizadas (4 accesorios sin normalizar). En este snapshot `is_new` viene en 0.
 **Techo planeado:** <500 productos → ~3300 chunks. PostgreSQL + pgvector en una
 sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrado
 < 10 ms — ver §12 para la justificación cuantitativa y la migración a
@@ -59,7 +60,7 @@ sola DB. **Sin índice vectorial nunca a este horizonte** (seq scan + prefiltrad
 |---|---|---|
 | Stack | PostgreSQL 15 + pgvector + pg_trgm | Una DB, todo cabe. |
 | Modelo embeddings | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Costo trivial al volumen. La dimensión por defecto del modelo (3072) define la columna `vector(3072)`. |
-| Índice vectorial | Ninguno (ver §12) | A 73 productos / 310 chunks reales, seq scan corre en <2 ms. En el techo planeado de 500 productos / ~3300 chunks, < 10 ms. Activación nunca se justifica a este horizonte. |
+| Índice vectorial | Ninguno (ver §12) | A 74 productos / 317 chunks reales, seq scan corre en <2 ms. En el techo planeado de 500 productos / ~3300 chunks, < 10 ms. Activación nunca se justifica a este horizonte. |
 | Atributos taxonómicos (Woo `pa_*`) | EAV controlado | Multivalor + heterogéneo por categoría. |
 | Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Catálogo manual de spec_keys es overkill a este volumen. |
 | Software de gestión | Tabla canónica con embedding único | Evita 12 chunks idénticos (Robustel et al.). |
@@ -132,8 +133,8 @@ resolver o que conviene corregir manualmente si se quiere trazabilidad completa:
 | Atributo inválido | 1 producto trae atributo `id = 0`, `taxonomy = null` | `attributes.taxonomy` es `NOT NULL` | Debe saltarse y registrarse como warning. |
 | Fuente de recomendados | `productos_recomendados[]` viene del JSON actual | `product_recommendations` no tiene columna `source` | La fuente queda en `ingestion_runs.source`, no en cada edge. |
 | Output del nodo "relaciones" | El nodo emite `{product_recommendations: [...], stats: {total_recommendations, skipped_*_recommendation, ...}}` | Tabla DB `product_recommendations` con las mismas columnas | El loader inserta 1:1 el campo en la tabla del mismo nombre. El nombre del node en n8n es `"relaciones"` aunque emite `product_recommendations` — desalineación visual sin impacto funcional. |
-| `compatibility` mezcla dos semánticas | Caso A (Netio): items `{brand, models}` apuntando a marcas de terceros (Honeywell, DSC, Paradox) **fuera del catálogo**. Caso B (Robustel R1520): strings sueltos (`"Chile-SUBTEL"`, `"Uruguay-URSEC"`) que son **certificaciones regulatorias**, no compatibilidad de dispositivo | Una sola columna `product_specs.compatibility JSONB` | Decisión: **mantener como JSONB** (ver §12). Justificación: (a) ningún item resuelve a productos del catálogo, no aplica tabla relacional; (b) sparse (3/73 productos). Riesgo: el loader debe tolerar **ambas formas** del JSONB (lista de objetos `{brand, models}` y lista de strings) y emitir warning si llega una tercera forma. |
-| Brand de productos sin attribute `fabricante` | Nodo `merge del catalogo` aplica heurística filtrada: brand desde attribute `fabricante` cuando existe; fallback solo si (a) `name` tiene espacio, (b) primera palabra no está en `GENERIC_FIRST_WORDS` (`antena, cable, kit, módulo, modem, router, gateway, switch, transceptor, adaptador, fuente, accesorio, conector, sensor, panel, soporte, rack`), (c) primera palabra ≥ 2 caracteres. Si alguna regla falla, `brand = null` y `model = null`. | `products.brand` y `products.model` admiten NULL; el nodo emite además `brand_source` con valores `'attribute' \| 'heuristic' \| null` | Cobertura sobre la base cargada (73 productos): 67 con marca resuelta (attribute `fabricante` o heurística) y 6 sin marca (`brand=null`, `model=null`). El loader debe loggear warning estructurado por cada producto con `brand_source='heuristic'` (deuda de datos: el attribute `fabricante` debería estar cargado en Woo para esos productos). |
+| `compatibility` mezcla dos semánticas | Caso A (Netio): items `{brand, models}` apuntando a marcas de terceros (Honeywell, DSC, Paradox) **fuera del catálogo**. Caso B (Robustel R1520): strings sueltos (`"Chile-SUBTEL"`, `"Uruguay-URSEC"`) que son **certificaciones regulatorias**, no compatibilidad de dispositivo | Una sola columna `product_specs.compatibility JSONB` | Decisión: **mantener como JSONB** (ver §12). Justificación: (a) ningún item resuelve a productos del catálogo, no aplica tabla relacional; (b) sparse (3/74 productos). Riesgo: el loader debe tolerar **ambas formas** del JSONB (lista de objetos `{brand, models}` y lista de strings) y emitir warning si llega una tercera forma. |
+| Brand de productos sin attribute `fabricante` | Nodo `merge del catalogo` aplica heurística filtrada: brand desde attribute `fabricante` cuando existe; fallback solo si (a) `name` tiene espacio, (b) primera palabra no está en `GENERIC_FIRST_WORDS` (`antena, cable, kit, módulo, modem, router, gateway, switch, transceptor, adaptador, fuente, accesorio, conector, sensor, panel, soporte, rack`), (c) primera palabra ≥ 2 caracteres. Si alguna regla falla, `brand = null` y `model = null`. | `products.brand` y `products.model` admiten NULL; el nodo emite además `brand_source` con valores `'attribute' \| 'heuristic' \| null` | Cobertura sobre la base cargada (74 productos): 68 con marca resuelta (attribute `fabricante` o heurística) y 6 sin marca (`brand=null`, `model=null`). El loader debe loggear warning estructurado por cada producto con `brand_source='heuristic'` (deuda de datos: el attribute `fabricante` debería estar cargado en Woo para esos productos). |
 
 ---
 
@@ -288,7 +289,7 @@ cómo el loader lo invoca, qué le pasa y cómo valida la salida. El detalle de 
 vs enum, etc.) vive en [prompt.md](prompt.md) — no se duplica aquí.
 
 Una llamada LLM por producto. Modelo recomendado: `claude-sonnet-4-6` o
-`gpt-4o-mini` (no necesita Opus). Costo total estimado para 73 productos: <$1.
+`gpt-4o-mini` (no necesita Opus). Costo total estimado para 74 productos: <$1.
 
 **Input por producto** (ver `<context>` en [prompt.md](prompt.md)):
 `{ category_name, specs: [{name, value, section?}], keys_context }`. El aplanado de
@@ -559,7 +560,7 @@ modelo estándar de function-calling: el "NLU" queda **implícito dentro del too
 — cuando el agente llama `search_products({category_id, attribute_filters})`, eso *es*
 la extracción de intención + filtros.
 
-**Por qué a este volumen**: 73 productos / 8 categorías / 310 chunks, tools agrupadas
+**Por qué a este volumen**: 74 productos / 8 categorías / 317 chunks, tools agrupadas
 por mecanismo, sin rerank ni índice vectorial. No hay volumen ni ambigüedad que pague
 un NLU separado + caller con cascada de fallback.
 
@@ -595,7 +596,7 @@ de SQL (las tools devuelven lo que el dato permite), sino huecos de ingesta a po
   `get_recommendations` (devuelve otro gateway). Mitigación v1: el agente usa
   `compatibility_query` y, si vacío, lista Accesorios (cat 1554) con disclaimer. Fix de
   raíz: poblar aristas de accesorio/compatibilidad en la ingesta.
-- **Compatibilidad casi vacía (3/73).** `product_specs.compatibility` solo está poblada en
+- **Compatibilidad casi vacía (3/74).** `product_specs.compatibility` solo está poblada en
   3 productos; el EG5100 no es uno. "Antenas compatibles con X" queda sin dato. Fix:
   extraer compatibilidad en la ingesta para todo el catálogo.
 - **Ganancia de antena canónica.** La antena 3.9 dBi usaba `gain_max_dbi`; se normalizó en
@@ -694,7 +695,7 @@ El re-ranking clásico (cross-encoders, Cohere Rerank, LLM-as-reranker)
 está diseñado para escenarios de **alto recall**: BM25/cosine devuelve
 100-200 candidatos con orden ruidoso y necesita refinarlos. **No es este caso.**
 
-A 73 productos / 310 chunks con prefiltrado SQL fuerte (JOIN a `products` por
+A 74 productos / 317 chunks con prefiltrado SQL fuerte (JOIN a `products` por
 `category_id`/`is_new`/`brand` + EXISTS de atributos sobre `pav`), el pool sobre el que opera cosine es
 típicamente 20-100 chunks. Cosine sobre `gemini-embedding-001` ya
 ordena bien sobre ese pool. El verdadero motor de calidad es el
@@ -901,6 +902,16 @@ curada**, no una derivación de los datos. Para regenerar o ampliar:
   filosofía que `reference_alias_candidates` (se detecta, un humano aprueba; no se
   auto-inserta al canon).
 - No hay trigger ni cálculo automático: es estado curado y editable a mano.
+- ⚠️ **El reload del ETL borra los aliases.** `attribute_option_aliases` tiene
+  `ON DELETE CASCADE` a `attribute_options`; si el flujo n8n hace **delete+insert** de
+  las opciones (en vez de upsert), la cascada **vacía la tabla de aliases** en cada
+  corrida (observado: 226 → 0). Los `attribute_option_id` vienen de WooCommerce y son
+  **estables**, así que el seed sigue válido — solo hay que **re-correrlo**. Dos arreglos
+  de raíz para no hacerlo a mano:
+  - **(A, recomendado)** que el ETL haga `INSERT … ON CONFLICT DO UPDATE` (upsert) sobre
+    `attribute_options` → no se dispara la cascada y los aliases sobreviven.
+  - **(B)** agregar `attribute_option_aliases_seed.sql` como **paso final idempotente**
+    del flujo n8n (después de cargar opciones).
 
 Query para auditar opciones sin ningún alias (huecos del diccionario):
 
@@ -1338,8 +1349,8 @@ condiciones que invalidarían cada elección quedan explícitas para revisión f
 |---|---|---|---|---|
 | Vector store | pgvector en mismo Postgres | Pinecone / Qdrant / Weaviate | Una sola DB, joins SQL triviales con catálogo, menos ops. A <500 productos no justifica DB extra. | >100k chunks o necesidad de filtrado por metadata muy compleja. |
 | Modelo de embedding | `gemini-embedding-001` (3072 dims), vía n8n (Gemini + LangChain) | Salida reducida a 1536 dims vía `output_dimensionality` | Costo absoluto despreciable al volumen. Si llega el momento de necesitar menos dims (índice HNSW, storage), el path **sin cambiar de modelo** es pedirle al mismo `gemini-embedding-001` una `output_dimensionality` menor — el modelo está entrenado con Matryoshka Representation Learning, así que el output reducido preserva la mayor parte de la calidad del 3072. | Si P95 de retrieval supera 150 ms o el storage cruza umbrales de costo. Migración: `ALTER COLUMN ... TYPE vector(1536)` + re-embeddear con `output_dimensionality=1536`. |
-| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real medido: 73 productos → 310 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por JOIN a `products` (`category_id`/`is_new`/`brand`) + EXISTS de atributos sobre `pav` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
-| Tipo de embedding en DDL | `vector(3072)` | `halfvec(3072)` desde día 1 | A 310 chunks la diferencia de storage (~4 MB vs ~2 MB) es irrelevante. `vector` es el tipo más probado, mejor soportado por drivers y el default en la mayoría de tutoriales/ejemplos de pgvector. Half-precision solo se justificaría si hubiera que indexar, y eso no va a pasar a este horizonte. | Si algún día se cruza el umbral del índice: `ALTER COLUMN ... TYPE halfvec(3072) USING ...::halfvec(3072)` toma segundos a 3300 filas. No se pierde nada por aplazar. |
+| Índice vectorial | **Ninguno**, ni hoy ni en el techo planeado | IVFFlat / HNSW desde día 1 | Volumen real medido: 74 productos → 317 chunks. Techo 500 productos → ~3300 chunks. Con prefiltrado por JOIN a `products` (`category_id`/`is_new`/`brand`) + EXISTS de atributos sobre `pav` el ORDER BY cosine corre sobre 50–300 chunks: <10 ms en seq scan. Cualquier índice aproximado agrega overhead sin beneficio bajo 10k filas. | Que el catálogo crezca más allá de 10k chunks **y** P95 sostenida > 150 ms. Improbable en este negocio. |
+| Tipo de embedding en DDL | `vector(3072)` | `halfvec(3072)` desde día 1 | A 317 chunks la diferencia de storage (~4 MB vs ~2 MB) es irrelevante. `vector` es el tipo más probado, mejor soportado por drivers y el default en la mayoría de tutoriales/ejemplos de pgvector. Half-precision solo se justificaría si hubiera que indexar, y eso no va a pasar a este horizonte. | Si algún día se cruza el umbral del índice: `ALTER COLUMN ... TYPE halfvec(3072) USING ...::halfvec(3072)` toma segundos a 3300 filas. No se pierde nada por aplazar. |
 | Atributos taxonómicos | EAV controlado (3 tablas) | Una columna JSONB por producto | EAV permite filtros eficientes con índices estándar y multivalor por categoría. JSONB sirve para leer pero rinde mal en filtros booleanos múltiples. | No aplica a este volumen ni dominio. |
 | Specs técnicas | JSONB crudo + `specs_normalized` JSONB (LLM) | Tabla `spec_keys` + `product_spec_values` | Vocabulario emergente y heterogéneo por categoría. El catálogo manual no escala a 1600+ specs. El LLM con reuso de `keys_context` converge en 10–15 productos por categoría. | Si la query mensual de claves huérfanas no converge en 2 ciclos. |
 | Software de gestión | Tabla canónica + chunk único | Texto duplicado por producto | Embedding único elimina ruido en top-K (12 productos comparten la misma descripción de Robustel Cloud Manager). | Si el software empieza a tener variantes reales por producto, splittear. |
@@ -1349,11 +1360,11 @@ condiciones que invalidarían cada elección quedan explícitas para revisión f
 | Re-ingesta | Fingerprint por contenido calculado en n8n (`content_fingerprint` en products/software, `specs_fingerprint` en product_specs) + hard delete para stale. Chunks comparan `content` directo (sin fingerprint). | Truncate + reload / MD5 en DB | Reload rompe IDs y FKs. Fingerprints garantizan idempotencia y diff barato (re-corrida sin cambios = 0 USD en embeddings). MD5 descartado porque n8n no puede usar `require('crypto')` — fingerprint legible es equivalente y debuggeable. Hard delete elegido sobre soft delete porque el source siempre envía el catálogo completo. | Si el source pasa a envíos parciales, cambiar hard delete por soft delete con `is_active`. |
 | Categorías | Tabla con `name`/`slug` `NOT NULL` (placeholders si Woo no responde) | NOT NULL estricto bloqueante | Permite ingesta sin bloquear por lookup externo. | Cuando se conecte Woo en vivo, reemplazar placeholders. |
 | `category_summary` chunk | **No se genera** | 1 chunk por categoría con texto descriptivo | A este volumen el contexto de categoría se obtiene mejor desde SQL puro (`categories`) o desde los `overview` agregados. | Si retrieval muestra que el LLM final necesita contexto narrativo de categoría. |
-| Hybrid search (BM25/keyword + RRF) | **No se implementa hoy** | Agregar `ts_vector` sobre `rag_chunks.content` + fusión RRF con el cosine | A 73 productos los casos donde keyword vence a embedding ya están cubiertos: identificadores ("R2011", "EG5100") por el matcher fuzzy de §7, marca/atributos por filtros SQL exactos. El delta de calidad estimado es <2% y el costo de mantener dos índices + tuning de RRF (`k`, peso por canal) supera el beneficio. | Catálogo >500 productos **o** >5% de queries con respuesta incorrecta atribuible a fallo de embedding en términos técnicos raros **o** entrada de descripciones largas con jerga única. Activación: `ALTER TABLE rag_chunks ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;` + índice GIN + fusión RRF en query layer. |
+| Hybrid search (BM25/keyword + RRF) | **No se implementa hoy** | Agregar `ts_vector` sobre `rag_chunks.content` + fusión RRF con el cosine | A 74 productos los casos donde keyword vence a embedding ya están cubiertos: identificadores ("R2011", "EG5100") por el matcher fuzzy de §7, marca/atributos por filtros SQL exactos. El delta de calidad estimado es <2% y el costo de mantener dos índices + tuning de RRF (`k`, peso por canal) supera el beneficio. | Catálogo >500 productos **o** >5% de queries con respuesta incorrecta atribuible a fallo de embedding en términos técnicos raros **o** entrada de descripciones largas con jerga única. Activación: `ALTER TABLE rag_chunks ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;` + índice GIN + fusión RRF en query layer. |
 | Cache de embeddings de queries | **No se implementa hoy** | Tabla `query_cache (hash, embedding, created_at)` con TTL | Con `gemini-embedding-001` el costo por query es una fracción de centavo; a 10k queries/mes sigue siendo trivial. La complejidad operativa (invalidación cuando cambia el modelo, TTL, normalización de query antes del hash) supera el ahorro. | >100k queries/mes **o** latencia de embedding domina P50 del pipeline. |
-| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 73 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `gemini-embedding-001` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
+| Re-ranking post-cosine | **No en v1; opcional detrás de feature flag** | Implementar rerank desde día 1 / cross-encoder dedicado (Cohere, BGE) | El rerank está pensado para alto recall (100-200 candidatos con orden ruidoso). A 74 productos con prefiltrado fuerte, el pool sobre el que opera cosine es 20-100 chunks y `gemini-embedding-001` ya los ordena bien. El motor real de calidad es prefiltrado + dedup por producto, no rerank. Implementarlo de entrada agrega ~300 ms y costo sin beneficio medible. | Si el golden set muestra P@5 < 0.80 en `intent=compare` **o** queries con criterio numérico implícito fallan y el NLU no las puede expresar como `spec_filters` (ver §7). |
 | Dedup de chunks por producto en merge | **Sí, máximo 3/producto, ≤10 totales** | Pasar el top-K crudo al LLM final | Sin dedup, el contexto del LLM se llena de `overview`+`description`+`features` del mismo producto y el modelo pondera por repetición. | No aplica. |
-| `product_specs.compatibility` | **JSONB sin normalizar** | Tabla `product_compatibility` con FK a productos / split en `compatibility` + `certifications` | Inspección del JSON real: 3/73 productos tienen `compatibility` no vacía. Ninguno apunta a productos del catálogo (Honeywell/DSC/Paradox son marcas externas; `"Chile-SUBTEL"` es certificación regulatoria, no compatibilidad). Una tabla relacional con 6-9 filas no aporta nada. El chunk `compatibility` del retrieval ya cubre el caso para el LLM final. | Si llegan ≥10 productos con `compatibility` que apunte a slugs del catálogo, normalizar a tabla. Si las certificaciones regulatorias se multiplican, agregar `product_specs.certifications JSONB` separado y dejar `compatibility` solo para compatibilidad de dispositivo. |
+| `product_specs.compatibility` | **JSONB sin normalizar** | Tabla `product_compatibility` con FK a productos / split en `compatibility` + `certifications` | Inspección del JSON real: 3/74 productos tienen `compatibility` no vacía. Ninguno apunta a productos del catálogo (Honeywell/DSC/Paradox son marcas externas; `"Chile-SUBTEL"` es certificación regulatoria, no compatibilidad). Una tabla relacional con 6-9 filas no aporta nada. El chunk `compatibility` del retrieval ya cubre el caso para el LLM final. | Si llegan ≥10 productos con `compatibility` que apunte a slugs del catálogo, normalizar a tabla. Si las certificaciones regulatorias se multiplican, agregar `product_specs.certifications JSONB` separado y dejar `compatibility` solo para compatibilidad de dispositivo. |
 
 ---
 
@@ -1417,7 +1428,7 @@ CREATE TABLE product_spec_values (
 );
 ```
 
-**Por qué se rechazó (para 73 productos, techo <500):**
+**Por qué se rechazó (para 74 productos, techo <500):**
 - Curaduría manual: ~80–120 spec_keys entre 8 categorías. Mantenimiento perpetuo.
 - Parser de unidades robusto: "1.5 Gbps" → 1500 Mbps requiere reglas por unidad.
 - Validación de `allowed_values`: bloquea ingestas si una opción no está pre-registrada.
@@ -1498,7 +1509,7 @@ Costo real de la alternativa descartada:
 | Mitigación de inconsistencias (claves huérfanas) | 0.5 día/mes | Query mensual + fusión manual |
 
 **Costo del JSONB + LLM (elegido):**
-- Normalización por producto: ~2 minutos/producto × 73 = 2–3 horas.
+- Normalización por producto: ~2 minutos/producto × 74 = 2–3 horas.
 - Prompt reutilizable.
 - Revisión manual de huérfanas: 0.5 día/mes.
 - **Total: 1 día vs 8 días. ROI claro.**
