@@ -318,7 +318,10 @@
       "name": "variables del producto"
     },
     {
-      "parameters": {},
+      "parameters": {
+        "mode": "combineBySql",
+        "options": {}
+      },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
@@ -1054,7 +1057,7 @@
     {
       "parameters": {
         "mode": "combineBySql",
-        "query": "SELECT\n  COALESCE(input1.id, input2.id) as id,\n  COALESCE(input1.slug, input2.slug) as slug,\n  COALESCE(input1.name, input2.name) as name,\n  input1.brand,\n  input1.model,\n  input1.category_id,\n  input1.source_url,\n  input1.description,\n  input1.attributes,\n  input1.content_fingerprint,\n  input1.attributes_fingerprint,\n  CASE\n    WHEN input1.id IS NOT NULL AND input2.id IS NULL THEN 'INSERT'\n    WHEN input1.id IS NULL AND input2.id IS NOT NULL THEN 'DELETE'\n    WHEN COALESCE(input1.content_fingerprint, '')    != COALESCE(input2.content_fingerprint, '') OR\n         COALESCE(input1.attributes_fingerprint, '') != COALESCE(input2.attributes_fingerprint, '') THEN 'UPDATE'\n    ELSE 'NO_CHANGE'\n  END as operation\nFROM input1\nFULL OUTER JOIN input2 ON input1.id = input2.id\nWHERE COALESCE(input1.id, input2.id) IS NOT NULL\nORDER BY\n  CASE\n    WHEN operation = 'DELETE' THEN 1\n    WHEN operation = 'INSERT' THEN 2\n    WHEN operation = 'UPDATE' THEN 3\n    ELSE 4\n  END,\n  COALESCE(input1.id, input2.id);\n",
+        "query": "SELECT\n  COALESCE(input1.id, input2.id) as id,\n  COALESCE(input1.slug, input2.slug) as slug,\n  COALESCE(input1.name, input2.name) as name,\n  input1.brand,\n  input1.model,\n  input1.category_id,\n  input1.source_url,\n  input1.is_new,\n  input1.software_id,\n  input1.description,\n  input1.attributes,\n  input1.content_fingerprint,\n  input1.attributes_fingerprint,\n  CASE\n    WHEN input1.id IS NOT NULL AND input2.id IS NULL THEN 'INSERT'\n    WHEN input1.id IS NULL AND input2.id IS NOT NULL THEN 'DELETE'\n    WHEN COALESCE(input1.content_fingerprint, '')    != COALESCE(input2.content_fingerprint, '') OR\n         COALESCE(input1.attributes_fingerprint, '') != COALESCE(input2.attributes_fingerprint, '') OR \n         COALESCE(input1.is_new, '') != COALESCE(input2.is_new, '') OR\n         COALESCE(input1.software_id, '') != COALESCE(input2.software_id, '') THEN 'UPDATE'\n    ELSE 'NO_CHANGE'\n  END as operation\nFROM input1\nFULL OUTER JOIN input2 ON input1.id = input2.id\nWHERE COALESCE(input1.id, input2.id) IS NOT NULL\nORDER BY\n  CASE\n    WHEN operation = 'DELETE' THEN 1\n    WHEN operation = 'INSERT' THEN 2\n    WHEN operation = 'UPDATE' THEN 3\n    ELSE 4\n  END,\n  COALESCE(input1.id, input2.id);\n",
         "options": {}
       },
       "type": "n8n-nodes-base.merge",

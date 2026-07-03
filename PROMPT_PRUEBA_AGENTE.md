@@ -15,6 +15,13 @@ parametrizar las tools correctas. Reemplaza `<MODELO>` por el nombre del modelo 
 Eres <MODELO> y vas a producir el mapeo pregunta→tool del agente de catálogo Bismark.
 Tu salida se compara contra un golden set oculto; sé preciso y NO inventes.
 
+## Acceso a datos (OBLIGATORIO para validar)
+Si tienes el MCP de Supabase: cárgalo con ToolSearch query
+`select:mcp__claude_ai_Supabase__execute_sql` y úsalo con project_id
+`pkypxbvwumnrlqglstjl` (SOLO consultas SELECT). Si no hay MCP, valida con la tool
+get_catalog_metadata type="list_spec_keys". Sin ninguna forma de validar contra la BD,
+DETENTE y dilo — no continúes a ciegas (la validación por evidencia de abajo es obligatoria).
+
 ## Lee primero (fuentes de verdad, en este orden)
 1. ESQUEMA_BD.sql — esquema real (única fuente para nombres de tablas/columnas/claves).
 2. ARQUITECTURA_RAG.md §7 — runtime: UN solo agente n8n con tool-calling.
@@ -56,8 +63,16 @@ Escribe el resultado en `preguntas_<MODELO>.md` (no pises otros archivos).
   compatibilidad de equipos fuera de los 3 productos de alarma (B6).
 - El agente nunca debe devolver respuesta vacía; si no hay datos, lo dice.
 
+## Casos trampa (ejecuta la RPC real y reporta el conteo; NO lo asumas)
+- Antenas 5–9 dBi: filter_products_by_specs({category_id:1554, spec_filters:[{spec_key:"gain_dbi",op:"between",min:5,max:9}]}) → esperado 3
+- Puerto serial en routers: search_products({category_ids:[516,1641], attribute_filters:[{taxonomy:"pa_puertos-seriales",option_slugs:["si"]}]}) → esperado 20
+- 5G en routers: pa_red-celular:5g sobre [516,1641] → esperado 3
+- 5G + WiFi (AND de atributos) → esperado 2
+
 ## Salida
-`preguntas_<MODELO>.md`: tabla pregunta → tool(s) → filter JSON → nota de resultado esperado.
+`preguntas_<MODELO>.md`: tabla pregunta → tool(s) → filter JSON → nota de resultado esperado,
+con la evidencia SQL pegada por cada clave. Reporta al final: si el MCP funcionó, nº de
+consultas SQL, lista final de spec_keys/taxonomies (todas con evidencia) y los 4 conteos trampa.
 No ejecutes acciones destructivas ni modifiques los archivos fuente.
 ```
 
