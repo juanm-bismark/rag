@@ -30,9 +30,8 @@ services:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["/bin/sh", "-c"]
     command: >
-      "ollama pull qwen2.5:3b &&
-       ollama pull qwen2.5:7b &&
-       ollama pull qwen3:4b"
+      ollama pull qwen2.5:3b &&
+      ollama pull granite4:micro-h
     restart: "no"
 
 volumes:
