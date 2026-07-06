@@ -9,9 +9,12 @@ services:
       - ollama:/root/.ollama
     environment:
       OLLAMA_HOST: 0.0.0.0:11434
-      OLLAMA_CONTEXT_LENGTH: "8192"
+      # 16384: el agente RAG (system prompt + tools + resultados) desborda 8192
+      OLLAMA_CONTEXT_LENGTH: "16384"
       OLLAMA_NUM_PARALLEL: "1"
       OLLAMA_KEEP_ALIVE: "-1"
+      # KV_CACHE_TYPE solo aplica con flash attention activo; sin esto es no-op (f16)
+      OLLAMA_FLASH_ATTENTION: "1"
       OLLAMA_KV_CACHE_TYPE: q8_0
     healthcheck:
       test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
