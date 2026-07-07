@@ -60,6 +60,11 @@ if [ "${1:-}" = "--check" ]; then
 fi
 
 if [ "${1:-}" != "--fg" ]; then
+  if pgrep -f "simulador_worker.py correr" >/dev/null 2>&1; then
+    echo "✗ Ya hay una corrida activa (pgrep -f simulador_worker). Para detenerla:"
+    echo "    pkill -f simulador_worker.py"
+    exit 1
+  fi
   verificar || { echo; echo "Corrige lo anterior y vuelve a correr."; exit 1; }
   nohup "$0" --fg >> corrida.log 2>&1 &
   echo

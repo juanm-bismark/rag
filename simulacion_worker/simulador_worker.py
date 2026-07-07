@@ -170,9 +170,11 @@ def higiene_output(output):
             if not v:
                 violaciones.append(f"array_vacio:{k}")
                 continue
-            tipos = {type(x) in (int, float) for x in v}
-            if len(tipos) > 1:
-                violaciones.append(f"array_mixto:{k}")
+            solo_strings = all(isinstance(x, str) for x in v)
+            solo_numeros = all(isinstance(x, (int, float)) and not isinstance(x, bool)
+                               for x in v)
+            if not (solo_strings or solo_numeros):
+                violaciones.append(f"array_tipo_invalido:{k}")
                 continue
             vistos, dedup = set(), []
             for x in v:
@@ -256,7 +258,7 @@ def agente(host, modelo, system, user, timeout, max_iter=20):
         r = llamar_ollama(host, {
             "model": modelo, "messages": mensajes, "tools": TOOL_CALCULATOR,
             "stream": False,
-            "options": {"temperature": 0, "num_ctx": 16384, "num_predict": 4096},
+            "options": {"temperature": 0, "num_ctx": 24576, "num_predict": 6144},
         }, timeout)
         stats["wall_s"] += time.time() - t0
         stats["prompt_tokens"] = r.get("prompt_eval_count", 0)
@@ -291,9 +293,10 @@ def post_proceso(texto):
         fixes.append("contract_deviation_recovered:" +
                      "+".join(sorted(parsed.keys())[:6]))
     output = parsed.get("output") if es_obj(parsed.get("output")) else None
-    if output is None:  # recuperación: única clave-objeto que parezca specs
-        candidatos = [v for v in parsed.values()
-                      if es_obj(v) and v and not es_obj(next(iter(v.values()), None))]
+    if output is None:  # recuperación: única clave-objeto que NO sea trace/contexto
+        candidatos = [v for k, v in parsed.items()
+                      if k not in ("audit_trace", "keys_context")
+                      and es_obj(v) and v]
         output = candidatos[0] if len(candidatos) == 1 else {}
         fixes.append("output_recuperado")
     limpio, violaciones = higiene_output(output)
@@ -343,8 +346,14 @@ def exportar_normalizado(modelo):
 
 
 def cargar_hechos(modelo):
-    """Para reanudar: product_ids ya procesados y filas previas por categoría."""
-    hechos, filas = set(), []
+    """Para reanudar: product_ids ya procesados y filas previas por categoría.
+
+    Deduplica por producto (gana la última fila). Los errores TRANSITORIOS
+    (error_type=excepcion: timeouts, red) NO cuentan como hechos → se
+    reintentan al reanudar. Los fallos del modelo (invalid_json,
+    empty_normalization) sí son definitivos.
+    """
+    por_pid = {}
     ruta = archivo_resultados(modelo)
     if ruta.exists():
         for linea in ruta.read_text().splitlines():
@@ -352,8 +361,10 @@ def cargar_hechos(modelo):
                 fila = json.loads(linea)
             except json.JSONDecodeError:
                 continue
-            hechos.add(fila["product_id"])
-            filas.append(fila)
+            por_pid[fila["product_id"]] = fila
+    filas = list(por_pid.values())
+    hechos = {pid for pid, f in por_pid.items()
+              if f.get("error_type") != "excepcion"}
     return hechos, filas
 
 
@@ -563,7 +574,10 @@ def main():
     c.add_argument("--host")
     c.add_argument("--env", default=str(AQUI.parent / ".env"))
     c.add_argument("--prompt", default=str(AQUI.parent / "PROMPT_NORMALIZACION.md"))
-    c.add_argument("--timeout", type=int, default=3000)
+    c.add_argument("--timeout", type=int, default=10800,
+                   help="segundos por llamada; incluye la espera en cola del "
+                        "servidor (NUM_PARALLEL=1): granite sin caché ~30min/"
+                        "producto × cola de 4 exige margen amplio")
     c.set_defaults(fn=cmd_correr)
     d = sub.add_parser("comparar")
     d.add_argument("--modelos", default="qwen2.5:3b,granite4:micro-h")
