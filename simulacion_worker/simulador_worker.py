@@ -251,7 +251,7 @@ def agente(host, modelo, system, user, timeout, max_iter=20):
     mensajes = [{"role": "system", "content": system},
                 {"role": "user", "content": user}]
     stats = {"iteraciones": 0, "llamadas_calculator": 0,
-             "prompt_tokens": 0, "out_tokens": 0, "wall_s": 0.0}
+             "prompt_tokens": 0, "out_tokens": 0, "llm_s": 0.0}
     for _ in range(max_iter):
         stats["iteraciones"] += 1
         t0 = time.time()
@@ -260,7 +260,7 @@ def agente(host, modelo, system, user, timeout, max_iter=20):
             "stream": False,
             "options": {"temperature": 0, "num_ctx": 24576, "num_predict": 6144},
         }, timeout)
-        stats["wall_s"] += time.time() - t0
+        stats["llm_s"] += time.time() - t0
         stats["prompt_tokens"] = r.get("prompt_eval_count", 0)
         stats["out_tokens"] += r.get("eval_count", 0)
         msg = r.get("message", {})
@@ -388,6 +388,7 @@ def correr_categoria(host, modelo, system, categoria, hechos, filas_previas,
         t0 = time.time()
         try:
             texto, stats = agente(host, modelo, system, entrada, timeout)
+            stats["llm_s"] = round(stats.get("llm_s", 0.0), 1)
             res = post_proceso(texto)
         except Exception as e:
             res = {"status": "review", "error_type": "excepcion", "error_detail": str(e)}
