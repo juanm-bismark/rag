@@ -1,0 +1,173 @@
+{
+ "claves": {
+  "category_name": {
+   "n": 1,
+   "example": "SFP-Transceptor",
+   "shape": "scalar"
+  },
+  "wavelength_nm": {
+   "n": 5,
+   "example": [
+    1310000000000,
+    1490000000000
+   ],
+   "shape": "numeric_array",
+   "desc": "Optical wavelength in nanometers"
+  },
+  "reach_m": {
+   "n": 6,
+   "example": 20,
+   "shape": "scalar",
+   "desc": "Physical reach of the transceiver (meters)"
+  },
+  "transfer_rate_mbps": {
+   "n": 6,
+   "example": 2500,
+   "shape": "scalar",
+   "desc": "Data transfer rate in Mbps"
+  },
+  "standard": {
+   "n": 6,
+   "example": 1000,
+   "shape": "scalar",
+   "desc": "IEEE standard supported (numeric)"
+  },
+  "interface_type": {
+   "n": 6,
+   "example": "single-lc",
+   "shape": "scalar",
+   "desc": "Physical connector type"
+  },
+  "fiber_optic_cable": {
+   "n": 5,
+   "example": "mono-mode",
+   "shape": "scalar",
+   "desc": "Type of optical fiber used"
+  },
+  "ddm": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Whether Data Detection Modulation is supported"
+  },
+  "operating_temperature_min_c": {
+   "n": 6,
+   "example": -40,
+   "shape": "scalar",
+   "desc": "Minimum operating temperature (°C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 5,
+   "example": 75,
+   "shape": "range",
+   "desc": "Maximum operating temperature (°C)"
+  },
+  "form_factor": {
+   "n": 4,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "Device physical form factor"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 16883,
+   "claves_nuevas": [
+    "category_name",
+    "wavelength_nm",
+    "reach_m",
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "fiber_optic_cable",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 10
+  },
+  {
+   "product_id": 16888,
+   "claves_nuevas": [
+    "form_factor"
+   ],
+   "claves_actualizadas": [
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "wavelength_nm",
+    "reach_m",
+    "fiber_optic_cable",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 11
+  },
+  {
+   "product_id": 16906,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "form_factor",
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "wavelength_nm",
+    "reach_m",
+    "fiber_optic_cable",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 11
+  },
+  {
+   "product_id": 16914,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "wavelength_nm",
+    "reach_m",
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "fiber_optic_cable",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "form_factor"
+   ],
+   "total_claves": 11
+  },
+  {
+   "product_id": 16918,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "form_factor",
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "wavelength_nm",
+    "reach_m",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 11
+  },
+  {
+   "product_id": 16919,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "transfer_rate_mbps",
+    "standard",
+    "interface_type",
+    "reach_m",
+    "fiber_optic_cable",
+    "ddm",
+    "operating_temperature_min_c"
+   ],
+   "total_claves": 11
+  }
+ ]
+}

@@ -1,0 +1,102 @@
+{
+ "7233": {
+  "slug": "suntech-st20u",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "16884": {
+  "slug": "eon-transceptor-sfp-gsx-1g-10km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "9535": {
+  "slug": "suntech-st25t",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "16902": {
+  "slug": "eon-transceptor-sfp-gsr-10g-300m",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "18264": {
+  "slug": "galileosky-10-4g",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "16907": {
+  "slug": "eon-transceptor-sfp-ger-10g-40km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "14885": {
+  "slug": "antena-magnetica-7-dbi-3-mts",
+  "error_type": "invalid_json",
+  "category_id": 1554
+ },
+ "9944": {
+  "slug": "sierra-wireless-raven-rv50x",
+  "error_type": "empty_normalization",
+  "category_id": 516
+ },
+ "22071": {
+  "slug": "antena-magnetica-3-9-dbi-1-5-mts",
+  "error_type": "invalid_json",
+  "category_id": 1554
+ },
+ "18869": {
+  "slug": "lynkworld-lw4g-wrp",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "18003": {
+  "slug": "netio-nt-link-4g",
+  "error_type": "invalid_json",
+  "category_id": 518
+ },
+ "18004": {
+  "slug": "netio-nt-com2-4g",
+  "error_type": "invalid_json",
+  "category_id": 518
+ },
+ "18447": {
+  "slug": "3onedata-gateway-gw1114",
+  "error_type": "invalid_json",
+  "category_id": 1630
+ },
+ "18453": {
+  "slug": "3onedata-switch-ies6300",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "15206": {
+  "slug": "robustel-r1520-4l",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "20222": {
+  "slug": "teldat-switch-esw4l3",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "19354": {
+  "slug": "robustel-r5020-5g",
+  "error_type": "invalid_json",
+  "category_id": 1641
+ },
+ "18304": {
+  "slug": "maipu-mp1800x-50",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "20208": {
+  "slug": "teldat-ares-c640",
+  "error_type": "empty_normalization",
+  "category_id": 516
+ },
+ "22615": {
+  "slug": "robustel-eg5100",
+  "error_type": "invalid_json",
+  "category_id": 516
+ }
+}

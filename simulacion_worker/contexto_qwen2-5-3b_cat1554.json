@@ -1,0 +1,214 @@
+{
+ "claves": {
+  "elementos": {
+   "n": 1,
+   "example": 62,
+   "shape": "scalar",
+   "desc": "number of elements"
+  },
+  "ganancia": {
+   "n": 1,
+   "example": "15 dBi",
+   "shape": "scalar",
+   "desc": "gain level"
+  },
+  "frecuencia_de_trabajo": {
+   "n": 1,
+   "example": [
+    "700 MHz",
+    "2700 MHz"
+   ],
+   "shape": "enum",
+   "desc": "frequency range"
+  },
+  "front_to_back": {
+   "n": 2,
+   "example": ">2.0",
+   "shape": "scalar",
+   "desc": "front to back ratio"
+  },
+  "impedancia": {
+   "n": 2,
+   "example": 50,
+   "shape": "scalar",
+   "desc": "impedance value"
+  },
+  "angulo": {
+   "n": 2,
+   "example": ">2.0",
+   "shape": "scalar",
+   "desc": "angle of installation"
+  },
+  "ro_e": {
+   "n": 2,
+   "example": "<1.6 : 1",
+   "shape": "scalar",
+   "desc": "return loss efficiency"
+  },
+  "conector": {
+   "n": 2,
+   "example": "SMA macho",
+   "shape": "scalar",
+   "desc": "connector type"
+  },
+  "mastil_de_instalacion": {
+   "n": 2,
+   "example": "se solicita por separado (opcional)",
+   "shape": "scalar",
+   "desc": "installation mast requirements"
+  },
+  "alto_mm": {
+   "n": 2,
+   "example": 290,
+   "shape": "scalar",
+   "desc": "height in mm"
+  },
+  "ancho_mm": {
+   "n": 2,
+   "example": 75,
+   "shape": "scalar",
+   "desc": "width in mm"
+  },
+  "largo_mm": {
+   "n": 2,
+   "example": [
+    1500,
+    300
+   ],
+   "shape": "numeric_array",
+   "desc": "length in mm"
+  },
+  "peso_g": {
+   "n": 2,
+   "example": 65,
+   "shape": "scalar",
+   "desc": "weight in g"
+  },
+  "empaque_largo_cm": {
+   "n": 2,
+   "example": [
+    1.5,
+    3
+   ],
+   "shape": "numeric_array",
+   "desc": "packaging length in cm"
+  },
+  "empaque_ancho_cm": {
+   "n": 2,
+   "example": 29,
+   "shape": "scalar",
+   "desc": "packaging width in cm"
+  },
+  "input_voltage_v": {
+   "n": 3,
+   "example": 0.744,
+   "shape": "scalar",
+   "desc": "input voltage"
+  },
+  "input_power_max_w": {
+   "n": 2,
+   "example": [
+    50,
+    100
+   ],
+   "shape": "numeric_array",
+   "desc": "maximum input power"
+  },
+  "mtbf_min_hours": {
+   "n": 1,
+   "example": [
+    7500,
+    15000
+   ],
+   "shape": "numeric_array",
+   "desc": "minimum MTBF (hours)"
+  },
+  "frecuencia_de_trabajo_min_mhz": {
+   "n": 2,
+   "example": [
+    800,
+    1800
+   ],
+   "shape": "numeric_array",
+   "desc": "frequency range min"
+  },
+  "frecuencia_de_trabajo_max_mhz": {
+   "n": 2,
+   "example": [
+    2700,
+    3400,
+    6250
+   ],
+   "shape": "numeric_array",
+   "desc": "frequency range max"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 14869,
+   "claves_nuevas": [
+    "elementos",
+    "ganancia",
+    "frecuencia_de_trabajo",
+    "front_to_back",
+    "impedancia",
+    "angulo",
+    "ro_e",
+    "conector",
+    "mastil_de_instalacion",
+    "alto_mm",
+    "ancho_mm",
+    "largo_mm",
+    "peso_g",
+    "empaque_largo_cm",
+    "empaque_ancho_cm"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 15
+  },
+  {
+   "product_id": 14879,
+   "claves_nuevas": [
+    "input_voltage_v",
+    "input_power_max_w",
+    "mtbf_min_hours"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 18
+  },
+  {
+   "product_id": 14882,
+   "claves_nuevas": [
+    "frecuencia_de_trabajo_min_mhz",
+    "frecuencia_de_trabajo_max_mhz"
+   ],
+   "claves_actualizadas": [
+    "front_to_back",
+    "impedancia",
+    "angulo",
+    "ro_e",
+    "conector",
+    "mastil_de_instalacion",
+    "alto_mm",
+    "ancho_mm",
+    "largo_mm",
+    "peso_g",
+    "empaque_largo_cm",
+    "empaque_ancho_cm",
+    "input_voltage_v",
+    "input_power_max_w"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 22071,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "frecuencia_de_trabajo_min_mhz",
+    "frecuencia_de_trabajo_max_mhz",
+    "input_voltage_v"
+   ],
+   "total_claves": 20
+  }
+ ]
+}

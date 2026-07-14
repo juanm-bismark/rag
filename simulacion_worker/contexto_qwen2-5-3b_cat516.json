@@ -1,0 +1,384 @@
+{
+ "claves": {
+  "interfaces_wwan_count": {
+   "n": 6,
+   "example": 4,
+   "shape": "scalar",
+   "desc": "number of WWAN interfaces"
+  },
+  "interfaces_ethernet_count": {
+   "n": 6,
+   "example": 8,
+   "shape": "scalar",
+   "desc": "number of Ethernet ports"
+  },
+  "length_mm": {
+   "n": 7,
+   "example": 264000,
+   "shape": "scalar",
+   "desc": "Length in mm (min, max)"
+  },
+  "width_mm": {
+   "n": 7,
+   "example": 60000,
+   "shape": "scalar",
+   "desc": "Width in mm (min, max)"
+  },
+  "height_mm": {
+   "n": 7,
+   "example": 44000,
+   "shape": "scalar",
+   "desc": "Height in mm (min, max)"
+  },
+  "weight_g": {
+   "n": 5,
+   "example": 4000,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "input": {
+   "n": 2,
+   "example": [
+    "Calculator('30 * 1000')"
+   ],
+   "shape": "enum"
+  },
+  "input_voltage_v": {
+   "n": 4,
+   "example": 12,
+   "shape": "scalar",
+   "desc": "voltage"
+  },
+  "current_consumption_idle_ma": {
+   "n": 5,
+   "example": 32,
+   "shape": "scalar",
+   "desc": "Idle current consumption per variant in mA"
+  },
+  "current_consumption_peak_ma": {
+   "n": 5,
+   "example": 8000,
+   "shape": "scalar",
+   "desc": "Peak current consumption per variant in mA"
+  },
+  "data_rate_mbps": {
+   "n": 4,
+   "example": 60,
+   "shape": "scalar",
+   "desc": "data rate in Mbps"
+  },
+  "reset_button_count": {
+   "n": 4,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "number of reset buttons"
+  },
+  "leds_indicator_count": {
+   "n": 4,
+   "example": 4,
+   "shape": "scalar",
+   "desc": "number of LEDs"
+  },
+  "watchdog_included": {
+   "n": 4,
+   "example": true,
+   "shape": "boolean",
+   "desc": "whether watchdog is included"
+  },
+  "firewall_features": {
+   "n": 4,
+   "example": [
+    "DMZ",
+    "anti-DDoS",
+    "access control"
+   ],
+   "shape": "enum",
+   "desc": "features in firewall"
+  },
+  "remote_management_channels": {
+   "n": 3,
+   "example": [
+    "Web",
+    "CLI",
+    "SMS"
+   ],
+   "shape": "enum",
+   "desc": "channels for remote management"
+  },
+  "voip_protocols": {
+   "n": 3,
+   "example": [
+    "SIP",
+    "H323",
+    "UA-NOE",
+    "SRTP",
+    "SCCP"
+   ],
+   "shape": "enum",
+   "desc": "protocols for VoIP"
+  },
+  "cpu_model": {
+   "n": 4,
+   "example": "1.6GHz de doble núcleo",
+   "shape": "scalar",
+   "desc": "CPU model"
+  },
+  "memory_gb": {
+   "n": 3,
+   "example": 0.9765625,
+   "shape": "scalar",
+   "desc": "Memory capacity in GB"
+  },
+  "flash_mb": {
+   "n": 3,
+   "example": 0.128,
+   "shape": "scalar",
+   "desc": "Flash memory capacity in MB"
+  },
+  "dual_ios": {
+   "n": 3,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Dual IOS feature"
+  },
+  "interfaces_count": {
+   "n": 3,
+   "example": 5,
+   "shape": "scalar",
+   "desc": "Number of interfaces (count)"
+  },
+  "usb_ports_count": {
+   "n": 3,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "USB ports count per variant"
+  },
+  "console_ports_count": {
+   "n": 3,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "Console/AUX ports count per variant"
+  },
+  "input_power_max_w": {
+   "n": 3,
+   "example": 26,
+   "shape": "scalar",
+   "desc": "Max input power in W"
+  },
+  "ingress_protection": {
+   "n": 2,
+   "example": [
+    "IP30"
+   ],
+   "shape": "enum",
+   "desc": "Ingress protection rating (IP)"
+  },
+  "temperature_min_c": {
+   "n": 2,
+   "example": -20,
+   "shape": "range",
+   "desc": "Minimum operating temperature in °C (min, max)"
+  },
+  "temperature_max_c": {
+   "n": 2,
+   "example": 45,
+   "shape": "range",
+   "desc": "Maximum operating temperature in °C (min, max)"
+  },
+  "humidity_min_percent": {
+   "n": 2,
+   "example": 5,
+   "shape": "range",
+   "desc": "Minimum humidity percentage"
+  },
+  "humidity_max_percent": {
+   "n": 2,
+   "example": 85,
+   "shape": "range",
+   "desc": "Maximum humidity percentage"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 9842,
+   "claves_nuevas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 6
+  },
+  {
+   "product_id": 9854,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g"
+   ],
+   "total_claves": 6
+  },
+  {
+   "product_id": 9980,
+   "claves_nuevas": [
+    "input"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 7
+  },
+  {
+   "product_id": 17895,
+   "claves_nuevas": [
+    "input_voltage_v",
+    "current_consumption_idle_ma",
+    "current_consumption_peak_ma",
+    "data_rate_mbps",
+    "reset_button_count",
+    "leds_indicator_count",
+    "watchdog_included",
+    "firewall_features",
+    "remote_management_channels"
+   ],
+   "claves_actualizadas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g"
+   ],
+   "total_claves": 16
+  },
+  {
+   "product_id": 17915,
+   "claves_nuevas": [
+    "voip_protocols"
+   ],
+   "claves_actualizadas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "input_voltage_v",
+    "current_consumption_idle_ma",
+    "current_consumption_peak_ma",
+    "data_rate_mbps",
+    "reset_button_count",
+    "leds_indicator_count",
+    "watchdog_included",
+    "firewall_features"
+   ],
+   "total_claves": 17
+  },
+  {
+   "product_id": 18304,
+   "claves_nuevas": [
+    "cpu_model",
+    "memory_gb",
+    "flash_mb",
+    "dual_ios",
+    "interfaces_count",
+    "usb_ports_count",
+    "console_ports_count",
+    "input_power_max_w",
+    "ingress_protection",
+    "temperature_min_c",
+    "temperature_max_c",
+    "humidity_min_percent",
+    "humidity_max_percent"
+   ],
+   "claves_actualizadas": [
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "current_consumption_idle_ma",
+    "current_consumption_peak_ma"
+   ],
+   "total_claves": 30
+  },
+  {
+   "product_id": 18305,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "cpu_model",
+    "dual_ios",
+    "interfaces_count",
+    "usb_ports_count",
+    "console_ports_count",
+    "input_power_max_w",
+    "ingress_protection",
+    "temperature_min_c",
+    "temperature_max_c",
+    "humidity_min_percent",
+    "humidity_max_percent"
+   ],
+   "total_claves": 30
+  },
+  {
+   "product_id": 20076,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v",
+    "current_consumption_idle_ma",
+    "current_consumption_peak_ma",
+    "data_rate_mbps",
+    "reset_button_count",
+    "leds_indicator_count",
+    "watchdog_included",
+    "firewall_features",
+    "remote_management_channels",
+    "voip_protocols",
+    "cpu_model",
+    "memory_gb",
+    "flash_mb"
+   ],
+   "total_claves": 30
+  },
+  {
+   "product_id": 22602,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "interfaces_wwan_count",
+    "interfaces_ethernet_count",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input",
+    "input_voltage_v",
+    "current_consumption_idle_ma",
+    "current_consumption_peak_ma",
+    "data_rate_mbps",
+    "reset_button_count",
+    "leds_indicator_count",
+    "watchdog_included",
+    "firewall_features",
+    "remote_management_channels",
+    "voip_protocols",
+    "cpu_model",
+    "memory_gb",
+    "flash_mb",
+    "dual_ios",
+    "interfaces_count",
+    "usb_ports_count",
+    "console_ports_count",
+    "input_power_max_w"
+   ],
+   "total_claves": 30
+  }
+ ]
+}

@@ -1,0 +1,154 @@
+{
+ "claves": {
+  "category_name": {
+   "n": 1,
+   "example": "Comunicadores de alarmas",
+   "shape": "scalar"
+  },
+  "active_current_a": {
+   "n": 1,
+   "example": 0.05,
+   "shape": "scalar",
+   "desc": "Active current (A)"
+  },
+  "digital_input_current_max_a": {
+   "n": 2,
+   "example": 0.35,
+   "shape": "scalar",
+   "desc": "Maximum digital input current (A)"
+  },
+  "ingress_protection": {
+   "n": 1,
+   "example": [
+    "ip65"
+   ],
+   "shape": "enum",
+   "desc": "IP enclosure rating"
+  },
+  "wifi_standards": {
+   "n": 1,
+   "example": [
+    "802.11b",
+    "802.11g",
+    "802.11n"
+   ],
+   "shape": "enum",
+   "desc": "Supported wireless standards"
+  },
+  "channel_bandwidth_min_mhz": {
+   "n": 1,
+   "example": 2400,
+   "shape": "range",
+   "desc": "Minimum channel bandwidth (MHz)"
+  },
+  "channel_bandwidth_max_mhz": {
+   "n": 1,
+   "example": 2483.5,
+   "shape": "range",
+   "desc": "Maximum channel bandwidth (MHz)"
+  },
+  "output_power_w_max": {
+   "n": 1,
+   "example": 14,
+   "shape": "scalar",
+   "desc": "Maximum output power (W)"
+  },
+  "signal_modulation": {
+   "n": 1,
+   "example": "ofdm",
+   "shape": "scalar",
+   "desc": "Modulation technique"
+  },
+  "certifications": {
+   "n": 1,
+   "example": [
+    "global-fcc"
+   ],
+   "shape": "enum",
+   "desc": "Regulatory approvals"
+  },
+  "input_voltage_min_v": {
+   "n": 1,
+   "example": 9,
+   "shape": "range",
+   "desc": "Minimum input voltage (V)"
+  },
+  "input_voltage_max_v": {
+   "n": 1,
+   "example": 16,
+   "shape": "range",
+   "desc": "Maximum input voltage (V)"
+  },
+  "wifi_channel_bandwidth_min_mhz": {
+   "n": 1,
+   "example": 850000000,
+   "shape": "range",
+   "desc": "Minimum channel bandwidth (MHz)"
+  },
+  "wifi_channel_bandwidth_max_mhz": {
+   "n": 1,
+   "example": 1710000000,
+   "shape": "range",
+   "desc": "Maximum channel bandwidth (MHz)"
+  },
+  "antenna_impedance_ohm": {
+   "n": 1,
+   "example": 50000,
+   "shape": "scalar",
+   "desc": "Antenna impedance (Ω)"
+  },
+  "protocols": {
+   "n": 1,
+   "example": [
+    "tcp",
+    "udp"
+   ],
+   "shape": "enum",
+   "desc": "Supported communication protocols"
+  },
+  "regulatory_standards": {
+   "n": 1,
+   "example": [
+    "global-fcc",
+    "global-rohs"
+   ],
+   "shape": "enum",
+   "desc": "Regulatory approvals"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18020,
+   "claves_nuevas": [
+    "category_name",
+    "active_current_a",
+    "digital_input_current_max_a",
+    "ingress_protection",
+    "wifi_standards",
+    "channel_bandwidth_min_mhz",
+    "channel_bandwidth_max_mhz",
+    "output_power_w_max",
+    "signal_modulation",
+    "certifications"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 10
+  },
+  {
+   "product_id": 19359,
+   "claves_nuevas": [
+    "input_voltage_min_v",
+    "input_voltage_max_v",
+    "wifi_channel_bandwidth_min_mhz",
+    "wifi_channel_bandwidth_max_mhz",
+    "antenna_impedance_ohm",
+    "protocols",
+    "regulatory_standards"
+   ],
+   "claves_actualizadas": [
+    "digital_input_current_max_a"
+   ],
+   "total_claves": 17
+  }
+ ]
+}

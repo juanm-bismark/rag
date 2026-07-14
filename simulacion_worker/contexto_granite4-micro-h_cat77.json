@@ -1,0 +1,290 @@
+{
+ "claves": {
+  "category_name": {
+   "n": 2,
+   "example": "Seguimiento GPS",
+   "shape": "scalar"
+  },
+  "packet_transfer_rate_mbps": {
+   "n": 5,
+   "example": 10000000,
+   "shape": "scalar",
+   "desc": "Maximum download / upload throughput (bits per second)"
+  },
+  "frequency_mhz": {
+   "n": 5,
+   "example": [
+    850,
+    900,
+    1800,
+    1900,
+    2100,
+    2600,
+    2800,
+    6600
+   ],
+   "shape": "numeric_array",
+   "desc": "Supported RF frequencies (MHz)"
+  },
+  "accelerometer_3axis": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Indicates whether a 3‑axis accelerometer is present"
+  },
+  "connection_ports_count": {
+   "n": 4,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "Number of physical connection ports (digital + analog)"
+  },
+  "led_status": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Indicates if the LED indicates network/GPS status"
+  },
+  "antenna_type": {
+   "n": 5,
+   "example": "internal",
+   "shape": "scalar",
+   "desc": "Type of antenna(s) integrated on the device"
+  },
+  "m2m_protocol": {
+   "n": 5,
+   "example": "suntech",
+   "shape": "scalar",
+   "desc": "Unified M2M communication protocol used by the device"
+  },
+  "input_output_ports": {
+   "n": 5,
+   "example": [
+    "digital_inputs_count_2"
+   ],
+   "shape": "enum",
+   "desc": "Set of physical connection ports (digital + analog)"
+  },
+  "communication_protocols": {
+   "n": 5,
+   "example": [
+    "tcp"
+   ],
+   "shape": "enum",
+   "desc": "Supported network communication protocols"
+  },
+  "memory_capacity_positions": {
+   "n": 5,
+   "example": 10000,
+   "shape": "scalar",
+   "desc": "Maximum number of stored positions / waypoints"
+  },
+  "geofence_count": {
+   "n": 4,
+   "example": [
+    999,
+    30
+   ],
+   "shape": "numeric_array",
+   "desc": "Count of circular and polygonal geofences supported"
+  },
+  "dimensions_mm": {
+   "n": 5,
+   "example": [
+    94,
+    55,
+    23
+   ],
+   "shape": "numeric_array"
+  },
+  "weight_g": {
+   "n": 5,
+   "example": 61200,
+   "shape": "scalar",
+   "desc": "Device weight including backup battery"
+  },
+  "update_frequency_hz": {
+   "n": 4,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "GPS update rate (samples per second)"
+  },
+  "gps_receiver_modes": {
+   "n": 4,
+   "example": [
+    "gps_l1_1575420000",
+    "glonass_l1_1601710000",
+    "sbas"
+   ],
+   "shape": "enum",
+   "desc": "Supported GNSS receiver modes (L1/L2, SBAS, etc.)"
+  },
+  "gps_accuracy": {
+   "n": 4,
+   "example": "2.0_m_cep",
+   "shape": "scalar",
+   "desc": "Typical positional accuracy class (CEP)"
+  },
+  "cold_start_time_s": {
+   "n": 4,
+   "example": 27,
+   "shape": "scalar",
+   "desc": "Cold‑start acquisition time (seconds)"
+  },
+  "sensitivity_dbm": {
+   "n": 4,
+   "example": [
+    -167,
+    -161,
+    -149
+   ],
+   "shape": "numeric_array",
+   "desc": "Receiver sensitivity values (dBm)"
+  },
+  "certifications": {
+   "n": 2,
+   "example": [
+    "GLOBAL-FCC",
+    "GLOBAL-RoHS"
+   ],
+   "shape": "enum"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18259,
+   "claves_nuevas": [
+    "category_name"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 1
+  },
+  {
+   "product_id": 18813,
+   "claves_nuevas": [
+    "packet_transfer_rate_mbps",
+    "frequency_mhz",
+    "accelerometer_3axis",
+    "connection_ports_count",
+    "led_status",
+    "antenna_type",
+    "m2m_protocol",
+    "input_output_ports",
+    "communication_protocols",
+    "memory_capacity_positions",
+    "geofence_count",
+    "dimensions_mm",
+    "weight_g",
+    "update_frequency_hz",
+    "gps_receiver_modes",
+    "gps_accuracy",
+    "cold_start_time_s",
+    "sensitivity_dbm",
+    "certifications"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 20
+  },
+  {
+   "product_id": 18816,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "packet_transfer_rate_mbps",
+    "frequency_mhz",
+    "m2m_protocol",
+    "accelerometer_3axis",
+    "connection_ports_count",
+    "led_status",
+    "antenna_type",
+    "input_output_ports",
+    "communication_protocols",
+    "memory_capacity_positions",
+    "geofence_count",
+    "dimensions_mm",
+    "weight_g",
+    "update_frequency_hz",
+    "gps_receiver_modes",
+    "gps_accuracy",
+    "cold_start_time_s",
+    "sensitivity_dbm"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 18853,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 18863,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "packet_transfer_rate_mbps",
+    "frequency_mhz",
+    "accelerometer_3axis",
+    "connection_ports_count",
+    "led_status",
+    "antenna_type",
+    "m2m_protocol",
+    "input_output_ports",
+    "communication_protocols",
+    "memory_capacity_positions",
+    "geofence_count",
+    "dimensions_mm",
+    "weight_g",
+    "update_frequency_hz",
+    "gps_receiver_modes",
+    "gps_accuracy",
+    "cold_start_time_s",
+    "sensitivity_dbm",
+    "certifications"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 18866,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "packet_transfer_rate_mbps",
+    "frequency_mhz",
+    "accelerometer_3axis",
+    "led_status",
+    "antenna_type",
+    "m2m_protocol",
+    "input_output_ports",
+    "communication_protocols",
+    "memory_capacity_positions",
+    "dimensions_mm",
+    "weight_g",
+    "cold_start_time_s",
+    "sensitivity_dbm"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 20284,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "packet_transfer_rate_mbps",
+    "frequency_mhz",
+    "accelerometer_3axis",
+    "connection_ports_count",
+    "led_status",
+    "antenna_type",
+    "m2m_protocol",
+    "input_output_ports",
+    "communication_protocols",
+    "memory_capacity_positions",
+    "geofence_count",
+    "dimensions_mm",
+    "weight_g",
+    "update_frequency_hz",
+    "gps_receiver_modes",
+    "gps_accuracy"
+   ],
+   "total_claves": 20
+  }
+ ]
+}

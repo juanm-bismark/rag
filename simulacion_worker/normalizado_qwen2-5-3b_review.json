@@ -1,0 +1,257 @@
+{
+ "16883": {
+  "slug": "eon-transceptor-sfp-gsx-1g-500m",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "16884": {
+  "slug": "eon-transceptor-sfp-gsx-1g-10km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "14874": {
+  "slug": "antena-magnetica-3dbi-1-5-y-3mts",
+  "error_type": "invalid_json",
+  "category_id": 1554
+ },
+ "16888": {
+  "slug": "eon-transceptor-sfp-gex-1g-40km-copia",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "9856": {
+  "slug": "teldat-m8-smart",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "9858": {
+  "slug": "teldat-rlx-14000",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "14885": {
+  "slug": "antena-magnetica-7-dbi-3-mts",
+  "error_type": "invalid_json",
+  "category_id": 1554
+ },
+ "9862": {
+  "slug": "teldat-regesta-smart-pro",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "7233": {
+  "slug": "suntech-st20u",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "18346": {
+  "slug": "maipu-switch-s3330",
+  "error_type": "empty_normalization",
+  "category_id": 1626
+ },
+ "9914": {
+  "slug": "sierra-wireless-airlink-450",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "9924": {
+  "slug": "sierra-wireless-airlink-gx450-400",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "16902": {
+  "slug": "eon-transceptor-sfp-gsr-10g-300m",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "18259": {
+  "slug": "galileosky-base-block-iridium",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "18351": {
+  "slug": "maipu-switch-s4330",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "9932": {
+  "slug": "sierra-wireless-airlink-mp70",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "9944": {
+  "slug": "sierra-wireless-raven-rv50x",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "16907": {
+  "slug": "eon-transceptor-sfp-ger-10g-40km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "9946": {
+  "slug": "sierra-wireless-raven-rv55",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "9954": {
+  "slug": "robustel-r3000-lite",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "18264": {
+  "slug": "galileosky-10-4g",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "18453": {
+  "slug": "3onedata-switch-ies6300",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "18816": {
+  "slug": "suntech-st8310-4g",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "16914": {
+  "slug": "eon-transceptor-sfp-bidi-down-1g-10km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "9976": {
+  "slug": "robustel-r3000-lg",
+  "error_type": "excepcion",
+  "category_id": 516
+ },
+ "20217": {
+  "slug": "teldat-switch-esw3l2p",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "16919": {
+  "slug": "eon-transceptor-gpon-20km",
+  "error_type": "invalid_json",
+  "category_id": 1599
+ },
+ "18853": {
+  "slug": "lynkworld-lw4g-5e",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "20222": {
+  "slug": "teldat-switch-esw4l3",
+  "error_type": "invalid_json",
+  "category_id": 1626
+ },
+ "18447": {
+  "slug": "3onedata-gateway-gw1114",
+  "error_type": "empty_normalization",
+  "category_id": 1630
+ },
+ "18003": {
+  "slug": "netio-nt-link-4g",
+  "error_type": "empty_normalization",
+  "category_id": 518
+ },
+ "9987": {
+  "slug": "robustel-r2110",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "18863": {
+  "slug": "lynkworld-lw4g-oa",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "18448": {
+  "slug": "3onedata-servidor-np5200",
+  "error_type": "invalid_json",
+  "category_id": 1630
+ },
+ "14137": {
+  "slug": "robustel-r1510-4l",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "19354": {
+  "slug": "robustel-r5020-5g",
+  "error_type": "invalid_json",
+  "category_id": 1641
+ },
+ "18869": {
+  "slug": "lynkworld-lw4g-wrp",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "19441": {
+  "slug": "robustel-r5020-lite-5g",
+  "error_type": "invalid_json",
+  "category_id": 1641
+ },
+ "19359": {
+  "slug": "3i-corporation-pegasus-nx-ii-4g",
+  "error_type": "invalid_json",
+  "category_id": 518
+ },
+ "20284": {
+  "slug": "suntech-st8310um-4g",
+  "error_type": "invalid_json",
+  "category_id": 77
+ },
+ "14851": {
+  "slug": "teldat-rs1800",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "15004": {
+  "slug": "robustel-r1511",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "15206": {
+  "slug": "robustel-r1520-4l",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "17889": {
+  "slug": "robustel-r2010",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "17914": {
+  "slug": "teldat-m2",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "17916": {
+  "slug": "robustel-r1510-lite",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "18309": {
+  "slug": "maipu-mp2900",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "18457": {
+  "slug": "robustel-m1201",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "19361": {
+  "slug": "teldat-rs420",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "20208": {
+  "slug": "teldat-ares-c640",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "22615": {
+  "slug": "robustel-eg5100",
+  "error_type": "invalid_json",
+  "category_id": 516
+ }
+}

@@ -1,0 +1,1789 @@
+{
+ "claves": {
+  "category_name": {
+   "n": 9,
+   "example": "Módems y routers",
+   "shape": "scalar"
+  },
+  "length_mm": {
+   "n": 14,
+   "example": 232.8,
+   "shape": "scalar",
+   "desc": "device length in millimeters"
+  },
+  "width_mm": {
+   "n": 15,
+   "example": 104,
+   "shape": "scalar",
+   "desc": "device width in millimeters"
+  },
+  "height_mm": {
+   "n": 14,
+   "example": 43.5,
+   "shape": "scalar",
+   "desc": "device height in millimeters"
+  },
+  "weight_g": {
+   "n": 11,
+   "example": 1200,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "input_voltage_v_min": {
+   "n": 15,
+   "example": 90,
+   "shape": "range",
+   "desc": "Minimum input voltage (V)"
+  },
+  "input_voltage_v_max": {
+   "n": 15,
+   "example": 264,
+   "shape": "range",
+   "desc": "Maximum input voltage (V)"
+  },
+  "input_power_w_max": {
+   "n": 10,
+   "example": 1500,
+   "shape": "scalar",
+   "desc": "maximum power consumption (W)"
+  },
+  "ethernet_port_speeds_mbps": {
+   "n": 17,
+   "example": 10000,
+   "shape": "scalar",
+   "desc": "Supported Ethernet port speeds (Mbps)"
+  },
+  "poe_ports_count": {
+   "n": 15,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "PoE‑enabled port count"
+  },
+  "rj45_connector_count": {
+   "n": 15,
+   "example": 6,
+   "shape": "scalar",
+   "desc": "RJ45 connector count"
+  },
+  "sfp_interface": {
+   "n": 10,
+   "example": false,
+   "shape": "boolean",
+   "desc": "presence of SFP optical interface"
+  },
+  "optical_wavelength_nm_min": {
+   "n": 12,
+   "example": 2412,
+   "shape": "range",
+   "desc": "minimum optical wavelength (nm)"
+  },
+  "optical_wavelength_nm_max": {
+   "n": 12,
+   "example": 2472,
+   "shape": "range",
+   "desc": "maximum optical wavelength (nm)"
+  },
+  "operating_temperature_c_min": {
+   "n": 15,
+   "example": -40,
+   "shape": "range",
+   "desc": "minimum operating temperature (°C)"
+  },
+  "operating_temperature_c_max": {
+   "n": 15,
+   "example": 75,
+   "shape": "range",
+   "desc": "maximum operating temperature (°C)"
+  },
+  "relative_humidity_percent_min": {
+   "n": 13,
+   "example": 5,
+   "shape": "range",
+   "desc": "minimum relative humidity (%)"
+  },
+  "relative_humidity_percent_max": {
+   "n": 13,
+   "example": 95,
+   "shape": "range",
+   "desc": "maximum relative humidity (%)"
+  },
+  "atmospheric_pressure_min_mbar": {
+   "n": 11,
+   "example": 700,
+   "shape": "range",
+   "desc": "minimum atmospheric pressure (mbar)"
+  },
+  "atmospheric_pressure_max_mbar": {
+   "n": 11,
+   "example": 1060,
+   "shape": "range",
+   "desc": "maximum atmospheric pressure (mbar)"
+  },
+  "volume_mm3": {
+   "n": 8,
+   "example": 6270000,
+   "shape": "scalar",
+   "desc": "device volume in cubic millimeters"
+  },
+  "ethernet_standards": {
+   "n": 12,
+   "example": [
+    "802.3i",
+    "802.3u",
+    "802.3ab"
+   ],
+   "shape": "enum",
+   "desc": "Supported Ethernet standards"
+  },
+  "ethernet_features": {
+   "n": 8,
+   "example": [
+    "duplex",
+    "negotiation",
+    "ieee_802_3u"
+   ],
+   "shape": "enum",
+   "desc": "Ethernet device features"
+  },
+  "security_features": {
+   "n": 13,
+   "example": [
+    "acl",
+    "ssh",
+    "cpu_protection",
+    "firewall",
+    "ips",
+    "url_filtering",
+    "aaa",
+    "ike",
+    "pki",
+    "802_1x",
+    "urfp"
+   ],
+   "shape": "enum",
+   "desc": "Supported security features"
+  },
+  "management_features": {
+   "n": 11,
+   "example": [
+    "cli",
+    "http_https",
+    "snmp_v1",
+    "snmp_v2",
+    "snmp_v3",
+    "telnet",
+    "ftp",
+    "tftp",
+    "sftp",
+    "tr069",
+    "ip_sla"
+   ],
+   "shape": "enum",
+   "desc": "Management interface features"
+  },
+  "certifications": {
+   "n": 11,
+   "example": [
+    "GLOBAL-CE",
+    "GLOBAL-FCC",
+    "GLOBAL-RoHS"
+   ],
+   "shape": "enum",
+   "desc": "Industrial certifications (RoHS, CE, FCC)"
+  },
+  "_physical_notes": {
+   "n": 13,
+   "example": "Fanless, IP54",
+   "shape": "scalar",
+   "desc": "Free‑form physical notes"
+  },
+  "ethernet_port_count": {
+   "n": 12,
+   "example": 4,
+   "shape": "scalar",
+   "desc": "number of Ethernet ports"
+  },
+  "serial_interface": {
+   "n": 9,
+   "example": true,
+   "shape": "boolean",
+   "desc": "has serial interface"
+  },
+  "usb_connector_count": {
+   "n": 4,
+   "example": 1,
+   "shape": "scalar"
+  },
+  "sma_antenna_connector_count": {
+   "n": 9,
+   "example": 2000,
+   "shape": "scalar",
+   "desc": "antenna SMA connector count"
+  },
+  "digital_inputs_count": {
+   "n": 6,
+   "example": 5,
+   "shape": "scalar"
+  },
+  "digital_output_max_current_a": {
+   "n": 5,
+   "example": 0.5,
+   "shape": "scalar"
+  },
+  "dhcp_enabled": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "ip_forwarding_enabled": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "vlan_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "VLAN support"
+  },
+  "host_watchdog_enabled": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "pppoe_enabled": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "serial_mode_pad": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "serial_mode_tcp_udp": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "modbus_ascii_support": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "modbus_rtu_support": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "modbus_variable_support": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "ppp_enabled": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "wifi_dual_band": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean"
+  },
+  "wifi_standards": {
+   "n": 10,
+   "example": [
+    "802.11b",
+    "802.11g",
+    "802.11n"
+   ],
+   "shape": "enum",
+   "desc": "supported Wi‑Fi standards"
+  },
+  "max_wifi_clients_count": {
+   "n": 7,
+   "example": 128,
+   "shape": "scalar",
+   "desc": "maximum number of concurrent Wi‑Fi clients"
+  },
+  "wifi_output_power_dbm": {
+   "n": 7,
+   "example": 21,
+   "shape": "scalar",
+   "desc": "maximum Wi‑Fi output power in dBm"
+  },
+  "wifi_mode_wan": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Wi‑Fi mode for WAN usage?"
+  },
+  "nat_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "NAT capability enabled?"
+  },
+  "nemo_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "NEMO support?"
+  },
+  "dmnr_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "DMNR support?"
+  },
+  "vrrp_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "VRRP enabled?"
+  },
+  "static_routing_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Static routing enabled?"
+  },
+  "ethernet_wan_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Ethernet WAN support?"
+  },
+  "verizon_pntm_supported": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Verizon PNTM supported?"
+  },
+  "ipv6_gateway_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IPv6 gateway enabled?"
+  },
+  "policy_routing_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Policy routing enabled?"
+  },
+  "dynamic_dns_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Dynamic DNS support?"
+  },
+  "vpn_client_ipsec_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IPSec VPN via IPSec client support?"
+  },
+  "vpn_client_gre_support": {
+   "n": 7,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IPSec VPN via GRE"
+  },
+  "vpn_client_openvpn_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "OpenVPN client support?"
+  },
+  "max_concurrent_tunnels_count": {
+   "n": 6,
+   "example": 5,
+   "shape": "scalar",
+   "desc": "maximum concurrent tunnels count"
+  },
+  "tunnel_split_support": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Tunnel split capability?"
+  },
+  "dpd_detection_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "DPD detection enabled?"
+  },
+  "battery_low_discharge_protection_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Battery low discharge protection enabled?"
+  },
+  "motor_startup_protection_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Motor startup protection enabled?"
+  },
+  "high_voltage_transient_protection_enabled": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "High‑voltage transient protection enabled?"
+  },
+  "iecee_certification": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IECEE certification?"
+  },
+  "ul60950_compliant": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "UL 60950 compliant?"
+  },
+  "iec_61000_5_2_compliant": {
+   "n": 6,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IEC 61000‑5‑2 (charging safety) compliant?"
+  },
+  "iec_61558_compliant": {
+   "n": 5,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IEC 61558 compliance?"
+  },
+  "rohs_compliant": {
+   "n": 3,
+   "example": true,
+   "shape": "boolean",
+   "desc": "RoHS compliance"
+  },
+  "sim_count": {
+   "n": 7,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "SIM slot count"
+  },
+  "dimensions_mm": {
+   "n": 4,
+   "example": [
+    232800,
+    183200,
+    45200
+   ],
+   "shape": "numeric_array",
+   "desc": "device length × width × height (mm)"
+  },
+  "device_weight_g": {
+   "n": 11,
+   "example": 1200,
+   "shape": "scalar",
+   "desc": "Device weight in grams"
+  },
+  "transmitted_power_w": {
+   "n": 3,
+   "example": 0.58,
+   "shape": "scalar"
+  },
+  "sensitivity_dbm": {
+   "n": 4,
+   "example": [
+    -93,
+    -90,
+    -88,
+    -85
+   ],
+   "shape": "numeric_array",
+   "desc": "device sensitivity in dBm"
+  },
+  "device_length_mm": {
+   "n": 2,
+   "example": 232800,
+   "shape": "scalar"
+  },
+  "device_width_mm": {
+   "n": 1,
+   "example": 104,
+   "shape": "scalar"
+  },
+  "device_height_mm": {
+   "n": 1,
+   "example": 43.5,
+   "shape": "scalar"
+  },
+  "antenna_count": {
+   "n": 7,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "number of Wi‑Fi antennas"
+  },
+  "connector_type": {
+   "n": 5,
+   "example": "sma-k",
+   "shape": "scalar",
+   "desc": "Wi‑Fi connector type (e.g., RP‑SMA‑K)"
+  },
+  "device_voltage_max_v": {
+   "n": 4,
+   "example": 1500,
+   "shape": "scalar",
+   "desc": "maximum absolute VDC voltage"
+  },
+  "device_current_max_a": {
+   "n": 2,
+   "example": 0.02,
+   "shape": "scalar",
+   "desc": "maximum ADC current in amps"
+  },
+  "regulatory_certifications": {
+   "n": 5,
+   "example": [
+    "GLOBAL-CE"
+   ],
+   "shape": "enum",
+   "desc": "industrial certifications (RoHS, CE, FCC)"
+  },
+  "has_serial_interface": {
+   "n": 3,
+   "example": true,
+   "shape": "boolean",
+   "desc": "serial interface present?"
+  },
+  "mimo_count": {
+   "n": 2,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "MIMO count per interface"
+  },
+  "max_wifi_data_rate_mbps": {
+   "n": 3,
+   "example": 300,
+   "shape": "scalar",
+   "desc": "maximum Wi‑Fi data rate in Mbps"
+  },
+  "serial_min_bps": {
+   "n": 1,
+   "example": 300,
+   "shape": "range",
+   "desc": "minimum serial baud rate (bps)"
+  },
+  "serial_max_bps": {
+   "n": 1,
+   "example": 115200,
+   "shape": "range",
+   "desc": "maximum serial baud rate (bps)"
+  },
+  "has_restart_button": {
+   "n": 2,
+   "example": true,
+   "shape": "boolean",
+   "desc": "restart button available?"
+  },
+  "indicators_led": {
+   "n": 2,
+   "example": [
+    "run",
+    "mdm",
+    "usr",
+    "rssi",
+    "wlan"
+   ],
+   "shape": "enum",
+   "desc": "LED indicators present"
+  },
+  "has_serial_mode_tcp_udp": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean"
+  },
+  "wlan_port_count": {
+   "n": 1,
+   "example": 2000,
+   "shape": "scalar"
+  },
+  "regulatory_standards": {
+   "n": 2,
+   "example": [
+    "GLOBAL-CE",
+    "GLOBAL-FCC",
+    "GLOBAL-RoHS"
+   ],
+   "shape": "enum",
+   "desc": "industrial certifications"
+  },
+  "cpu_model": {
+   "n": 2,
+   "example": "1.6GHz Dual Core",
+   "shape": "scalar",
+   "desc": "CPU model (e.g., 1.6GHz Dual Core)"
+  },
+  "ram_size_mb": {
+   "n": 2,
+   "example": 1000,
+   "shape": "scalar",
+   "desc": "RAM size in MB"
+  },
+  "flash_size_mib": {
+   "n": 2,
+   "example": 128,
+   "shape": "scalar",
+   "desc": "Flash storage size in MiB"
+  },
+  "dual_software_image": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean"
+  },
+  "ethernet_wan_ports": {
+   "n": 1,
+   "example": 5,
+   "shape": "scalar"
+  },
+  "ethernet_ports": {
+   "n": 1,
+   "example": 8,
+   "shape": "scalar"
+  },
+  "wlan_data_rate_mbps": {
+   "n": 1,
+   "example": 300,
+   "shape": "scalar"
+  },
+  "device_dimensions_mm": {
+   "n": 2,
+   "example": [
+    264000,
+    483000,
+    44000
+   ],
+   "shape": "numeric_array",
+   "desc": "Device length × width × height (mm)"
+  },
+  "operating_temperature_c_min_max": {
+   "n": 3,
+   "example": [
+    -40,
+    75
+   ],
+   "shape": "numeric_array",
+   "desc": "minimum/maximum operating temperature (°C)"
+  },
+  "relative_humidity_percent_min_max": {
+   "n": 2,
+   "example": [
+    5,
+    95
+   ],
+   "shape": "numeric_array",
+   "desc": "Relative humidity range (%)"
+  },
+  "wan_protocols": {
+   "n": 2,
+   "example": [
+    "DDR",
+    "NDIS",
+    "PPPoE",
+    "Bridge Group",
+    "EDP"
+   ],
+   "shape": "enum",
+   "desc": "Supported WAN protocols"
+  },
+  "tcp_ip_protocols": {
+   "n": 2,
+   "example": [
+    "dhcp",
+    "dns",
+    "ddns",
+    "nat",
+    "nat64",
+    "nat66",
+    "nat_alg",
+    "ipip",
+    "gre",
+    "l2tp",
+    "l2tpv3"
+   ],
+   "shape": "enum",
+   "desc": "Supported TCP/IP protocols"
+  },
+  "ipv4_routing_protocols": {
+   "n": 2,
+   "example": [
+    "static",
+    "rip",
+    "ospfv2",
+    "is-is",
+    "bgp",
+    "policy_routing"
+   ],
+   "shape": "enum",
+   "desc": "IPv4 routing protocols"
+  },
+  "ipv6_routing_protocols": {
+   "n": 2,
+   "example": [
+    "static",
+    "ripng",
+    "ospfv3",
+    "is-isv6",
+    "bgp4+",
+    "policy_routing"
+   ],
+   "shape": "enum",
+   "desc": "IPv6 routing protocols"
+  },
+  "ipv6_features": {
+   "n": 2,
+   "example": [
+    "ipv4_ipv6_dual_stack",
+    "ipv6_nd",
+    "ipv6_pmtu_disc",
+    "ipv6_acl",
+    "icmpv6",
+    "dnsv6",
+    "dhcpv6",
+    "gre_ipv6",
+    "ipv6_pim"
+   ],
+   "shape": "enum",
+   "desc": "IPv6 specific features"
+  },
+  "ipv6_tunneling_protocols": {
+   "n": 2,
+   "example": [
+    "ipv6_over_ipv4",
+    "6to4",
+    "isatap"
+   ],
+   "shape": "enum",
+   "desc": "IPv6 tunneling protocols"
+  },
+  "multicast_protocols": {
+   "n": 3,
+   "example": [
+    "igmp_v1",
+    "igmp_v2",
+    "igmp_v3",
+    "pim_sm",
+    "msdp",
+    "mld",
+    "mldv2"
+   ],
+   "shape": "enum",
+   "desc": "Supported multicast protocols"
+  },
+  "vpn_protocols": {
+   "n": 2,
+   "example": [
+    "ipsec_transport",
+    "ipsec_tunnel",
+    "preshared_key",
+    "rsa",
+    "certificates",
+    "md5",
+    "sha2",
+    "ike",
+    "pkI",
+    "vlpS",
+    "l3vpn",
+    "oam",
+    "6pe",
+    "vrf",
+    "dvpn",
+    "vxlan"
+   ],
+   "shape": "enum",
+   "desc": "VPN protocols supported"
+  },
+  "qos_features": {
+   "n": 2,
+   "example": [
+    "fifo",
+    "pq",
+    "fq",
+    "wfq",
+    "cbwfq",
+    "llq",
+    "rsrvP",
+    "car",
+    "h-qos",
+    "traffic_configuration",
+    "speed_limiting"
+   ],
+   "shape": "enum",
+   "desc": "Quality of Service features"
+  },
+  "reliability_features": {
+   "n": 2,
+   "example": [
+    "backup_interface",
+    "vrrp_v3",
+    "vbrp",
+    "ipsla",
+    "track",
+    "bfd",
+    "bfdv6"
+   ],
+   "shape": "enum",
+   "desc": "Reliability features"
+  },
+  "model_names": {
+   "n": 1,
+   "example": [
+    "rcrs420h101",
+    "rcrs420h102",
+    "rcrs420h103",
+    "rcrs420h104",
+    "rcrs420h105",
+    "rcrs420h106"
+   ],
+   "shape": "enum"
+  },
+  "ethernet_ports_count": {
+   "n": 2,
+   "example": 8,
+   "shape": "scalar",
+   "desc": "number of Ethernet ports"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 9842,
+   "claves_nuevas": [
+    "category_name"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 1
+  },
+  {
+   "product_id": 9854,
+   "claves_nuevas": [
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar"
+   ],
+   "claves_actualizadas": [
+    "category_name"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 9856,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "length_mm",
+    "width_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 9858,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar"
+   ],
+   "total_claves": 20
+  },
+  {
+   "product_id": 9862,
+   "claves_nuevas": [
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes"
+   ],
+   "claves_actualizadas": [
+    "category_name",
+    "weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar"
+   ],
+   "total_claves": 27
+  },
+  {
+   "product_id": 9914,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes"
+   ],
+   "total_claves": 27
+  },
+  {
+   "product_id": 9924,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes"
+   ],
+   "total_claves": 27
+  },
+  {
+   "product_id": 9932,
+   "claves_nuevas": [
+    "ethernet_port_count",
+    "serial_interface",
+    "usb_connector_count",
+    "sma_antenna_connector_count",
+    "digital_inputs_count",
+    "digital_output_max_current_a",
+    "dhcp_enabled",
+    "ip_forwarding_enabled",
+    "vlan_support",
+    "host_watchdog_enabled",
+    "pppoe_enabled",
+    "serial_mode_pad",
+    "serial_mode_tcp_udp",
+    "modbus_ascii_support",
+    "modbus_rtu_support",
+    "modbus_variable_support",
+    "ppp_enabled",
+    "wifi_dual_band",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant",
+    "iec_61558_compliant",
+    "rohs_compliant"
+   ],
+   "claves_actualizadas": [
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "volume_mm3",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar"
+   ],
+   "total_claves": 73
+  },
+  {
+   "product_id": 9946,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name",
+    "weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "serial_interface",
+    "usb_connector_count",
+    "sma_antenna_connector_count",
+    "digital_inputs_count",
+    "digital_output_max_current_a",
+    "dhcp_enabled",
+    "ip_forwarding_enabled",
+    "vlan_support",
+    "host_watchdog_enabled",
+    "pppoe_enabled",
+    "serial_mode_pad",
+    "serial_mode_tcp_udp",
+    "modbus_ascii_support",
+    "modbus_rtu_support",
+    "modbus_variable_support",
+    "ppp_enabled",
+    "wifi_dual_band",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant",
+    "iec_61558_compliant",
+    "rohs_compliant"
+   ],
+   "total_claves": 73
+  },
+  {
+   "product_id": 9954,
+   "claves_nuevas": [
+    "sim_count",
+    "dimensions_mm"
+   ],
+   "claves_actualizadas": [
+    "ethernet_port_count",
+    "sma_antenna_connector_count",
+    "wifi_standards",
+    "serial_interface",
+    "security_features",
+    "management_features",
+    "certifications"
+   ],
+   "total_claves": 75
+  },
+  {
+   "product_id": 9976,
+   "claves_nuevas": [
+    "device_weight_g",
+    "transmitted_power_w",
+    "sensitivity_dbm",
+    "device_length_mm",
+    "device_width_mm",
+    "device_height_mm"
+   ],
+   "claves_actualizadas": [
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sma_antenna_connector_count",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes",
+    "ethernet_port_count",
+    "serial_interface",
+    "digital_inputs_count",
+    "digital_output_max_current_a",
+    "dhcp_enabled",
+    "ip_forwarding_enabled",
+    "vlan_support",
+    "host_watchdog_enabled",
+    "pppoe_enabled",
+    "serial_mode_pad",
+    "serial_mode_tcp_udp",
+    "modbus_ascii_support",
+    "modbus_rtu_support",
+    "modbus_variable_support",
+    "ppp_enabled",
+    "wifi_dual_band",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant",
+    "iec_61558_compliant",
+    "sim_count"
+   ],
+   "total_claves": 81
+  },
+  {
+   "product_id": 9980,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name",
+    "weight_g",
+    "device_weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "ethernet_port_count",
+    "digital_inputs_count",
+    "sma_antenna_connector_count",
+    "serial_interface",
+    "usb_connector_count",
+    "wifi_standards",
+    "certifications"
+   ],
+   "total_claves": 81
+  },
+  {
+   "product_id": 9987,
+   "claves_nuevas": [
+    "antenna_count",
+    "connector_type"
+   ],
+   "claves_actualizadas": [
+    "sim_count",
+    "ethernet_port_speeds_mbps",
+    "rj45_connector_count",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes"
+   ],
+   "total_claves": 83
+  },
+  {
+   "product_id": 14137,
+   "claves_nuevas": [
+    "device_voltage_max_v",
+    "device_current_max_a",
+    "regulatory_certifications"
+   ],
+   "claves_actualizadas": [
+    "antenna_count",
+    "connector_type",
+    "sim_count",
+    "ethernet_port_count",
+    "wifi_output_power_dbm",
+    "sensitivity_dbm",
+    "_physical_notes",
+    "dimensions_mm"
+   ],
+   "total_claves": 86
+  },
+  {
+   "product_id": 14851,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "device_weight_g",
+    "dimensions_mm",
+    "ethernet_port_count",
+    "sma_antenna_connector_count",
+    "antenna_count",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "certifications",
+    "ethernet_standards",
+    "wifi_standards"
+   ],
+   "total_claves": 86
+  },
+  {
+   "product_id": 15004,
+   "claves_nuevas": [
+    "has_serial_interface",
+    "mimo_count",
+    "max_wifi_data_rate_mbps",
+    "serial_min_bps",
+    "serial_max_bps",
+    "has_restart_button",
+    "indicators_led",
+    "has_serial_mode_tcp_udp"
+   ],
+   "claves_actualizadas": [
+    "antenna_count",
+    "connector_type",
+    "device_weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "ethernet_port_speeds_mbps",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "sensitivity_dbm"
+   ],
+   "total_claves": 94
+  },
+  {
+   "product_id": 17889,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name",
+    "weight_g",
+    "device_weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "antenna_count",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "device_voltage_max_v",
+    "transmitted_power_w",
+    "ethernet_standards",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes",
+    "ethernet_port_count",
+    "serial_interface",
+    "sma_antenna_connector_count",
+    "digital_inputs_count",
+    "digital_output_max_current_a",
+    "dhcp_enabled",
+    "ip_forwarding_enabled",
+    "vlan_support",
+    "host_watchdog_enabled",
+    "pppoe_enabled",
+    "serial_mode_pad",
+    "serial_mode_tcp_udp",
+    "modbus_ascii_support",
+    "modbus_rtu_support",
+    "modbus_variable_support",
+    "ppp_enabled",
+    "wifi_dual_band",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant",
+    "iec_61558_compliant"
+   ],
+   "total_claves": 94
+  },
+  {
+   "product_id": 17895,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "antenna_count",
+    "connector_type",
+    "sim_count",
+    "ethernet_port_count",
+    "poe_ports_count",
+    "device_voltage_max_v",
+    "wifi_standards",
+    "ethernet_standards",
+    "security_features",
+    "vpn_client_gre_support",
+    "has_restart_button",
+    "_physical_notes"
+   ],
+   "total_claves": 94
+  },
+  {
+   "product_id": 17914,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "device_weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes",
+    "ethernet_port_count",
+    "serial_interface",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant",
+    "iec_61558_compliant",
+    "rohs_compliant",
+    "sim_count"
+   ],
+   "total_claves": 94
+  },
+  {
+   "product_id": 17915,
+   "claves_nuevas": [
+    "wlan_port_count"
+   ],
+   "claves_actualizadas": [
+    "device_length_mm",
+    "width_mm",
+    "height_mm",
+    "ethernet_port_count",
+    "sma_antenna_connector_count",
+    "dimensions_mm",
+    "device_weight_g",
+    "transmitted_power_w",
+    "sensitivity_dbm",
+    "regulatory_certifications",
+    "has_serial_interface",
+    "max_wifi_data_rate_mbps"
+   ],
+   "total_claves": 95
+  },
+  {
+   "product_id": 17916,
+   "claves_nuevas": [
+    "regulatory_standards"
+   ],
+   "claves_actualizadas": [
+    "category_name",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "atmospheric_pressure_min_mbar",
+    "atmospheric_pressure_max_mbar",
+    "volume_mm3",
+    "ethernet_standards",
+    "ethernet_features",
+    "security_features",
+    "management_features",
+    "_physical_notes",
+    "ethernet_port_count",
+    "serial_interface",
+    "sma_antenna_connector_count",
+    "digital_inputs_count",
+    "digital_output_max_current_a",
+    "dhcp_enabled",
+    "ip_forwarding_enabled",
+    "vlan_support",
+    "host_watchdog_enabled",
+    "pppoe_enabled",
+    "serial_mode_pad",
+    "serial_mode_tcp_udp",
+    "modbus_ascii_support",
+    "modbus_rtu_support",
+    "modbus_variable_support",
+    "ppp_enabled",
+    "wifi_dual_band",
+    "wifi_standards",
+    "max_wifi_clients_count",
+    "wifi_output_power_dbm",
+    "wifi_mode_wan",
+    "nat_enabled",
+    "nemo_support",
+    "dmnr_support",
+    "vrrp_enabled",
+    "static_routing_enabled",
+    "ethernet_wan_support",
+    "verizon_pntm_supported",
+    "ipv6_gateway_enabled",
+    "policy_routing_enabled",
+    "dynamic_dns_enabled",
+    "vpn_client_ipsec_support",
+    "vpn_client_gre_support",
+    "vpn_client_openvpn_support",
+    "max_concurrent_tunnels_count",
+    "tunnel_split_support",
+    "dpd_detection_enabled",
+    "battery_low_discharge_protection_enabled",
+    "motor_startup_protection_enabled",
+    "high_voltage_transient_protection_enabled",
+    "iecee_certification",
+    "ul60950_compliant",
+    "iec_61000_5_2_compliant"
+   ],
+   "total_claves": 96
+  },
+  {
+   "product_id": 18305,
+   "claves_nuevas": [
+    "cpu_model",
+    "ram_size_mb",
+    "flash_size_mib",
+    "dual_software_image",
+    "ethernet_wan_ports",
+    "ethernet_ports",
+    "wlan_data_rate_mbps",
+    "device_dimensions_mm",
+    "operating_temperature_c_min_max",
+    "relative_humidity_percent_min_max",
+    "wan_protocols",
+    "tcp_ip_protocols",
+    "ipv4_routing_protocols",
+    "ipv6_routing_protocols",
+    "ipv6_features",
+    "ipv6_tunneling_protocols",
+    "multicast_protocols",
+    "vpn_protocols",
+    "qos_features",
+    "reliability_features"
+   ],
+   "claves_actualizadas": [
+    "device_weight_g",
+    "security_features",
+    "management_features",
+    "regulatory_certifications"
+   ],
+   "total_claves": 116
+  },
+  {
+   "product_id": 18309,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "wan_protocols",
+    "ethernet_standards",
+    "tcp_ip_protocols",
+    "ipv4_routing_protocols",
+    "ipv6_routing_protocols",
+    "ipv6_features",
+    "ipv6_tunneling_protocols",
+    "multicast_protocols",
+    "vpn_protocols",
+    "security_features",
+    "qos_features",
+    "reliability_features"
+   ],
+   "total_claves": 116
+  },
+  {
+   "product_id": 18457,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "category_name",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "serial_interface",
+    "usb_connector_count",
+    "indicators_led",
+    "device_weight_g",
+    "operating_temperature_c_min_max",
+    "regulatory_standards"
+   ],
+   "total_claves": 116
+  },
+  {
+   "product_id": 19361,
+   "claves_nuevas": [
+    "model_names"
+   ],
+   "claves_actualizadas": [
+    "ethernet_port_count",
+    "ethernet_standards",
+    "ethernet_features",
+    "vlan_support",
+    "poe_ports_count",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min_max",
+    "regulatory_certifications",
+    "_physical_notes"
+   ],
+   "total_claves": 117
+  },
+  {
+   "product_id": 20076,
+   "claves_nuevas": [
+    "ethernet_ports_count"
+   ],
+   "claves_actualizadas": [
+    "ethernet_port_speeds_mbps",
+    "device_dimensions_mm",
+    "device_weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "relative_humidity_percent_min_max",
+    "multicast_protocols",
+    "security_features",
+    "management_features",
+    "certifications",
+    "_physical_notes"
+   ],
+   "total_claves": 118
+  },
+  {
+   "product_id": 22602,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "connector_type",
+    "antenna_count",
+    "mimo_count",
+    "sim_count",
+    "cpu_model",
+    "ram_size_mb",
+    "flash_size_mib",
+    "device_weight_g",
+    "input_voltage_v_min",
+    "input_voltage_v_max",
+    "input_power_w_max",
+    "ethernet_port_speeds_mbps",
+    "poe_ports_count",
+    "rj45_connector_count",
+    "sfp_interface",
+    "optical_wavelength_nm_min",
+    "optical_wavelength_nm_max",
+    "operating_temperature_c_min",
+    "operating_temperature_c_max",
+    "relative_humidity_percent_min",
+    "relative_humidity_percent_max",
+    "device_voltage_max_v",
+    "device_current_max_a",
+    "regulatory_certifications",
+    "has_serial_interface",
+    "max_wifi_data_rate_mbps",
+    "_physical_notes",
+    "ethernet_ports_count"
+   ],
+   "total_claves": 118
+  }
+ ]
+}

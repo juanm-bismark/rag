@@ -1,0 +1,114 @@
+{
+ "claves": {
+  "weight_g": {
+   "n": 2,
+   "example": 123,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "battery_life_s": {
+   "n": 2,
+   "example": 345600,
+   "shape": "scalar",
+   "desc": "battery life in seconds"
+  },
+  "ingress_protection": {
+   "n": 2,
+   "example": [
+    "ip65"
+   ],
+   "shape": "enum",
+   "desc": "ip enclosure rating"
+  },
+  "physical_notes": {
+   "n": 2,
+   "example": [
+    "Fanless",
+    "IP54"
+   ],
+   "shape": "enum",
+   "desc": "physical notes"
+  },
+  "serial_format": {
+   "n": 2,
+   "example": [
+    "8n1",
+    "8e1"
+   ],
+   "shape": "enum",
+   "desc": "serial format"
+  },
+  "sdk_programming_languages": {
+   "n": 2,
+   "example": [
+    "c",
+    "c++"
+   ],
+   "shape": "enum",
+   "desc": "SDK programming languages"
+  },
+  "active_current_a": {
+   "n": 2,
+   "example": 0.0375,
+   "shape": "scalar"
+  },
+  "sleep_current_a": {
+   "n": 2,
+   "example": 0.0031,
+   "shape": "scalar"
+  },
+  "operating_temperature_min_c": {
+   "n": 2,
+   "example": -45,
+   "shape": "range"
+  },
+  "operating_temperature_max_c": {
+   "n": 2,
+   "example": 85,
+   "shape": "range"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18813,
+   "claves_nuevas": [
+    "weight_g",
+    "battery_life_s",
+    "ingress_protection",
+    "physical_notes",
+    "serial_format",
+    "sdk_programming_languages"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 6
+  },
+  {
+   "product_id": 9535,
+   "claves_nuevas": [
+    "active_current_a",
+    "sleep_current_a",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 10
+  },
+  {
+   "product_id": 18866,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "weight_g",
+    "battery_life_s",
+    "ingress_protection",
+    "physical_notes",
+    "serial_format",
+    "sdk_programming_languages",
+    "active_current_a",
+    "sleep_current_a",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 10
+  }
+ ]
+}

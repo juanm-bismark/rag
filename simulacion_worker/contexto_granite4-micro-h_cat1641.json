@@ -1,0 +1,275 @@
+{
+ "claves": {
+  "number_of_cellular_antennas": {
+   "n": 1,
+   "example": 4,
+   "shape": "scalar"
+  },
+  "conector": {
+   "n": 1,
+   "example": "sma-k",
+   "shape": "scalar"
+  },
+  "sim": {
+   "n": 1,
+   "example": "mini sim (2ff)",
+   "shape": "scalar"
+  },
+  "number_of_ports": {
+   "n": 1,
+   "example": [
+    10,
+    100,
+    1000
+   ],
+   "shape": "numeric_array"
+  },
+  "proteccion_aislamiento_magnetico": {
+   "n": 1,
+   "example": 1000,
+   "shape": "scalar"
+  },
+  "boton_reinicio": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean"
+  },
+  "indicators_led": {
+   "n": 1,
+   "example": [
+    "run",
+    "modem",
+    "usr",
+    "rssi",
+    "wifi-2.4g",
+    "wifi-5g"
+   ],
+   "shape": "enum"
+  },
+  "watchdog": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean"
+  },
+  "number_of_antennas_wifi": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar"
+  },
+  "conector_wifi": {
+   "n": 1,
+   "example": "rp-sma-k",
+   "shape": "scalar"
+  },
+  "standards_wifi": {
+   "n": 1,
+   "example": [
+    "802.11b/g/n/ac 2*2 mimo",
+    "ap cliente"
+   ],
+   "shape": "enum"
+  },
+  "security_wifi": {
+   "n": 1,
+   "example": [
+    "wpa",
+    "wpa2",
+    "wep",
+    "wpa3"
+   ],
+   "shape": "enum"
+  },
+  "encryption_wifi": {
+   "n": 1,
+   "example": [
+    "aes",
+    "tkip",
+    "wep64"
+   ],
+   "shape": "enum"
+  },
+  "number_of_serial_ports": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar"
+  },
+  "serial_connector": {
+   "n": 1,
+   "example": "3 pins female 3,5 mm",
+   "shape": "scalar"
+  },
+  "esd_protection": {
+   "n": 1,
+   "example": [
+    "±8 kv air discharge",
+    "±6 kv contact discharge"
+   ],
+   "shape": "enum"
+  },
+  "signal_definition_serial": {
+   "n": 1,
+   "example": "rs232 txd, rxd, gnd | rs485: datos+ (a), datos- (b), tierra (gnd)",
+   "shape": "scalar"
+  },
+  "applications": {
+   "n": 1,
+   "example": [
+    "l2tp",
+    "pptp",
+    "dmvpn",
+    "vrrp",
+    "qos",
+    "snmp",
+    "idioma",
+    "rcms",
+    "ruteo dinamico",
+    "proteccion de datos",
+    "portal cautivo",
+    "wlan multi ap"
+   ],
+   "shape": "enum"
+  },
+  "programming_languages_sdk": {
+   "n": 1,
+   "example": [
+    "c",
+    "c++"
+   ],
+   "shape": "enum"
+  },
+  "sdk_flash_mb": {
+   "n": 1,
+   "example": 5,
+   "shape": "scalar"
+  },
+  "sdk_ram_mb": {
+   "n": 1,
+   "example": 128,
+   "shape": "scalar"
+  },
+  "protection_grade": {
+   "n": 1,
+   "example": "ip30",
+   "shape": "scalar"
+  },
+  "enclosure_and_weight": {
+   "n": 1,
+   "example": "aluminio, 475 g",
+   "shape": "scalar"
+  },
+  "dimensions_mm": {
+   "n": 1,
+   "example": [
+    136,
+    115,
+    32
+   ],
+   "shape": "numeric_array"
+  },
+  "installation": {
+   "n": 1,
+   "example": "montaje en escritorio, en pared y en din rail",
+   "shape": "scalar"
+  },
+  "operating_temperature_min_c": {
+   "n": 1,
+   "example": -25,
+   "shape": "range"
+  },
+  "operating_temperature_max_c": {
+   "n": 1,
+   "example": 55,
+   "shape": "range"
+  },
+  "storage_temperature_min_c": {
+   "n": 1,
+   "example": -25,
+   "shape": "range"
+  },
+  "storage_temperature_max_c": {
+   "n": 1,
+   "example": 70,
+   "shape": "range"
+  },
+  "relative_humidity_percent": {
+   "n": 1,
+   "example": [
+    5,
+    95
+   ],
+   "shape": "numeric_array"
+  },
+  "environmental_approval": {
+   "n": 1,
+   "example": [
+    "rohs2.0"
+   ],
+   "shape": "enum"
+  },
+  "physical_approvals": {
+   "n": 1,
+   "example": [
+    "iec 60068-2-6 (vibration sinusoidal)",
+    "iec 60068-2-64 (vibration random)",
+    "iec 60068-2-27 (mechanical shock)"
+   ],
+   "shape": "enum"
+  },
+  "power_supply_connector": {
+   "n": 1,
+   "example": "b098004 : zócalo hembra de 2 pines y 3,5 mm con cerradura | b098005 : toma de corriente de cc industrial de 4 pines",
+   "shape": "scalar"
+  },
+  "input_voltage_range_v": {
+   "n": 1,
+   "example": [
+    12,
+    36
+   ],
+   "shape": "numeric_array"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 19441,
+   "claves_nuevas": [
+    "number_of_cellular_antennas",
+    "conector",
+    "sim",
+    "number_of_ports",
+    "proteccion_aislamiento_magnetico",
+    "boton_reinicio",
+    "indicators_led",
+    "watchdog",
+    "number_of_antennas_wifi",
+    "conector_wifi",
+    "standards_wifi",
+    "security_wifi",
+    "encryption_wifi",
+    "number_of_serial_ports",
+    "serial_connector",
+    "esd_protection",
+    "signal_definition_serial",
+    "applications",
+    "programming_languages_sdk",
+    "sdk_flash_mb",
+    "sdk_ram_mb",
+    "protection_grade",
+    "enclosure_and_weight",
+    "dimensions_mm",
+    "installation",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "storage_temperature_min_c",
+    "storage_temperature_max_c",
+    "relative_humidity_percent",
+    "environmental_approval",
+    "physical_approvals",
+    "power_supply_connector",
+    "input_voltage_range_v"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 34
+  }
+ ]
+}

@@ -1,0 +1,111 @@
+{
+ "claves": {
+  "switch_count": {
+   "n": 3,
+   "example": 9,
+   "shape": "scalar",
+   "desc": "Number of switch ports (hardware configuration)"
+  },
+  "sfp_count": {
+   "n": 3,
+   "example": [
+    4,
+    6
+   ],
+   "shape": "numeric_array",
+   "desc": "Count of SFP/SFP+ ports available"
+  },
+  "input_power_watts_max": {
+   "n": 3,
+   "example": 760,
+   "shape": "scalar",
+   "desc": "Maximum input power the switch can draw (W)"
+  },
+  "poe_poe_power_watts_max": {
+   "n": 3,
+   "example": 125,
+   "shape": "scalar",
+   "desc": "Maximum combined PoE/PoE+ output power to devices (W)"
+  },
+  "power_watts_max": {
+   "n": 3,
+   "example": 760,
+   "shape": "scalar",
+   "desc": "Peak total power consumption of the switch (W)"
+  },
+  "power_supply_type": {
+   "n": 3,
+   "example": "fixed",
+   "shape": "scalar",
+   "desc": "Type of power supply – fixed AC"
+  },
+  "modular_expansion_slot": {
+   "n": 3,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Indicates if the unit supports modular expansion slots"
+  },
+  "operating_temperature_min_c": {
+   "n": 3,
+   "example": -40,
+   "shape": "range",
+   "desc": "Minimum operating temperature (°C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 3,
+   "example": 75,
+   "shape": "range",
+   "desc": "Maximum operating temperature (°C)"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18346,
+   "claves_nuevas": [
+    "switch_count",
+    "sfp_count",
+    "input_power_watts_max",
+    "poe_poe_power_watts_max",
+    "power_watts_max",
+    "power_supply_type",
+    "modular_expansion_slot",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 9
+  },
+  {
+   "product_id": 18351,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "switch_count",
+    "sfp_count",
+    "input_power_watts_max",
+    "poe_poe_power_watts_max",
+    "power_watts_max",
+    "power_supply_type",
+    "modular_expansion_slot",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 9
+  },
+  {
+   "product_id": 20217,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "switch_count",
+    "sfp_count",
+    "input_power_watts_max",
+    "poe_poe_power_watts_max",
+    "power_watts_max",
+    "power_supply_type",
+    "modular_expansion_slot",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 9
+  }
+ ]
+}

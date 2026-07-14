@@ -1,0 +1,179 @@
+{
+ "claves": {
+  "element_count": {
+   "n": 2,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "Number of elements"
+  },
+  "gain_dbi": {
+   "n": 4,
+   "example": 5,
+   "shape": "scalar",
+   "desc": "Gain in dBi"
+  },
+  "frequency_min_mhz": {
+   "n": 4,
+   "example": 800000000,
+   "shape": "range",
+   "desc": "Minimum frequency (MHz)"
+  },
+  "frequency_max_mhz": {
+   "n": 4,
+   "example": 2100000000,
+   "shape": "range",
+   "desc": "Maximum frequency (MHz)"
+  },
+  "front_to_back_db": {
+   "n": 2,
+   "example": ">26",
+   "shape": "scalar",
+   "desc": "Front‑to‑back ratio"
+  },
+  "input_impedance_ohm": {
+   "n": 4,
+   "example": 50,
+   "shape": "scalar",
+   "desc": "Input impedance in ohms"
+  },
+  "angle_min_degrees": {
+   "n": 1,
+   "example": 500,
+   "shape": "range",
+   "desc": "Minimum angle (degrees)"
+  },
+  "angle_max_degrees": {
+   "n": 1,
+   "example": 520,
+   "shape": "range",
+   "desc": "Maximum angle (degrees)"
+  },
+  "roe_ratio": {
+   "n": 4,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "Receiver Output Ratio"
+  },
+  "mounting_type": {
+   "n": 2,
+   "example": "optional",
+   "shape": "scalar",
+   "desc": "Mounting type description"
+  },
+  "height_cm": {
+   "n": 2,
+   "example": 7.5,
+   "shape": "scalar",
+   "desc": "Height in centimeters"
+  },
+  "width_cm": {
+   "n": 2,
+   "example": 19.5,
+   "shape": "scalar",
+   "desc": "Width in centimeters"
+  },
+  "length_cm": {
+   "n": 2,
+   "example": 117,
+   "shape": "scalar",
+   "desc": "Length in centimeters"
+  },
+  "weight_g": {
+   "n": 3,
+   "example": 65,
+   "shape": "scalar",
+   "desc": "Weight in grams"
+  },
+  "operating_temperature_min_c": {
+   "n": 2,
+   "example": -40,
+   "shape": "range",
+   "desc": "Minimum operating temperature (°C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 2,
+   "example": 70,
+   "shape": "range",
+   "desc": "Maximum operating temperature (°C)"
+  },
+  "polarization": {
+   "n": 2,
+   "example": "vertical",
+   "shape": "scalar"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 14869,
+   "claves_nuevas": [
+    "element_count",
+    "gain_dbi",
+    "frequency_min_mhz",
+    "frequency_max_mhz",
+    "front_to_back_db",
+    "input_impedance_ohm",
+    "angle_min_degrees",
+    "angle_max_degrees",
+    "roe_ratio",
+    "mounting_type",
+    "height_cm",
+    "width_cm",
+    "length_cm",
+    "weight_g"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 14
+  },
+  {
+   "product_id": 14874,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "frequency_min_mhz",
+    "frequency_max_mhz",
+    "gain_dbi",
+    "roe_ratio",
+    "input_impedance_ohm",
+    "weight_g"
+   ],
+   "total_claves": 14
+  },
+  {
+   "product_id": 14879,
+   "claves_nuevas": [
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "polarization"
+   ],
+   "claves_actualizadas": [
+    "frequency_min_mhz",
+    "frequency_max_mhz",
+    "gain_dbi",
+    "roe_ratio",
+    "input_impedance_ohm"
+   ],
+   "total_claves": 17
+  },
+  {
+   "product_id": 14882,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "element_count",
+    "gain_dbi",
+    "frequency_min_mhz",
+    "frequency_max_mhz",
+    "front_to_back_db",
+    "input_impedance_ohm",
+    "roe_ratio",
+    "mounting_type",
+    "height_cm",
+    "width_cm",
+    "length_cm",
+    "weight_g",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "polarization"
+   ],
+   "total_claves": 17
+  }
+ ]
+}

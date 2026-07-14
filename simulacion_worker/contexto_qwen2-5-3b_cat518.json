@@ -1,0 +1,108 @@
+{
+ "claves": {
+  "weight_g": {
+   "n": 2,
+   "example": 81.5,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "battery_life_s": {
+   "n": 1,
+   "example": 345600,
+   "shape": "scalar",
+   "desc": "battery life duration (seconds)"
+  },
+  "sleep_current_a": {
+   "n": 2,
+   "example": 0.125,
+   "shape": "scalar",
+   "desc": "sleep current"
+  },
+  "active_current_a": {
+   "n": 2,
+   "example": 0.075,
+   "shape": "scalar",
+   "desc": "sleep current"
+  },
+  "voltage_v": {
+   "n": 1,
+   "example": 12000,
+   "shape": "scalar",
+   "desc": "voltage (array of values)"
+  },
+  "voltage_v_max": {
+   "n": 1,
+   "example": 15000,
+   "shape": "scalar",
+   "desc": "voltage (array of values)"
+  },
+  "frequency_min_mhz": {
+   "n": 1,
+   "example": 2400,
+   "shape": "range",
+   "desc": "frequency min (MHz)"
+  },
+  "frequency_max_mhz": {
+   "n": 1,
+   "example": 2483.5,
+   "shape": "range",
+   "desc": "frequency max (MHz)"
+  },
+  "modulation": {
+   "n": 1,
+   "example": [
+    "OFDM"
+   ],
+   "shape": "enum",
+   "desc": "modulation"
+  },
+  "certifications": {
+   "n": 1,
+   "example": [
+    "GLOBAL-WiFi"
+   ],
+   "shape": "enum",
+   "desc": "certification"
+  },
+  "dimensions_mm": {
+   "n": 1,
+   "example": [
+    110,
+    70,
+    25
+   ],
+   "shape": "numeric_array"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18004,
+   "claves_nuevas": [
+    "weight_g",
+    "battery_life_s",
+    "sleep_current_a",
+    "active_current_a"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 4
+  },
+  {
+   "product_id": 18020,
+   "claves_nuevas": [
+    "voltage_v",
+    "voltage_v_max",
+    "frequency_min_mhz",
+    "frequency_max_mhz",
+    "modulation",
+    "certifications",
+    "dimensions_mm"
+   ],
+   "claves_actualizadas": [
+    "weight_g",
+    "active_current_a",
+    "sleep_current_a"
+   ],
+   "total_claves": 11
+  }
+ ]
+}

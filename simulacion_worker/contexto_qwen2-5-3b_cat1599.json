@@ -1,0 +1,109 @@
+{
+ "claves": {
+  "shape_factor": {
+   "n": 2,
+   "example": "SFP",
+   "shape": "scalar",
+   "desc": "shape factor"
+  },
+  "transfer_rate": {
+   "n": 2,
+   "example": 1000,
+   "shape": "scalar",
+   "desc": "transfer rate"
+  },
+  "standard": {
+   "n": 2,
+   "example": [
+    "1000BASE-BX"
+   ],
+   "shape": "enum",
+   "desc": "standard"
+  },
+  "interface_type": {
+   "n": 2,
+   "example": [
+    "Single-LC"
+   ],
+   "shape": "enum",
+   "desc": "interface type"
+  },
+  "wavelength": {
+   "n": 2,
+   "example": [
+    1310,
+    1490
+   ],
+   "shape": "numeric_array",
+   "desc": "wavelength"
+  },
+  "range": {
+   "n": 2,
+   "example": 10000,
+   "shape": "scalar",
+   "desc": "range"
+  },
+  "cable_type": {
+   "n": 2,
+   "example": [
+    "F.O. Monomodo"
+   ],
+   "shape": "enum",
+   "desc": "cable type"
+  },
+  "ddm": {
+   "n": 2,
+   "example": true,
+   "shape": "boolean",
+   "desc": "direct detect modulation"
+  },
+  "operating_temperature_min_c": {
+   "n": 2,
+   "example": 0,
+   "shape": "range",
+   "desc": "minimum operating temperature (C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 2,
+   "example": 70,
+   "shape": "range",
+   "desc": "maximum operating temperature (C)"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 16906,
+   "claves_nuevas": [
+    "shape_factor",
+    "transfer_rate",
+    "standard",
+    "interface_type",
+    "wavelength",
+    "range",
+    "cable_type",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 10
+  },
+  {
+   "product_id": 16918,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "shape_factor",
+    "transfer_rate",
+    "standard",
+    "interface_type",
+    "wavelength",
+    "range",
+    "cable_type",
+    "ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 10
+  }
+ ]
+}

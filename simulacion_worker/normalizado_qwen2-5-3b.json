@@ -1,0 +1,373 @@
+{
+ "9535": {
+  "active_current_a": 0.0375,
+  "sleep_current_a": 0.0031,
+  "operating_temperature_min_c": -45000,
+  "operating_temperature_max_c": 85000
+ },
+ "9842": {
+  "interfaces_wwan_count": -4,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 237,
+  "width_mm": 180,
+  "height_mm": 59,
+  "weight_g": 2500
+ },
+ "9854": {
+  "interfaces_wwan_count": 1,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 442,
+  "width_mm": 320,
+  "height_mm": 44,
+  "weight_g": 6223.36
+ },
+ "9980": {
+  "input": "Calculator('30 * 1000')"
+ },
+ "14869": {
+  "elementos": 62,
+  "ganancia": "15 dBi",
+  "frecuencia_de_trabajo": [
+   "700 MHz",
+   "2700 MHz"
+  ],
+  "front_to_back": ">26 dB",
+  "impedancia": 50,
+  "angulo": "50+- 2 grados",
+  "ro_e": "<1.6 : 1",
+  "conector": "tipo N hembra",
+  "mastil_de_instalacion": "se solicita por separado (opcional)",
+  "alto_mm": 750,
+  "ancho_mm": 195,
+  "largo_mm": 11700,
+  "peso_g": 888000,
+  "empaque_largo_cm": [
+   125,
+   23
+  ],
+  "empaque_ancho_cm": 23
+ },
+ "14879": {
+  "input_voltage_v": 0.0002,
+  "input_power_max_w": [
+   180000,
+   345600
+  ],
+  "mtbf_min_hours": [
+   7500,
+   15000
+  ]
+ },
+ "14882": {
+  "frecuencia_de_trabajo_min_mhz": 800,
+  "frecuencia_de_trabajo_max_mhz": 2100,
+  "front_to_back": ">2.0",
+  "impedancia": 50,
+  "angulo": ">2.0",
+  "ro_e": "<1.6 : 1",
+  "conector": "SMA macho",
+  "mastil_de_instalacion": "se solicita por separado (opcional)",
+  "alto_mm": 290,
+  "ancho_mm": 75,
+  "largo_mm": [
+   1500,
+   300
+  ],
+  "peso_g": 65,
+  "empaque_largo_cm": [
+   1.5,
+   3
+  ],
+  "empaque_ancho_cm": 29,
+  "input_voltage_v": 0.0002,
+  "input_power_max_w": [
+   50,
+   100
+  ]
+ },
+ "16906": {
+  "shape_factor": "SFP+",
+  "transfer_rate": 10000,
+  "standard": [
+   "10GBASE-LR"
+  ],
+  "interface_type": [
+   "Dual-LC"
+  ],
+  "wavelength": 1310000,
+  "range": 10000,
+  "cable_type": [
+   "F.O. Monomodo"
+  ],
+  "ddm": true,
+  "operating_temperature_min_c": 0,
+  "operating_temperature_max_c": 70
+ },
+ "16918": {
+  "shape_factor": "SFP",
+  "transfer_rate": 1000,
+  "standard": [
+   "1000BASE-BX"
+  ],
+  "interface_type": [
+   "Single-LC"
+  ],
+  "wavelength": [
+   1310,
+   1490
+  ],
+  "range": 10000,
+  "cable_type": [
+   "F.O. Monomodo"
+  ],
+  "ddm": true,
+  "operating_temperature_min_c": 0,
+  "operating_temperature_max_c": 70
+ },
+ "17895": {
+  "interfaces_wwan_count": 2,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 442,
+  "width_mm": 320,
+  "height_mm": 44,
+  "weight_g": 6223.36,
+  "input_voltage_v": 12,
+  "current_consumption_idle_ma": 200,
+  "current_consumption_peak_ma": 580,
+  "data_rate_mbps": 2,
+  "reset_button_count": 1,
+  "leds_indicator_count": 4,
+  "watchdog_included": true,
+  "firewall_features": [
+   "DMZ",
+   "anti-DDoS",
+   "access control"
+  ],
+  "remote_management_channels": [
+   "Web",
+   "CLI",
+   "SMS"
+  ]
+ },
+ "17915": {
+  "interfaces_wwan_count": 3,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 232800,
+  "width_mm": 183200,
+  "height_mm": 45200,
+  "input_voltage_v": 12,
+  "current_consumption_idle_ma": 200,
+  "current_consumption_peak_ma": 580,
+  "data_rate_mbps": 2,
+  "reset_button_count": 1,
+  "leds_indicator_count": 4,
+  "watchdog_included": true,
+  "firewall_features": [
+   "DMZ",
+   "anti-DDoS",
+   "access control"
+  ],
+  "voip_protocols": [
+   "SIP",
+   "H323",
+   "UA-NOE",
+   "SRTP",
+   "SCCP"
+  ]
+ },
+ "18004": {
+  "weight_g": 1200,
+  "battery_life_s": 345600,
+  "sleep_current_a": 0.0002,
+  "active_current_a": 23.88888888888889
+ },
+ "18020": {
+  "weight_g": 81.5,
+  "active_current_a": 0.075,
+  "sleep_current_a": 0.125,
+  "voltage_v": 12000,
+  "voltage_v_max": 15000,
+  "frequency_min_mhz": 2400,
+  "frequency_max_mhz": 2483.5,
+  "modulation": [
+   "OFDM"
+  ],
+  "certifications": [
+   "GLOBAL-WiFi"
+  ],
+  "dimensions_mm": [
+   110,
+   70,
+   25
+  ]
+ },
+ "18304": {
+  "cpu_model": "1GHz de doble núcleo",
+  "memory_gb": 0.9765625,
+  "flash_mb": 0.128,
+  "dual_ios": true,
+  "interfaces_count": 5,
+  "usb_ports_count": 1,
+  "console_ports_count": 1,
+  "length_mm": 60,
+  "width_mm": 190,
+  "height_mm": 44,
+  "input_power_max_w": 12,
+  "current_consumption_idle_ma": 200,
+  "current_consumption_peak_ma": 580,
+  "ingress_protection": [
+   "IP30"
+  ],
+  "temperature_min_c": -20,
+  "temperature_max_c": 45,
+  "humidity_min_percent": 5,
+  "humidity_max_percent": 85
+ },
+ "18305": {
+  "cpu_model": "1.6GHz de doble núcleo",
+  "dual_ios": true,
+  "interfaces_count": 5,
+  "usb_ports_count": 1,
+  "console_ports_count": 1,
+  "input_power_max_w": 26,
+  "ingress_protection": [
+   "IP30"
+  ],
+  "temperature_min_c": -20,
+  "temperature_max_c": 45,
+  "humidity_min_percent": 5,
+  "humidity_max_percent": 85
+ },
+ "18813": {
+  "weight_g": 1200,
+  "battery_life_s": 345600,
+  "ingress_protection": [
+   "ip67"
+  ],
+  "physical_notes": [
+   "Fanless",
+   "IP54"
+  ],
+  "serial_format": [
+   "8n1",
+   "8e1"
+  ],
+  "sdk_programming_languages": [
+   "c",
+   "c++"
+  ]
+ },
+ "18866": {
+  "weight_g": 123,
+  "battery_life_s": 345600,
+  "ingress_protection": [
+   "ip65"
+  ],
+  "physical_notes": [
+   "Fanless",
+   "IP54"
+  ],
+  "serial_format": [
+   "8n1",
+   "8e1"
+  ],
+  "sdk_programming_languages": [
+   "c",
+   "c++"
+  ],
+  "active_current_a": 0.0375,
+  "sleep_current_a": 0.0031,
+  "operating_temperature_min_c": -45,
+  "operating_temperature_max_c": 85
+ },
+ "20076": {
+  "interfaces_wwan_count": 4,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 264000,
+  "width_mm": 60000,
+  "height_mm": 44000,
+  "weight_g": 4000,
+  "input_voltage_v": 12,
+  "current_consumption_idle_ma": 32,
+  "current_consumption_peak_ma": 8000,
+  "data_rate_mbps": 60,
+  "reset_button_count": 1,
+  "leds_indicator_count": 4,
+  "watchdog_included": true,
+  "firewall_features": [
+   "DMZ",
+   "anti-DDoS",
+   "access control"
+  ],
+  "remote_management_channels": [
+   "Web",
+   "CLI",
+   "SMS"
+  ],
+  "voip_protocols": [
+   "SIP",
+   "H323",
+   "UA-NOE",
+   "SRTP",
+   "SCCP"
+  ],
+  "cpu_model": "1.6GHz de doble núcleo",
+  "memory_gb": 0.9765625,
+  "flash_mb": 0.128
+ },
+ "22071": {
+  "frecuencia_de_trabajo_min_mhz": [
+   800,
+   1800
+  ],
+  "frecuencia_de_trabajo_max_mhz": [
+   2700,
+   3400,
+   6250
+  ],
+  "input_voltage_v": 0.744
+ },
+ "22602": {
+  "interfaces_wwan_count": 4,
+  "interfaces_ethernet_count": 8,
+  "length_mm": 264000,
+  "width_mm": 60000,
+  "height_mm": 44000,
+  "weight_g": 4000,
+  "input": [
+   "Calculator('30 * 1000')"
+  ],
+  "input_voltage_v": 12,
+  "current_consumption_idle_ma": 32,
+  "current_consumption_peak_ma": 8000,
+  "data_rate_mbps": 60,
+  "reset_button_count": 1,
+  "leds_indicator_count": 4,
+  "watchdog_included": true,
+  "firewall_features": [
+   "DMZ",
+   "anti-DDoS",
+   "access control"
+  ],
+  "remote_management_channels": [
+   "Web",
+   "CLI",
+   "SMS"
+  ],
+  "voip_protocols": [
+   "SIP",
+   "H323",
+   "UA-NOE",
+   "SRTP",
+   "SCCP"
+  ],
+  "cpu_model": "1.6GHz de doble núcleo",
+  "memory_gb": 0.9765625,
+  "flash_mb": 0.128,
+  "dual_ios": true,
+  "interfaces_count": 5,
+  "usb_ports_count": 1,
+  "console_ports_count": 1,
+  "input_power_max_w": 26
+ }
+}

@@ -1,0 +1,297 @@
+════════ RUN FLOW 2026-07-07 02:17:23 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsx-1g-500m: review | 2361.147000312805s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsx-1g-10km: review | 482.30025601387024s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gex-1g-40km-copia: review | 786.2181484699249s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1554 antena-logaritimica-periodica-15-dbi: ok | 5009.024698019028s | claves=15 | ctx=15 | iter=3 calc=18
+[qwen2.5:3b] cat 77 suntech-st20u: review | 6326.416826725006s | claves=- | ctx=0 | iter=4 calc=8
+[qwen2.5:3b] cat 1554 antena-magnetica-3dbi-1-5-y-3mts: review | 3000.1s | claves=- | ctx=15 | iter=- calc=-
+[qwen2.5:3b] cat 516 teldat-h2-auto: review | 8253.7s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsr-10g-300m: review | 4728.2s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 77 suntech-st25t: review | 3000.1s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 516 teldat-atlas-i70: review | 1428.25714635849s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 516 teldat-m8-smart: review | 3000.1s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-glr-10g-10km: review | 4414.1s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 77 galileosky-base-block-iridium: review | 3890.7s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 516 teldat-rlx-14000: review | 5023.2s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-ger-10g-40km: review | 4990.4s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 77 galileosky-10-4g: review | 4913.4s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1554 antena-magnetica-7o-9-dbi-3-mts: review | 11748.8s | claves=- | ctx=15 | iter=- calc=-
+[qwen2.5:3b] cat 516 teldat-regesta-smart-pro: review | 2265.3421335220337s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-bidi-down-1g-10km: review | 2285.917536497116s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 77 suntech-st8300r4g: ok | 5134.700521230698s | claves=6 | ctx=6 | iter=3 calc=2
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-bidi-up-1g-10km: review | 4967.75097155571s | claves=- | ctx=0 | iter=3 calc=2
+[qwen2.5:3b] cat 1554 antena-magnetica-5-dbi-1-5-o-3-mts: review | 6393.701033830643s | claves=- | ctx=15 | iter=4 calc=16
+[qwen2.5:3b] cat 1599 eon-transceptor-gpon-20km: review | 1824.3896210193634s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 77 suntech-st8310-4g: review | 5107.4s | claves=- | ctx=6 | iter=- calc=-
+[qwen2.5:3b] cat 1554 antena-magnetica-7-dbi-3-mts: review | 3000.1s | claves=- | ctx=15 | iter=- calc=-
+[qwen2.5:3b] cat 516 sierra-wireless-airlink-450: review | 9812.1s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1626 maipu-switch-s3330: review | 3000.1s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1554 antena-magnetica-3-9-dbi-1-5-mts: review | 5422.7s | claves=- | ctx=15 | iter=- calc=-
+[qwen2.5:3b] cat 516 sierra-wireless-airlink-gx450-400: review | 5295.2s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 1626 maipu-switch-s4330: review | 5439.6s | claves=- | ctx=0 | iter=- calc=-
+[qwen2.5:3b] cat 77 lynkworld-lw4g-5e: review | 7637.1s | claves=- | ctx=6 | iter=- calc=-
+[qwen2.5:3b] cat 1626 3onedata-switch-ies6300: review | 3000.1s | claves=- | ctx=0 | iter=- calc=-
+Terminated
+── comparando contra backup y entre modelos ──
+[granite4:micro-h] sin resultados aún
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=2/32 | cobertura 1.4% | exactitud 0.0%
+════════ FLUJO COMPLETO 2026-07-07 13:22:20 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_qwen2-5-3b.jsonl
+════════ RUN FLOW 2026-07-07 13:22:21 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] reanudando: 12 productos ya procesados
+Terminated
+── comparando contra backup y entre modelos ──
+[granite4:micro-h] sin resultados aún
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=2/32 | cobertura 1.4% | exactitud 0.0%
+════════ FLUJO COMPLETO 2026-07-07 13:22:48 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_qwen2-5-3b.jsonl
+════════ RUN FLOW 2026-07-07 13:22:49 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] reanudando: 12 productos ya procesados
+Terminated
+── comparando contra backup y entre modelos ──
+[granite4:micro-h] sin resultados aún
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=2/32 | cobertura 1.4% | exactitud 0.0%
+════════ FLUJO COMPLETO 2026-07-07 13:26:18 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_qwen2-5-3b.jsonl
+════════ RUN FLOW 2026-07-07 13:26:55 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] reanudando: 12 productos ya procesados
+Terminated
+── comparando contra backup y entre modelos ──
+[granite4:micro-h] sin resultados aún
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=2/32 | cobertura 1.4% | exactitud 0.0%
+════════ FLUJO COMPLETO 2026-07-07 13:27:59 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_qwen2-5-3b.jsonl
+════════ RUN FLOW 2026-07-07 13:28:13 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] reanudando: 12 productos ya procesados
+Terminated
+── comparando contra backup y entre modelos ──
+[granite4:micro-h] sin resultados aún
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=2/32 | cobertura 1.4% | exactitud 0.0%
+════════ FLUJO COMPLETO 2026-07-07 13:32:11 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_qwen2-5-3b.jsonl
+════════ RUN FLOW 2026-07-07 13:32:11 ════════
+host=http://localhost:11434 | modelos=qwen2.5:3b,granite4:micro-h | paralelo=4 | prompt=../PROMPT_NORMALIZACION.md
+── normalizando (reanudable; primero un modelo, luego el otro) ──
+Host: http://localhost:11434 | modelos: qwen2.5:3b,granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞
+[qwen2.5:3b] reanudando: 2 productos ya procesados
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsx-1g-500m: review | 2677.0s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsx-1g-10km: review | 902.3s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 1554 antena-magnetica-3dbi-1-5-y-3mts: review | 5821.6s | claves=- | ctx=15 | iter=3 calc=24
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gex-1g-40km-copia: review | 2301.5s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 516 teldat-h2-auto: ok | 7385.9s | claves=6 | ctx=6 | iter=5 calc=4
+[qwen2.5:3b] cat 1554 antena-magnetica-7o-9-dbi-3-mts: ok | 12446.1s | claves=3 | ctx=18 | iter=5 calc=262
+[qwen2.5:3b] cat 516 teldat-atlas-i70: ok | 11823.6s | claves=6 | ctx=6 | iter=4 calc=3
+[qwen2.5:3b] cat 516 teldat-m8-smart: review | 1662.8s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 516 teldat-rlx-14000: review | 1754.5s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 1554 antena-magnetica-5-dbi-1-5-o-3-mts: ok | 8365.4s | claves=16 | ctx=20 | iter=4 calc=3
+[qwen2.5:3b] cat 1554 antena-magnetica-7-dbi-3-mts: review | 7953.5s | claves=- | ctx=20 | iter=3 calc=4
+[qwen2.5:3b] cat 516 teldat-regesta-smart-pro: review | 16583.3s | claves=- | ctx=6 | iter=6 calc=9
+[qwen2.5:3b] cat 1554 antena-magnetica-3-9-dbi-1-5-mts: ok | 6996.1s | claves=3 | ctx=20 | iter=2 calc=5
+[qwen2.5:3b] cat 77 suntech-st20u: review | 51643.9s | claves=- | ctx=6 | iter=20 calc=60
+[qwen2.5:3b] cat 1626 maipu-switch-s3330: review | 11361.1s | claves=- | ctx=0 | iter=3 calc=10
+[qwen2.5:3b] cat 516 sierra-wireless-airlink-450: review | 22246.4s | claves=- | ctx=6 | iter=5 calc=4
+[qwen2.5:3b] cat 516 sierra-wireless-airlink-gx450-400: review | 2679.9s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 77 suntech-st25t: ok | 13118.6s | claves=4 | ctx=10 | iter=3 calc=4
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-gsr-10g-300m: review | 60979.8s | claves=- | ctx=0 | iter=20 calc=60
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-glr-10g-10km: ok | 3994.2s | claves=10 | ctx=10 | iter=2 calc=4
+[qwen2.5:3b] cat 77 galileosky-base-block-iridium: review | 9839.7s | claves=- | ctx=10 | iter=3 calc=6
+[qwen2.5:3b] cat 1626 maipu-switch-s4330: review | 23778.6s | claves=- | ctx=0 | iter=6 calc=6
+[qwen2.5:3b] cat 516 sierra-wireless-airlink-mp70: review | 13443.6s | claves=- | ctx=6 | iter=4 calc=7
+[qwen2.5:3b] cat 516 sierra-wireless-raven-rv50x: review | 1918.6s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-ger-10g-40km: review | 10845.5s | claves=- | ctx=10 | iter=3 calc=2
+[qwen2.5:3b] cat 516 sierra-wireless-raven-rv55: review | 4036.8s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 516 robustel-r3000-lite: review | 1947.1s | claves=- | ctx=6 | iter=1 calc=0
+[qwen2.5:3b] cat 77 galileosky-10-4g: review | 11704.6s | claves=- | ctx=10 | iter=4 calc=3
+[qwen2.5:3b] cat 1626 3onedata-switch-ies6300: review | 15136.4s | claves=- | ctx=0 | iter=5 calc=7
+[qwen2.5:3b] cat 77 suntech-st8310-4g: review | 11663.1s | claves=- | ctx=10 | iter=2 calc=4
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-bidi-down-1g-10km: review | 20423.2s | claves=- | ctx=10 | iter=4 calc=149
+[qwen2.5:3b] cat 516 robustel-r3000-lg: review | 20581.0s | claves=- | ctx=6 | iter=- calc=-
+[qwen2.5:3b] cat 1626 teldat-switch-esw3l2p: review | 18338.1s | claves=- | ctx=0 | iter=3 calc=2
+[qwen2.5:3b] cat 1599 eon-transceptor-sfp-bidi-up-1g-10km: ok | 10602.9s | claves=10 | ctx=10 | iter=3 calc=4
+[qwen2.5:3b] cat 1599 eon-transceptor-gpon-20km: review | 4522.4s | claves=- | ctx=10 | iter=1 calc=0
+[qwen2.5:3b] cat 77 lynkworld-lw4g-5e: review | 21173.1s | claves=- | ctx=10 | iter=5 calc=7
+[qwen2.5:3b] cat 1626 teldat-switch-esw4l3: review | 9472.2s | claves=- | ctx=0 | iter=3 calc=7
+[qwen2.5:3b] cat 516 robustel-m1200-g: ok | 14492.3s | claves=1 | ctx=7 | iter=5 calc=4
+[qwen2.5:3b] cat 1630 3onedata-gateway-gw1114: review | 6083.4s | claves=- | ctx=0 | iter=2 calc=7
+[qwen2.5:3b] cat 518 netio-nt-link-4g: review | 9666.2s | claves=- | ctx=0 | iter=3 calc=2
+[qwen2.5:3b] cat 516 robustel-r2110: review | 7201.4s | claves=- | ctx=7 | iter=2 calc=7
+[qwen2.5:3b] cat 77 lynkworld-lw4g-oa: review | 10565.2s | claves=- | ctx=10 | iter=3 calc=9
+[qwen2.5:3b] cat 77 lynkworld-lw4g-wrb: ok | 7211.2s | claves=10 | ctx=10 | iter=2 calc=5
+[qwen2.5:3b] cat 1630 3onedata-servidor-np5200: review | 13138.6s | claves=- | ctx=0 | iter=3 calc=439
+[qwen2.5:3b] cat 516 robustel-r1510-4l: review | 11936.1s | claves=- | ctx=7 | iter=3 calc=2
+[qwen2.5:3b] cat 1641 robustel-r5020-5g: review | 1757.9s | claves=- | ctx=0 | iter=1 calc=0
+[qwen2.5:3b] cat 518 netio-nt-com2-4g: ok | 15648.7s | claves=4 | ctx=4 | iter=5 calc=8
+[qwen2.5:3b] cat 77 lynkworld-lw4g-wrp: review | 8056.9s | claves=- | ctx=10 | iter=4 calc=3
+[qwen2.5:3b] cat 518 netio-wifi-app: ok | 5506.4s | claves=10 | ctx=11 | iter=3 calc=3
+[qwen2.5:3b] cat 1641 robustel-r5020-lite-5g: review | 11440.6s | claves=- | ctx=0 | iter=5 calc=16
+[qwen2.5:3b] cat 518 3i-corporation-pegasus-nx-ii-4g: review | 4597.5s | claves=- | ctx=11 | iter=1 calc=0
+[qwen2.5:3b] cat 77 suntech-st8310um-4g: review | 11468.1s | claves=- | ctx=10 | iter=4 calc=3
+[qwen2.5:3b] cat 516 teldat-rs1800: review | 19631.7s | claves=- | ctx=7 | iter=8 calc=7
+[qwen2.5:3b] cat 516 robustel-r1511: review | 983.0s | claves=- | ctx=7 | iter=2 calc=1
+[qwen2.5:3b] cat 516 robustel-r1520-4l: review | 998.6s | claves=- | ctx=7 | iter=8 calc=7
+[qwen2.5:3b] cat 516 robustel-r2010: review | 3443.4s | claves=- | ctx=7 | iter=2 calc=9
+[qwen2.5:3b] cat 516 robustel-r2011: ok | 2498.6s | claves=15 | ctx=16 | iter=2 calc=8
+[qwen2.5:3b] cat 516 teldat-m2: review | 2453.3s | claves=- | ctx=16 | iter=2 calc=1
+[qwen2.5:3b] cat 516 teldat-m10-smart: ok | 2126.8s | claves=14 | ctx=17 | iter=2 calc=6
+[qwen2.5:3b] cat 516 robustel-r1510-lite: review | 4159.9s | claves=- | ctx=17 | iter=3 calc=10
+[qwen2.5:3b] cat 516 maipu-mp1800x-50: ok | 1870.0s | claves=18 | ctx=30 | iter=2 calc=7
+[qwen2.5:3b] cat 516 maipu-mp1900x: ok | 1557.9s | claves=11 | ctx=30 | iter=2 calc=1
+[qwen2.5:3b] cat 516 maipu-mp2900: review | 1548.0s | claves=- | ctx=30 | iter=4 calc=12
+[qwen2.5:3b] cat 516 robustel-m1201: review | 965.3s | claves=- | ctx=30 | iter=2 calc=7
+[qwen2.5:3b] cat 516 teldat-rs420: review | 1587.7s | claves=- | ctx=30 | iter=2 calc=1
+[qwen2.5:3b] cat 516 teldat-atlas-840: ok | 3670.0s | claves=19 | ctx=30 | iter=2 calc=7
+[qwen2.5:3b] cat 516 teldat-ares-c640: review | 1465.8s | claves=- | ctx=30 | iter=4 calc=22
+[qwen2.5:3b] cat 516 robustel-eg5120: ok | 2193.5s | claves=25 | ctx=30 | iter=2 calc=8
+[qwen2.5:3b] cat 516 robustel-eg5100: review | 2151.2s | claves=- | ctx=30 | iter=4 calc=4
+[qwen2.5:3b] listo en 3216.6 min → resultados_qwen2-5-3b.jsonl | exportado normalizado_qwen2-5-3b.json (ok=20, review=51)
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-gsx-1g-500m: ok | 2883.1s | claves=10 | ctx=10 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-logaritimica-periodica-15-dbi: ok | 3380.2s | claves=14 | ctx=14 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-h2-auto: ok | 3792.7s | claves=1 | ctx=1 | iter=2 calc=1
+[granite4:micro-h] cat 77 suntech-st20u: review | 4194.0s | claves=- | ctx=0 | iter=3 calc=2
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-gsx-1g-10km: review | 2514.6s | claves=- | ctx=10 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-atlas-i70: ok | 2366.1s | claves=20 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-magnetica-3dbi-1-5-y-3mts: ok | 3774.4s | claves=6 | ctx=14 | iter=3 calc=2
+[granite4:micro-h] cat 77 suntech-st25t: review | 3720.1s | claves=- | ctx=0 | iter=3 calc=2
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-gex-1g-40km-copia: ok | 2989.9s | claves=10 | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-m8-smart: ok | 3079.5s | claves=18 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 77 galileosky-base-block-iridium: ok | 3754.8s | claves=1 | ctx=1 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-gsr-10g-300m: review | 3869.1s | claves=- | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-magnetica-7o-9-dbi-3-mts: ok | 5592.2s | claves=8 | ctx=17 | iter=3 calc=2
+[granite4:micro-h] cat 516 teldat-rlx-14000: ok | 4121.0s | claves=19 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 77 galileosky-10-4g: review | 4603.6s | claves=- | ctx=1 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-glr-10g-10km: ok | 4326.2s | claves=10 | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-regesta-smart-pro: ok | 4231.3s | claves=24 | ctx=27 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-magnetica-5-dbi-1-5-o-3-mts: ok | 5820.2s | claves=15 | ctx=17 | iter=3 calc=2
+[granite4:micro-h] cat 77 suntech-st8300r4g: ok | 3454.5s | claves=19 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-ger-10g-40km: review | 3540.0s | claves=- | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 516 sierra-wireless-airlink-450: ok | 3694.3s | claves=27 | ctx=27 | iter=2 calc=1
+[granite4:micro-h] cat 77 suntech-st8310-4g: ok | 3839.5s | claves=18 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-bidi-down-1g-10km: ok | 3809.5s | claves=10 | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-magnetica-7-dbi-3-mts: review | 5821.9s | claves=- | ctx=17 | iter=3 calc=2
+[granite4:micro-h] cat 516 sierra-wireless-airlink-gx450-400: ok | 4158.5s | claves=26 | ctx=27 | iter=2 calc=1
+[granite4:micro-h] cat 77 lynkworld-lw4g-5e: ok | 3992.1s | claves=1 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-sfp-bidi-up-1g-10km: ok | 3963.3s | claves=9 | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 516 sierra-wireless-airlink-mp70: ok | 4091.7s | claves=58 | ctx=73 | iter=2 calc=1
+[granite4:micro-h] cat 516 sierra-wireless-raven-rv50x: review | 2360.8s | claves=- | ctx=73 | iter=1 calc=0
+[granite4:micro-h] cat 77 lynkworld-lw4g-oa: ok | 5254.9s | claves=19 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1599 eon-transceptor-gpon-20km: ok | 5382.5s | claves=7 | ctx=11 | iter=2 calc=1
+[granite4:micro-h] cat 516 sierra-wireless-raven-rv55: ok | 2867.4s | claves=58 | ctx=73 | iter=1 calc=0
+[granite4:micro-h] cat 77 lynkworld-lw4g-wrb: ok | 4215.9s | claves=13 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1554 antena-magnetica-3-9-dbi-1-5-mts: review | 13154.7s | claves=- | ctx=17 | iter=6 calc=5
+[granite4:micro-h] cat 516 robustel-r3000-lite: ok | 3873.7s | claves=9 | ctx=75 | iter=2 calc=1
+[granite4:micro-h] cat 1626 maipu-switch-s3330: ok | 6677.7s | claves=9 | ctx=9 | iter=3 calc=2
+[granite4:micro-h] cat 516 robustel-r3000-lg: ok | 2708.3s | claves=70 | ctx=81 | iter=1 calc=0
+[granite4:micro-h] cat 77 lynkworld-lw4g-wrp: review | 5097.9s | claves=- | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 518 netio-nt-link-4g: review | 5415.4s | claves=- | ctx=0 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-m1200-g: ok | 2812.0s | claves=15 | ctx=81 | iter=1 calc=0
+[granite4:micro-h] cat 516 robustel-r2110: ok | 2079.0s | claves=20 | ctx=83 | iter=1 calc=0
+[granite4:micro-h] cat 77 suntech-st8310um-4g: ok | 5060.8s | claves=16 | ctx=20 | iter=2 calc=1
+[granite4:micro-h] cat 1626 maipu-switch-s4330: ok | 8266.7s | claves=9 | ctx=9 | iter=3 calc=2
+[granite4:micro-h] cat 518 netio-nt-com2-4g: review | 5771.2s | claves=- | ctx=0 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-r1510-4l: ok | 5589.0s | claves=11 | ctx=86 | iter=2 calc=1
+[granite4:micro-h] cat 1630 3onedata-gateway-gw1114: review | 5496.6s | claves=- | ctx=0 | iter=2 calc=1
+[granite4:micro-h] cat 1626 3onedata-switch-ies6300: review | 6332.6s | claves=- | ctx=9 | iter=2 calc=1
+[granite4:micro-h] cat 518 netio-wifi-app: ok | 7550.7s | claves=10 | ctx=10 | iter=3 calc=2
+[granite4:micro-h] cat 516 teldat-rs1800: ok | 5419.5s | claves=10 | ctx=86 | iter=2 calc=1
+[granite4:micro-h] cat 1626 teldat-switch-esw3l2p: ok | 3875.2s | claves=9 | ctx=9 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-r1511: ok | 3410.4s | claves=18 | ctx=94 | iter=1 calc=0
+[granite4:micro-h] cat 1630 3onedata-servidor-np5200: ok | 9311.5s | claves=21 | ctx=21 | iter=3 calc=2
+[granite4:micro-h] cat 518 3i-corporation-pegasus-nx-ii-4g: ok | 6801.9s | claves=8 | ctx=17 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-r1520-4l: review | 4364.9s | claves=- | ctx=94 | iter=1 calc=0
+[granite4:micro-h] cat 1626 teldat-switch-esw4l3: review | 7869.8s | claves=- | ctx=9 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-r2010: ok | 2730.2s | claves=69 | ctx=94 | iter=1 calc=0
+[granite4:micro-h] cat 1641 robustel-r5020-5g: review | 6859.9s | claves=- | ctx=0 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-r2011: ok | 2380.0s | claves=12 | ctx=94 | iter=1 calc=0
+[granite4:micro-h] cat 516 teldat-m2: ok | 1933.0s | claves=53 | ctx=94 | iter=1 calc=0
+[granite4:micro-h] cat 1641 robustel-r5020-lite-5g: ok | 4271.8s | claves=34 | ctx=34 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-m10-smart: ok | 2276.7s | claves=13 | ctx=95 | iter=1 calc=0
+[granite4:micro-h] cat 516 robustel-r1510-lite: ok | 1217.4s | claves=70 | ctx=96 | iter=1 calc=0
+[granite4:micro-h] cat 516 maipu-mp1800x-50: review | 1403.1s | claves=- | ctx=96 | iter=1 calc=0
+[granite4:micro-h] cat 516 maipu-mp1900x: ok | 2588.5s | claves=24 | ctx=116 | iter=2 calc=1
+[granite4:micro-h] cat 516 maipu-mp2900: ok | 2438.8s | claves=12 | ctx=116 | iter=2 calc=1
+[granite4:micro-h] cat 516 robustel-m1201: ok | 1386.0s | claves=16 | ctx=116 | iter=1 calc=0
+[granite4:micro-h] cat 516 teldat-rs420: ok | 1875.9s | claves=17 | ctx=117 | iter=1 calc=0
+[granite4:micro-h] cat 516 teldat-atlas-840: ok | 2778.8s | claves=12 | ctx=118 | iter=2 calc=1
+[granite4:micro-h] cat 516 teldat-ares-c640: review | 2351.5s | claves=- | ctx=118 | iter=1 calc=0
+[granite4:micro-h] cat 516 robustel-eg5120: ok | 2018.1s | claves=28 | ctx=118 | iter=1 calc=0
+[granite4:micro-h] cat 516 robustel-eg5100: review | 2467.9s | claves=- | ctx=118 | iter=1 calc=0
+[granite4:micro-h] listo en 1581.1 min → resultados_granite4-micro-h.jsonl | exportado normalizado_granite4-micro-h.json (ok=51, review=20)
+── comparando contra backup y entre modelos ──
+✓ comparacion_normalizacion.md
+  qwen2.5:3b: ok=20/71 | cobertura 8.3% | exactitud 39.3%
+  granite4:micro-h: ok=51/71 | cobertura 7.7% | exactitud 31.3%
+════════ FLUJO COMPLETO 2026-07-10 21:29:55 ════════
+Resultados guardados:
+  comparacion_normalizacion.md
+  contexto_granite4-micro-h_cat1554.json
+  contexto_granite4-micro-h_cat1599.json
+  contexto_granite4-micro-h_cat1626.json
+  contexto_granite4-micro-h_cat1630.json
+  contexto_granite4-micro-h_cat1641.json
+  contexto_granite4-micro-h_cat516.json
+  contexto_granite4-micro-h_cat518.json
+  contexto_granite4-micro-h_cat77.json
+  contexto_qwen2-5-3b_cat1554.json
+  contexto_qwen2-5-3b_cat1599.json
+  contexto_qwen2-5-3b_cat1626.json
+  contexto_qwen2-5-3b_cat1630.json
+  contexto_qwen2-5-3b_cat1641.json
+  contexto_qwen2-5-3b_cat516.json
+  contexto_qwen2-5-3b_cat518.json
+  contexto_qwen2-5-3b_cat77.json
+  normalizado_granite4-micro-h.json
+  normalizado_granite4-micro-h_review.json
+  normalizado_qwen2-5-3b.json
+  normalizado_qwen2-5-3b_review.json
+  resultados_granite4-micro-h.jsonl
+  resultados_qwen2-5-3b.jsonl

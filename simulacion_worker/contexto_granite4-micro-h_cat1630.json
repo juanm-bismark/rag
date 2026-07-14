@@ -1,0 +1,168 @@
+{
+ "claves": {
+  "power_consumption_min_w": {
+   "n": 1,
+   "example": 1400,
+   "shape": "range",
+   "desc": "minimum power consumption in watts"
+  },
+  "power_consumption_max_w": {
+   "n": 1,
+   "example": 1900,
+   "shape": "range",
+   "desc": "maximum power consumption in watts"
+  },
+  "operating_temperature_min_c": {
+   "n": 1,
+   "example": -40,
+   "shape": "range",
+   "desc": "minimum operating temperature in °C"
+  },
+  "operating_temperature_max_c": {
+   "n": 1,
+   "example": 85,
+   "shape": "range",
+   "desc": "maximum operating temperature in °C"
+  },
+  "relative_humidity_percent": {
+   "n": 1,
+   "example": [
+    "5-95"
+   ],
+   "shape": "enum",
+   "desc": "relative humidity range without condensation"
+  },
+  "weather_resistant_ip_rating": {
+   "n": 1,
+   "example": [
+    "ip40"
+   ],
+   "shape": "enum",
+   "desc": "IP protection rating for enclosure"
+  },
+  "dimensions_length_mm": {
+   "n": 1,
+   "example": 53000,
+   "shape": "scalar",
+   "desc": "device length in millimeters"
+  },
+  "dimensions_width_mm": {
+   "n": 1,
+   "example": 138000,
+   "shape": "scalar",
+   "desc": "device width in millimeters"
+  },
+  "dimensions_height_mm": {
+   "n": 1,
+   "example": 110000,
+   "shape": "scalar",
+   "desc": "device height in millimeters"
+  },
+  "weight_g": {
+   "n": 1,
+   "example": 591,
+   "shape": "scalar",
+   "desc": "device weight in grams"
+  },
+  "iec_61000_4_2_compliance": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "CE compliance indicator"
+  },
+  "electrostatic_discharge_voltage_max_kv": {
+   "n": 1,
+   "example": 8,
+   "shape": "scalar",
+   "desc": "maximum electrostatic discharge voltage (kV)"
+  },
+  "contact_discharge_voltage_max_kv": {
+   "n": 1,
+   "example": 6,
+   "shape": "scalar",
+   "desc": "maximum contact discharge voltage (kV)"
+  },
+  "electrostatic_discharge_voltage_transient_max_kv": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "maximum transient electrostatic discharge voltage (kV)"
+  },
+  "surge_protection_level": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "IEC 61000-4-5 surge protection compliance"
+  },
+  "signal_voltage_max_kv": {
+   "n": 1,
+   "example": 1000,
+   "shape": "scalar",
+   "desc": "maximum signal voltage in kV"
+  },
+  "impact_test_standard": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Compliance with IEC 60068-2-27 impact test"
+  },
+  "drop_test_standard": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Compliance with IEC 60068-2-32 drop test"
+  },
+  "vibration_test_standard": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "Compliance with IEC 60068-2-6 vibration test"
+  },
+  "certifications": {
+   "n": 1,
+   "example": [
+    "global-ce",
+    "global-fcc",
+    "global-rohs"
+   ],
+   "shape": "enum",
+   "desc": "List of international compliance certifications"
+  },
+  "warranty_years": {
+   "n": 1,
+   "example": 3,
+   "shape": "scalar",
+   "desc": "Guarantee period in years"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18448,
+   "claves_nuevas": [
+    "power_consumption_min_w",
+    "power_consumption_max_w",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "relative_humidity_percent",
+    "weather_resistant_ip_rating",
+    "dimensions_length_mm",
+    "dimensions_width_mm",
+    "dimensions_height_mm",
+    "weight_g",
+    "iec_61000_4_2_compliance",
+    "electrostatic_discharge_voltage_max_kv",
+    "contact_discharge_voltage_max_kv",
+    "electrostatic_discharge_voltage_transient_max_kv",
+    "surge_protection_level",
+    "signal_voltage_max_kv",
+    "impact_test_standard",
+    "drop_test_standard",
+    "vibration_test_standard",
+    "certifications",
+    "warranty_years"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 21
+  }
+ ]
+}

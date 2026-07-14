@@ -1,0 +1,2049 @@
+{
+ "9842": {
+  "category_name": "Módems y routers"
+ },
+ "9854": {
+  "category_name": "modems and routers",
+  "length_mm": 44200,
+  "width_mm": 32000,
+  "height_mm": 440,
+  "weight_g": 4000,
+  "input_voltage_v_min": 12,
+  "input_voltage_v_max": 48,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 4,
+  "sfp_interface": true,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060
+ },
+ "9856": {
+  "length_mm": 31000,
+  "width_mm": 32000,
+  "weight_g": 1200,
+  "input_voltage_v_min": 12,
+  "input_voltage_v_max": 48,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 4,
+  "sfp_interface": true,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060
+ },
+ "9858": {
+  "length_mm": 750,
+  "width_mm": 120,
+  "height_mm": 120,
+  "weight_g": 1200,
+  "input_voltage_v_min": 12,
+  "input_voltage_v_max": 48,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 4,
+  "sfp_interface": true,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060
+ },
+ "9862": {
+  "category_name": "Módems y routers",
+  "weight_g": 1200,
+  "length_mm": 140,
+  "width_mm": 192,
+  "height_mm": 80,
+  "volume_mm3": 2745600,
+  "ethernet_port_speeds_mbps": [
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "sfp_interface": true,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "vlm",
+   "vlb"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ],
+  "_physical_notes": [
+   "Fanless",
+   "IP54"
+  ]
+ },
+ "9914": {
+  "category_name": "Módems y routers",
+  "length_mm": 1420,
+  "width_mm": 980,
+  "height_mm": 410,
+  "weight_g": 397,
+  "input_voltage_v_min": 3.3,
+  "input_voltage_v_max": 30,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 2745600,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "vlm",
+   "vlb"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ],
+  "_physical_notes": [
+   "Fanless",
+   "IP54"
+  ]
+ },
+ "9924": {
+  "length_mm": 142000,
+  "width_mm": 98000,
+  "height_mm": 41000,
+  "weight_g": 397,
+  "input_voltage_v_min": 3.3,
+  "input_voltage_v_max": 30,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 1310,
+  "optical_wavelength_nm_max": 1650,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 90,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 2745600,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "vlm",
+   "vlb"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ],
+  "_physical_notes": [
+   "Fanless",
+   "IP54"
+  ]
+ },
+ "9932": {
+  "ethernet_port_count": 4,
+  "serial_interface": true,
+  "usb_connector_count": 1,
+  "sma_antenna_connector_count": 3,
+  "digital_inputs_count": 5,
+  "digital_output_max_current_a": 0.5,
+  "dhcp_enabled": true,
+  "ip_forwarding_enabled": true,
+  "vlan_support": true,
+  "host_watchdog_enabled": true,
+  "pppoe_enabled": true,
+  "serial_mode_pad": true,
+  "serial_mode_tcp_udp": true,
+  "modbus_ascii_support": true,
+  "modbus_rtu_support": true,
+  "modbus_variable_support": true,
+  "ppp_enabled": true,
+  "wifi_dual_band": true,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "length_mm": 190,
+  "width_mm": 45,
+  "height_mm": 105,
+  "volume_mm3": 6270000,
+  "input_voltage_v_min": 7,
+  "input_voltage_v_max": 36,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "operating_temperature_c_min": -30,
+  "operating_temperature_c_max": 70,
+  "relative_humidity_percent_min": 95,
+  "relative_humidity_percent_max": 100,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true,
+  "iec_61558_compliant": true,
+  "rohs_compliant": true
+ },
+ "9946": {
+  "category_name": "Módems y routers",
+  "weight_g": 320000,
+  "length_mm": 119000,
+  "width_mm": 33000,
+  "height_mm": 85000,
+  "operating_temperature_c_min": -30,
+  "operating_temperature_c_max": 70,
+  "input_voltage_v_min": 270,
+  "input_voltage_v_max": 3600,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "serial_interface": true,
+  "usb_connector_count": 1,
+  "sma_antenna_connector_count": 3,
+  "digital_inputs_count": 5,
+  "digital_output_max_current_a": 0.5,
+  "dhcp_enabled": true,
+  "ip_forwarding_enabled": true,
+  "vlan_support": true,
+  "host_watchdog_enabled": true,
+  "pppoe_enabled": true,
+  "serial_mode_pad": true,
+  "serial_mode_tcp_udp": true,
+  "modbus_ascii_support": true,
+  "modbus_rtu_support": true,
+  "modbus_variable_support": true,
+  "ppp_enabled": true,
+  "wifi_dual_band": true,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true,
+  "iec_61558_compliant": true,
+  "rohs_compliant": true
+ },
+ "9954": {
+  "ethernet_port_count": 4,
+  "sma_antenna_connector_count": 3,
+  "sim_count": 2,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "dimensions_mm": [
+   105,
+   98,
+   29.5
+  ],
+  "serial_interface": true,
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "vlm",
+   "vlb"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ]
+ },
+ "9976": {
+  "device_weight_g": 1200,
+  "transmitted_power_w": 24.5,
+  "sensitivity_dbm": -142,
+  "input_voltage_v_min": 270,
+  "input_voltage_v_max": 3600,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "sma_antenna_connector_count": 3,
+  "device_length_mm": 125,
+  "device_width_mm": 104,
+  "device_height_mm": 43.5,
+  "operating_temperature_c_min": -30,
+  "operating_temperature_c_max": 70,
+  "relative_humidity_percent_min": 95,
+  "relative_humidity_percent_max": 100,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 6270000,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "web",
+   "cli",
+   "sms"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ],
+  "_physical_notes": [
+   "Fanless",
+   "IP54"
+  ],
+  "ethernet_port_count": 4,
+  "serial_interface": true,
+  "digital_inputs_count": 5,
+  "digital_output_max_current_a": 0.5,
+  "dhcp_enabled": true,
+  "ip_forwarding_enabled": true,
+  "vlan_support": true,
+  "host_watchdog_enabled": true,
+  "pppoe_enabled": true,
+  "serial_mode_pad": true,
+  "serial_mode_tcp_udp": true,
+  "modbus_ascii_support": true,
+  "modbus_rtu_support": true,
+  "modbus_variable_support": true,
+  "ppp_enabled": true,
+  "wifi_dual_band": true,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true,
+  "iec_61558_compliant": true,
+  "sim_count": 2
+ },
+ "9980": {
+  "category_name": "Módems y routers",
+  "weight_g": 1200,
+  "device_weight_g": 1200,
+  "length_mm": 750,
+  "width_mm": 120,
+  "height_mm": 120,
+  "input_voltage_v_min": -40,
+  "input_voltage_v_max": 75,
+  "ethernet_port_count": 4,
+  "digital_inputs_count": 5,
+  "sma_antenna_connector_count": 3,
+  "serial_interface": true,
+  "usb_connector_count": 1,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ]
+ },
+ "9987": {
+  "antenna_count": 2,
+  "connector_type": "SMA-K",
+  "sim_count": 2,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "rj45_connector_count": 6,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 95,
+  "relative_humidity_percent_max": 100,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 6270000,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "web",
+   "cli",
+   "sms"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": [
+   "Fanless",
+   "IP54"
+  ]
+ },
+ "14137": {
+  "antenna_count": 2,
+  "connector_type": "SMA-K",
+  "sim_count": 1,
+  "ethernet_port_count": 4,
+  "wifi_output_power_dbm": 21,
+  "sensitivity_dbm": -142,
+  "device_voltage_max_v": 30,
+  "device_current_max_a": 0.02,
+  "regulatory_certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": "Fanless, IP54",
+  "dimensions_mm": [
+   750,
+   120
+  ]
+ },
+ "14851": {
+  "device_weight_g": 1200,
+  "dimensions_mm": [
+   750,
+   120,
+   45
+  ],
+  "ethernet_port_count": 4,
+  "sma_antenna_connector_count": 3,
+  "antenna_count": 2,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ]
+ },
+ "14869": {
+  "element_count": 62,
+  "gain_dbi": 15,
+  "frequency_min_mhz": 700000,
+  "frequency_max_mhz": 2700000,
+  "front_to_back_db": ">26",
+  "input_impedance_ohm": 50000,
+  "angle_min_degrees": 500,
+  "angle_max_degrees": 520,
+  "roe_ratio": 1.6,
+  "mounting_type": "se solicita por separado (opcional)",
+  "height_cm": 7.5,
+  "width_cm": 19.5,
+  "length_cm": 117,
+  "weight_g": 888
+ },
+ "14874": {
+  "frequency_min_mhz": 824000000,
+  "frequency_max_mhz": 960000000,
+  "gain_dbi": 3,
+  "roe_ratio": 2,
+  "input_impedance_ohm": 50,
+  "weight_g": 35
+ },
+ "14879": {
+  "frequency_min_mhz": 824000000,
+  "frequency_max_mhz": 960000000,
+  "gain_dbi": 16,
+  "roe_ratio": 2,
+  "input_impedance_ohm": 50,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 70,
+  "polarization": "vertical"
+ },
+ "14882": {
+  "element_count": 1,
+  "gain_dbi": 5,
+  "frequency_min_mhz": 800000000,
+  "frequency_max_mhz": 2100000000,
+  "front_to_back_db": ">26",
+  "input_impedance_ohm": 50,
+  "roe_ratio": 2,
+  "mounting_type": "optional",
+  "height_cm": 7.5,
+  "width_cm": 19.5,
+  "length_cm": 117,
+  "weight_g": 65,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 70,
+  "polarization": "vertical"
+ },
+ "15004": {
+  "antenna_count": 2,
+  "has_serial_interface": true,
+  "connector_type": "SMA-K",
+  "device_weight_g": 1200,
+  "length_mm": 91.5,
+  "width_mm": 91.5,
+  "height_mm": 31.5,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100
+  ],
+  "mimo_count": 2,
+  "max_wifi_data_rate_mbps": 300,
+  "serial_min_bps": 300,
+  "serial_max_bps": 115200,
+  "has_restart_button": true,
+  "indicators_led": [
+   "run",
+   "mdm",
+   "usr",
+   "rssi",
+   "wlan"
+  ],
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n"
+  ],
+  "max_wifi_clients_count": 128,
+  "has_serial_mode_tcp_udp": true,
+  "sensitivity_dbm": [
+   -93,
+   -90,
+   -88,
+   -85
+  ]
+ },
+ "16883": {
+  "category_name": "SFP-Transceptor",
+  "wavelength_nm": 850000000000,
+  "reach_m": 500,
+  "transfer_rate_mbps": 1250,
+  "standard": "1000BASE-SX",
+  "interface_type": "Dual-LC",
+  "fiber_optic_cable": "F.O. Multimode",
+  "ddm": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "16888": {
+  "form_factor": 1,
+  "transfer_rate_mbps": 1250,
+  "standard": 1000,
+  "interface_type": "dual-lc",
+  "wavelength_nm": 1310000000000,
+  "reach_m": 40000,
+  "fiber_optic_cable": "mono-mode",
+  "ddm": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "16906": {
+  "form_factor": 1,
+  "transfer_rate_mbps": 1250,
+  "standard": 1000,
+  "interface_type": "dual-lc",
+  "wavelength_nm": 1310000000000,
+  "reach_m": 40000,
+  "fiber_optic_cable": "mono-mode",
+  "ddm": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "16914": {
+  "wavelength_nm": [
+   1490000000000,
+   1310000000000
+  ],
+  "reach_m": [
+   10000,
+   40000
+  ],
+  "transfer_rate_mbps": 1250,
+  "standard": 1000,
+  "interface_type": "single-lc",
+  "fiber_optic_cable": "mono-mode",
+  "ddm": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75,
+  "form_factor": 1
+ },
+ "16918": {
+  "form_factor": 1,
+  "transfer_rate_mbps": 1250,
+  "standard": 1000,
+  "interface_type": "single-lc",
+  "wavelength_nm": [
+   1310000000000,
+   1490000000000
+  ],
+  "reach_m": [
+   10000,
+   40000
+  ],
+  "ddm": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "16919": {
+  "transfer_rate_mbps": 2500,
+  "standard": 1000,
+  "interface_type": "single-lc",
+  "reach_m": 20,
+  "fiber_optic_cable": "mono-mode",
+  "ddm": true,
+  "operating_temperature_min_c": -40
+ },
+ "17889": {
+  "category_name": "Módems y routers",
+  "weight_g": 1200,
+  "device_weight_g": 1200,
+  "length_mm": 750,
+  "width_mm": 120,
+  "height_mm": 45,
+  "antenna_count": 2,
+  "ethernet_port_speeds_mbps": [
+   2000,
+   2000000
+  ],
+  "poe_ports_count": 4,
+  "rj45_connector_count": 6,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 95,
+  "relative_humidity_percent_max": 100,
+  "input_voltage_v_min": 9,
+  "input_voltage_v_max": 36,
+  "device_voltage_max_v": 30,
+  "transmitted_power_w": 0.58,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "security_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "management_features": [
+   "web",
+   "cli",
+   "sms"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": "Fanless, IP54",
+  "ethernet_port_count": 4,
+  "serial_interface": true,
+  "sma_antenna_connector_count": 3,
+  "digital_inputs_count": 5,
+  "digital_output_max_current_a": 0.5,
+  "dhcp_enabled": true,
+  "ip_forwarding_enabled": true,
+  "vlan_support": true,
+  "host_watchdog_enabled": true,
+  "pppoe_enabled": true,
+  "serial_mode_pad": true,
+  "serial_mode_tcp_udp": true,
+  "modbus_ascii_support": true,
+  "modbus_rtu_support": true,
+  "modbus_variable_support": true,
+  "ppp_enabled": true,
+  "wifi_dual_band": true,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n"
+  ],
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true,
+  "iec_61558_compliant": true
+ },
+ "17895": {
+  "antenna_count": 2,
+  "connector_type": "rp-sma-k",
+  "sim_count": 2,
+  "ethernet_port_count": 5,
+  "poe_ports_count": 1,
+  "device_voltage_max_v": 1500,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n"
+  ],
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "security_features": [
+   "wep",
+   "wpa",
+   "wpa2"
+  ],
+  "vpn_client_gre_support": true,
+  "has_restart_button": true,
+  "_physical_notes": "Fanless, IP54"
+ },
+ "17914": {
+  "device_weight_g": 1200,
+  "length_mm": 252900,
+  "width_mm": 120000,
+  "height_mm": 310000,
+  "ethernet_port_speeds_mbps": [
+   2000,
+   2000000
+  ],
+  "poe_ports_count": 1,
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 95,
+  "relative_humidity_percent_max": 100,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 6270000,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec_transport",
+   "ipsec_tunnel",
+   "preshared_key",
+   "rsa",
+   "certificates",
+   "md5",
+   "sha2"
+  ],
+  "management_features": [
+   "web",
+   "cli",
+   "sms"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": "Fanless, IP54",
+  "ethernet_port_count": 5,
+  "serial_interface": true,
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true,
+  "iec_61558_compliant": true,
+  "rohs_compliant": true,
+  "sim_count": 2
+ },
+ "17915": {
+  "device_length_mm": 232800,
+  "width_mm": 183200,
+  "height_mm": 45200,
+  "ethernet_port_count": 4000,
+  "wlan_port_count": 2000,
+  "sma_antenna_connector_count": 2000,
+  "dimensions_mm": [
+   232800,
+   183200,
+   45200
+  ],
+  "device_weight_g": 1200,
+  "transmitted_power_w": 0.58,
+  "sensitivity_dbm": [
+   -93,
+   -90,
+   -88,
+   -85
+  ],
+  "regulatory_certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "has_serial_interface": true,
+  "max_wifi_data_rate_mbps": 300
+ },
+ "17916": {
+  "category_name": "modems_and_routers",
+  "length_mm": 232.8,
+  "width_mm": 104,
+  "height_mm": 43.5,
+  "weight_g": 1200,
+  "input_voltage_v_min": 9,
+  "input_voltage_v_max": 36,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "poe_ports_count": 1,
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 95,
+  "atmospheric_pressure_min_mbar": 700,
+  "atmospheric_pressure_max_mbar": 1060,
+  "volume_mm3": 6270000,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "security_features": [
+   "ipsec_transport",
+   "ipsec_tunnel",
+   "preshared_key",
+   "rsa",
+   "certificates",
+   "md5",
+   "sha2"
+  ],
+  "management_features": [
+   "web",
+   "cli",
+   "sms"
+  ],
+  "regulatory_standards": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": "Fanless, IP54",
+  "ethernet_port_count": 2,
+  "serial_interface": true,
+  "sma_antenna_connector_count": 2000,
+  "digital_inputs_count": 5,
+  "digital_output_max_current_a": 0.5,
+  "dhcp_enabled": true,
+  "ip_forwarding_enabled": true,
+  "vlan_support": true,
+  "host_watchdog_enabled": true,
+  "pppoe_enabled": true,
+  "serial_mode_pad": true,
+  "serial_mode_tcp_udp": true,
+  "modbus_ascii_support": true,
+  "modbus_rtu_support": true,
+  "modbus_variable_support": true,
+  "ppp_enabled": true,
+  "wifi_dual_band": true,
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n"
+  ],
+  "max_wifi_clients_count": 128,
+  "wifi_output_power_dbm": 21,
+  "wifi_mode_wan": true,
+  "nat_enabled": true,
+  "nemo_support": true,
+  "dmnr_support": true,
+  "vrrp_enabled": true,
+  "static_routing_enabled": true,
+  "ethernet_wan_support": true,
+  "verizon_pntm_supported": true,
+  "ipv6_gateway_enabled": true,
+  "policy_routing_enabled": true,
+  "dynamic_dns_enabled": true,
+  "vpn_client_ipsec_support": true,
+  "vpn_client_gre_support": true,
+  "vpn_client_openvpn_support": true,
+  "max_concurrent_tunnels_count": 5,
+  "tunnel_split_support": true,
+  "dpd_detection_enabled": true,
+  "battery_low_discharge_protection_enabled": true,
+  "motor_startup_protection_enabled": true,
+  "high_voltage_transient_protection_enabled": true,
+  "iecee_certification": true,
+  "ul60950_compliant": true,
+  "iec_61000_5_2_compliant": true
+ },
+ "18020": {
+  "category_name": "Comunicadores de alarmas",
+  "active_current_a": 0.05,
+  "digital_input_current_max_a": 0.125,
+  "ingress_protection": [
+   "ip65"
+  ],
+  "wifi_standards": [
+   "802.11b",
+   "802.11g",
+   "802.11n"
+  ],
+  "channel_bandwidth_min_mhz": 2400,
+  "channel_bandwidth_max_mhz": 2483.5,
+  "output_power_w_max": 14,
+  "signal_modulation": "ofdm",
+  "certifications": [
+   "global-fcc"
+  ]
+ },
+ "18259": {
+  "category_name": "Seguimiento GPS"
+ },
+ "18305": {
+  "cpu_model": "1.6GHz Dual Core",
+  "ram_size_mb": 1000,
+  "flash_size_mib": 128,
+  "dual_software_image": true,
+  "ethernet_wan_ports": 5,
+  "ethernet_ports": 8,
+  "wlan_data_rate_mbps": 300,
+  "device_dimensions_mm": [
+   232800,
+   104000,
+   44500
+  ],
+  "device_weight_g": 1200,
+  "operating_temperature_c_min_max": [
+   -40,
+   75
+  ],
+  "relative_humidity_percent_min_max": [
+   5,
+   95
+  ],
+  "wan_protocols": [
+   "DDR",
+   "NDIS",
+   "PPPoE",
+   "Bridge Group",
+   "EDP"
+  ],
+  "tcp_ip_protocols": [
+   "dhcp",
+   "dns",
+   "ddns",
+   "nat",
+   "nat64",
+   "nat66",
+   "nat_alg",
+   "ipip",
+   "gre",
+   "l2tp",
+   "l2tpv3"
+  ],
+  "ipv4_routing_protocols": [
+   "static",
+   "rip",
+   "ospfv2",
+   "is-is",
+   "bgp",
+   "policy_routing"
+  ],
+  "ipv6_routing_protocols": [
+   "static",
+   "ripng",
+   "ospfv3",
+   "is-isv6",
+   "bgp4+",
+   "policy_routing"
+  ],
+  "ipv6_features": [
+   "ipv4_ipv6_dual_stack",
+   "ipv6_nd",
+   "ipv6_pmtu_disc",
+   "ipv6_acl",
+   "icmpv6",
+   "dnsv6",
+   "dhcpv6",
+   "gre_ipv6",
+   "ipv6_pim"
+  ],
+  "ipv6_tunneling_protocols": [
+   "ipv6_over_ipv4",
+   "6to4",
+   "isatap"
+  ],
+  "multicast_protocols": [
+   "igmp_v1",
+   "igmp_v2",
+   "igmp_v3",
+   "pim_dm",
+   "pim_sm",
+   "ssm",
+   "mvpn",
+   "ng_mvpn",
+   "msdp",
+   "mld",
+   "ipv6_pim",
+   "mbgp"
+  ],
+  "vpn_protocols": [
+   "ipsec_transport",
+   "ipsec_tunnel",
+   "preshared_key",
+   "rsa",
+   "certificates",
+   "md5",
+   "sha2",
+   "ike",
+   "pkI",
+   "vlpS",
+   "l3vpn",
+   "oam",
+   "6pe",
+   "vrf",
+   "dvpn",
+   "vxlan"
+  ],
+  "security_features": [
+   "acl",
+   "ssh",
+   "cpu_protection",
+   "firewall",
+   "ips",
+   "url_filtering",
+   "aaa",
+   "ike",
+   "pki",
+   "802_1x",
+   "urfp"
+  ],
+  "qos_features": [
+   "fifo",
+   "pq",
+   "fq",
+   "wfq",
+   "cbwfq",
+   "llq",
+   "rsrvP",
+   "car",
+   "h-qos",
+   "traffic_configuration",
+   "speed_limiting"
+  ],
+  "reliability_features": [
+   "backup_interface",
+   "vrrp_v3",
+   "vbrp",
+   "ipsla",
+   "track",
+   "bfd",
+   "bfdv6"
+  ],
+  "management_features": [
+   "keepalive",
+   "ntp",
+   "eep",
+   "rmon",
+   "cwmp",
+   "cli",
+   "ssh",
+   "http_https",
+   "snmp_v1",
+   "snmp_v2",
+   "snmp_v3",
+   "telnet",
+   "ping",
+   "trace_route",
+   "login",
+   "ftp",
+   "tftp",
+   "sftp",
+   "tr069",
+   "ip_sla"
+  ],
+  "regulatory_certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ]
+ },
+ "18309": {
+  "wan_protocols": [
+   "DDR",
+   "NDIS",
+   "PPPoE",
+   "Bridge Group",
+   "EDP"
+  ],
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "tcp_ip_protocols": [
+   "dhcp",
+   "dns",
+   "ddns",
+   "nat",
+   "nat64",
+   "nat66",
+   "nat_alg",
+   "ipip",
+   "gre",
+   "l2tp",
+   "l2tpv3"
+  ],
+  "ipv4_routing_protocols": [
+   "static",
+   "rip",
+   "ospfv2",
+   "is-is",
+   "bgp",
+   "policy_routing"
+  ],
+  "ipv6_routing_protocols": [
+   "static",
+   "ripng",
+   "ospfv3",
+   "is-isv6",
+   "bgp4+",
+   "policy_routing"
+  ],
+  "ipv6_features": [
+   "ipv4_ipv6_dual_stack",
+   "ipv6_nd",
+   "ipv6_pmtu_disc",
+   "ipv6_acl",
+   "icmpv6",
+   "dnsv6",
+   "dhcpv6",
+   "gre_ipv6",
+   "ipv6_pim"
+  ],
+  "ipv6_tunneling_protocols": [
+   "ipv6_over_ipv4",
+   "6to4",
+   "isatap"
+  ],
+  "multicast_protocols": [
+   "igmp_v1",
+   "igmp_v2",
+   "igmp_v3",
+   "pim_dm",
+   "pim_sm",
+   "ssm",
+   "mvpn",
+   "ng_mvpn",
+   "msdp",
+   "mld",
+   "ipv6_pim",
+   "mbgp"
+  ],
+  "vpn_protocols": [
+   "ipsec_transport",
+   "ipsec_tunnel",
+   "preshared_key",
+   "rsa",
+   "certificates",
+   "md5",
+   "sha2",
+   "ike",
+   "pkI",
+   "vlpS",
+   "l3vpn",
+   "oam",
+   "6pe",
+   "vrf",
+   "dvpn",
+   "vxlan"
+  ],
+  "security_features": [
+   "acl",
+   "ssh",
+   "cpu_protection",
+   "firewall",
+   "ips",
+   "url_filtering",
+   "aaa",
+   "ike",
+   "pki",
+   "802_1x",
+   "urfp"
+  ],
+  "qos_features": [
+   "fifo",
+   "pq",
+   "fq",
+   "wfq",
+   "cbwfq",
+   "llq",
+   "rsrvP",
+   "car",
+   "h-qos",
+   "traffic_configuration",
+   "speed_limiting"
+  ],
+  "reliability_features": [
+   "backup_interface",
+   "vrrp_v3",
+   "vbrp",
+   "ipsla",
+   "track",
+   "bfd",
+   "bfdv6"
+  ]
+ },
+ "18346": {
+  "switch_count": 9,
+  "sfp_count": [
+   4,
+   6
+  ],
+  "input_power_watts_max": 380,
+  "poe_poe_power_watts_max": 125,
+  "power_watts_max": 760,
+  "power_supply_type": "fixed",
+  "modular_expansion_slot": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "18351": {
+  "switch_count": 9,
+  "sfp_count": [
+   4,
+   6
+  ],
+  "input_power_watts_max": 760,
+  "poe_poe_power_watts_max": 125,
+  "power_watts_max": 760,
+  "power_supply_type": "fixed",
+  "modular_expansion_slot": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "18448": {
+  "power_consumption_min_w": 1400,
+  "power_consumption_max_w": 1900,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 85,
+  "relative_humidity_percent": [
+   "5-95"
+  ],
+  "weather_resistant_ip_rating": [
+   "ip40"
+  ],
+  "dimensions_length_mm": 53000,
+  "dimensions_width_mm": 138000,
+  "dimensions_height_mm": 110000,
+  "weight_g": 591,
+  "iec_61000_4_2_compliance": true,
+  "electrostatic_discharge_voltage_max_kv": 8,
+  "contact_discharge_voltage_max_kv": 6,
+  "electrostatic_discharge_voltage_transient_max_kv": 2,
+  "surge_protection_level": true,
+  "signal_voltage_max_kv": 1000,
+  "impact_test_standard": true,
+  "drop_test_standard": true,
+  "vibration_test_standard": true,
+  "certifications": [
+   "global-ce",
+   "global-fcc",
+   "global-rohs"
+  ],
+  "warranty_years": 3
+ },
+ "18457": {
+  "category_name": "Módems y routers",
+  "length_mm": 232.8,
+  "width_mm": 104,
+  "height_mm": 43.5,
+  "weight_g": 1200,
+  "input_voltage_v_min": 9,
+  "input_voltage_v_max": 36,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "poe_ports_count": 1,
+  "rj45_connector_count": 6,
+  "serial_interface": true,
+  "usb_connector_count": 1,
+  "indicators_led": [
+   "run",
+   "mdm",
+   "usr",
+   "rssi",
+   "wlan"
+  ],
+  "device_weight_g": 1200,
+  "operating_temperature_c_min_max": [
+   -40,
+   75
+  ],
+  "regulatory_standards": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ]
+ },
+ "18813": {
+  "packet_transfer_rate_mbps": 10000000,
+  "frequency_mhz": [
+   850,
+   900,
+   1800,
+   1900,
+   2100,
+   2600,
+   2800,
+   6600
+  ],
+  "accelerometer_3axis": true,
+  "connection_ports_count": 2,
+  "led_status": true,
+  "antenna_type": "internal",
+  "m2m_protocol": "sunet",
+  "input_output_ports": [
+   "1-wire",
+   "rs232",
+   "ign",
+   "digital_inputs_count_2",
+   "digital_outputs_count_2",
+   "voice_communication"
+  ],
+  "communication_protocols": [
+   "tcp",
+   "udp",
+   "sms"
+  ],
+  "memory_capacity_positions": 10000,
+  "geofence_count": [
+   999,
+   30
+  ],
+  "dimensions_mm": [
+   90.5,
+   58,
+   26
+  ],
+  "weight_g": 115000,
+  "update_frequency_hz": 1,
+  "gps_receiver_modes": [
+   "gps_l1_1575420000",
+   "glonass_l1_1601710000",
+   "sbas"
+  ],
+  "gps_accuracy": [
+   "2.5_m_cep",
+   "2.0_m_cep"
+  ],
+  "cold_start_time_s": 1,
+  "sensitivity_dbm": [
+   -167,
+   -161,
+   -149
+  ],
+  "certifications": [
+   "nyce",
+   "ift"
+  ]
+ },
+ "18816": {
+  "packet_transfer_rate_mbps": 10000000,
+  "frequency_mhz": [
+   850,
+   900,
+   1800,
+   1900,
+   2100,
+   2600,
+   2800,
+   6600
+  ],
+  "m2m_protocol": "sunet",
+  "accelerometer_3axis": true,
+  "connection_ports_count": 2,
+  "led_status": true,
+  "antenna_type": "internal",
+  "input_output_ports": [
+   "digital_inputs_count_2",
+   "digital_outputs_count_2"
+  ],
+  "communication_protocols": [
+   "tcp",
+   "udp",
+   "sms"
+  ],
+  "memory_capacity_positions": 10000,
+  "geofence_count": [
+   999,
+   30
+  ],
+  "dimensions_mm": [
+   94,
+   55,
+   23
+  ],
+  "weight_g": 103,
+  "update_frequency_hz": 1,
+  "gps_receiver_modes": [
+   "gps_l1_1575420000",
+   "glonass_l1_1601710000",
+   "sbas"
+  ],
+  "gps_accuracy": [
+   "2.5_m_cep",
+   "2.0_m_cep"
+  ],
+  "cold_start_time_s": 1,
+  "sensitivity_dbm": [
+   -167,
+   -161,
+   -149
+  ]
+ },
+ "18853": {
+  "category_name": "Seguimiento GPS"
+ },
+ "18863": {
+  "packet_transfer_rate_mbps": 10000000,
+  "frequency_mhz": [
+   850,
+   900,
+   1800,
+   1900,
+   2100,
+   2600,
+   2800,
+   6600
+  ],
+  "accelerometer_3axis": true,
+  "connection_ports_count": 2,
+  "led_status": true,
+  "antenna_type": "internal",
+  "m2m_protocol": "sunet",
+  "input_output_ports": [
+   "digital_inputs_count_2",
+   "digital_outputs_count_2"
+  ],
+  "communication_protocols": [
+   "tcp",
+   "udp",
+   "sms"
+  ],
+  "memory_capacity_positions": 8000,
+  "geofence_count": [
+   999,
+   30
+  ],
+  "dimensions_mm": [
+   53,
+   47,
+   23
+  ],
+  "weight_g": 40,
+  "update_frequency_hz": 1,
+  "gps_receiver_modes": [
+   "gps_l1_1575420000",
+   "glonass_l1_1601710000",
+   "sbas"
+  ],
+  "gps_accuracy": [
+   "2.0_m_cep"
+  ],
+  "cold_start_time_s": 27,
+  "sensitivity_dbm": [
+   -167,
+   -161,
+   -149
+  ],
+  "certifications": [
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ]
+ },
+ "18866": {
+  "packet_transfer_rate_mbps": 10000000,
+  "frequency_mhz": [
+   850,
+   900,
+   1800,
+   1900,
+   2100,
+   2600,
+   2800,
+   6600
+  ],
+  "accelerometer_3axis": true,
+  "led_status": true,
+  "antenna_type": "internal",
+  "m2m_protocol": "gt06e",
+  "input_output_ports": [
+   "digital_inputs_count_2"
+  ],
+  "communication_protocols": [
+   "tcp"
+  ],
+  "memory_capacity_positions": 1000,
+  "dimensions_mm": [
+   78,
+   39,
+   29
+  ],
+  "weight_g": 123,
+  "cold_start_time_s": 27,
+  "sensitivity_dbm": [
+   -167,
+   -161,
+   -149
+  ]
+ },
+ "19359": {
+  "input_voltage_min_v": 9,
+  "input_voltage_max_v": 16,
+  "digital_input_current_max_a": 0.35,
+  "wifi_channel_bandwidth_min_mhz": 850000000,
+  "wifi_channel_bandwidth_max_mhz": 1710000000,
+  "antenna_impedance_ohm": 50000,
+  "protocols": [
+   "tcp",
+   "udp"
+  ],
+  "regulatory_standards": [
+   "global-fcc",
+   "global-rohs"
+  ]
+ },
+ "19361": {
+  "ethernet_port_count": 4,
+  "ethernet_standards": [
+   "802.3i",
+   "802.3u",
+   "802.3ab"
+  ],
+  "ethernet_features": [
+   "duplex",
+   "negotiation",
+   "ieee_802_3u"
+  ],
+  "vlan_support": true,
+  "poe_ports_count": 1,
+  "input_voltage_v_min": 9,
+  "input_voltage_v_max": 36,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": [
+   10,
+   100,
+   1000
+  ],
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min_max": [
+   -40,
+   75
+  ],
+  "regulatory_certifications": [
+   "GLOBAL-CE"
+  ],
+  "_physical_notes": "Fanless, IP54",
+  "model_names": [
+   "rcrs420h101",
+   "rcrs420h102",
+   "rcrs420h103",
+   "rcrs420h104",
+   "rcrs420h105",
+   "rcrs420h106"
+  ]
+ },
+ "19441": {
+  "number_of_cellular_antennas": 4,
+  "conector": "sma-k",
+  "sim": "mini sim (2ff)",
+  "number_of_ports": [
+   10,
+   100,
+   1000
+  ],
+  "proteccion_aislamiento_magnetico": 1000,
+  "boton_reinicio": true,
+  "indicators_led": [
+   "run",
+   "modem",
+   "usr",
+   "rssi",
+   "wifi-2.4g",
+   "wifi-5g"
+  ],
+  "watchdog": true,
+  "number_of_antennas_wifi": 2,
+  "conector_wifi": "rp-sma-k",
+  "standards_wifi": [
+   "802.11b/g/n/ac 2*2 mimo",
+   "ap cliente"
+  ],
+  "security_wifi": [
+   "wpa",
+   "wpa2",
+   "wep",
+   "wpa3"
+  ],
+  "encryption_wifi": [
+   "aes",
+   "tkip",
+   "wep64"
+  ],
+  "number_of_serial_ports": 1,
+  "serial_connector": "3 pins female 3,5 mm",
+  "esd_protection": [
+   "±8 kv air discharge",
+   "±6 kv contact discharge"
+  ],
+  "signal_definition_serial": "rs232 txd, rxd, gnd | rs485: datos+ (a), datos- (b), tierra (gnd)",
+  "applications": [
+   "l2tp",
+   "pptp",
+   "dmvpn",
+   "vrrp",
+   "qos",
+   "snmp",
+   "idioma",
+   "rcms",
+   "ruteo dinamico",
+   "proteccion de datos",
+   "portal cautivo",
+   "wlan multi ap"
+  ],
+  "programming_languages_sdk": [
+   "c",
+   "c++"
+  ],
+  "sdk_flash_mb": 5,
+  "sdk_ram_mb": 128,
+  "protection_grade": "ip30",
+  "enclosure_and_weight": "aluminio, 475 g",
+  "dimensions_mm": [
+   136,
+   115,
+   32
+  ],
+  "installation": "montaje en escritorio, en pared y en din rail",
+  "operating_temperature_min_c": -25,
+  "operating_temperature_max_c": 55,
+  "storage_temperature_min_c": -25,
+  "storage_temperature_max_c": 70,
+  "relative_humidity_percent": [
+   5,
+   95
+  ],
+  "environmental_approval": [
+   "rohs2.0"
+  ],
+  "physical_approvals": [
+   "iec 60068-2-6 (vibration sinusoidal)",
+   "iec 60068-2-64 (vibration random)",
+   "iec 60068-2-27 (mechanical shock)"
+  ],
+  "power_supply_connector": "b098004 : zócalo hembra de 2 pines y 3,5 mm con cerradura | b098005 : toma de corriente de cc industrial de 4 pines",
+  "input_voltage_range_v": [
+   12,
+   36
+  ]
+ },
+ "20076": {
+  "ethernet_port_speeds_mbps": 10000,
+  "ethernet_ports_count": 8,
+  "device_dimensions_mm": [
+   264000,
+   483000,
+   44000
+  ],
+  "device_weight_g": 4000,
+  "input_voltage_v_min": 90,
+  "input_voltage_v_max": 264,
+  "relative_humidity_percent_min_max": [
+   5,
+   95
+  ],
+  "multicast_protocols": [
+   "igmp_v1",
+   "igmp_v2",
+   "igmp_v3",
+   "pim_sm",
+   "msdp",
+   "mld",
+   "mldv2"
+  ],
+  "security_features": [
+   "acl",
+   "ssh",
+   "cpu_protection",
+   "firewall",
+   "ips",
+   "url_filtering",
+   "aaa",
+   "ike",
+   "pki",
+   "802_1x",
+   "urfp"
+  ],
+  "management_features": [
+   "cli",
+   "http_https",
+   "snmp_v1",
+   "snmp_v2",
+   "snmp_v3",
+   "telnet",
+   "ftp",
+   "tftp",
+   "sftp",
+   "tr069",
+   "ip_sla"
+  ],
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC",
+   "GLOBAL-RoHS"
+  ],
+  "_physical_notes": "Fanless, IP54"
+ },
+ "20217": {
+  "switch_count": 9,
+  "sfp_count": [
+   4,
+   6
+  ],
+  "input_power_watts_max": 760,
+  "poe_poe_power_watts_max": 125,
+  "power_watts_max": 760,
+  "power_supply_type": "fixed",
+  "modular_expansion_slot": true,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 75
+ },
+ "20284": {
+  "packet_transfer_rate_mbps": 10000000,
+  "frequency_mhz": [
+   850,
+   900,
+   1800,
+   1900,
+   2100,
+   2600,
+   2800,
+   6600
+  ],
+  "accelerometer_3axis": true,
+  "connection_ports_count": 2,
+  "led_status": true,
+  "antenna_type": "internal",
+  "m2m_protocol": "suntech",
+  "input_output_ports": [
+   "digital_inputs_count_2"
+  ],
+  "communication_protocols": [
+   "tcp"
+  ],
+  "memory_capacity_positions": 10000,
+  "geofence_count": [
+   999,
+   30
+  ],
+  "dimensions_mm": [
+   94,
+   55,
+   23
+  ],
+  "weight_g": 61200,
+  "update_frequency_hz": 1,
+  "gps_receiver_modes": [
+   "gps_l1_1575420000",
+   "glonass_l1_1601710000",
+   "sbas"
+  ],
+  "gps_accuracy": "2.0_m_cep"
+ },
+ "22602": {
+  "connector_type": "sma-k",
+  "antenna_count": 2,
+  "mimo_count": 2,
+  "sim_count": 2,
+  "cpu_model": "1.6GHz Dual Core",
+  "ram_size_mb": 1000,
+  "flash_size_mib": 128,
+  "device_weight_g": 1200,
+  "input_voltage_v_min": 90,
+  "input_voltage_v_max": 264,
+  "input_power_w_max": 1500,
+  "ethernet_port_speeds_mbps": 10000,
+  "poe_ports_count": 1,
+  "rj45_connector_count": 6,
+  "sfp_interface": false,
+  "optical_wavelength_nm_min": 2412,
+  "optical_wavelength_nm_max": 2472,
+  "operating_temperature_c_min": -40,
+  "operating_temperature_c_max": 75,
+  "relative_humidity_percent_min": 5,
+  "relative_humidity_percent_max": 95,
+  "device_voltage_max_v": 1500,
+  "device_current_max_a": 0.02,
+  "regulatory_certifications": [
+   "GLOBAL-CE"
+  ],
+  "has_serial_interface": true,
+  "max_wifi_data_rate_mbps": 300,
+  "_physical_notes": "Fanless, IP54",
+  "ethernet_ports_count": 8
+ }
+}
