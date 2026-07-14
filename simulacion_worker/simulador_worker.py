@@ -38,7 +38,7 @@ LOCK_PRINT = threading.Lock()
 
 def log(*a):
     with LOCK_PRINT:
-        print(*a, flush=True)
+        print(time.strftime("[%F %T]"), *a, flush=True)
 
 
 def leer_env(path):
@@ -238,6 +238,9 @@ class ContextoCategoria:
 
 
 # ------------------------------------------------------------------- agente
+NUM_CTX = 24576  # sobreescrito por --num-ctx en cmd_correr
+
+
 def llamar_ollama(host, payload, timeout):
     req = urllib.request.Request(
         f"{host}/api/chat", data=json.dumps(payload).encode(),
@@ -258,7 +261,7 @@ def agente(host, modelo, system, user, timeout, max_iter=20):
         r = llamar_ollama(host, {
             "model": modelo, "messages": mensajes, "tools": TOOL_CALCULATOR,
             "stream": False,
-            "options": {"temperature": 0, "num_ctx": 24576, "num_predict": 6144},
+            "options": {"temperature": 0, "num_ctx": NUM_CTX, "num_predict": 6144},
         }, timeout)
         stats["llm_s"] += time.time() - t0
         stats["prompt_tokens"] = r.get("prompt_eval_count", 0)
@@ -318,15 +321,72 @@ def slug_modelo(modelo):
     return re.sub(r"[^a-z0-9]+", "-", modelo.lower())
 
 
-def archivo_resultados(modelo):
-    return AQUI / f"resultados_{slug_modelo(modelo)}.jsonl"
+def archivo_resultados(modelo, tag=""):
+    suf = f"_{tag}" if tag else ""
+    return AQUI / f"resultados_{slug_modelo(modelo)}{suf}.jsonl"
 
 
-def exportar_normalizado(modelo):
+# ------------------------------------------------ experimento 2: siembra
+def construir_seed_backup(categorias):
+    """Vocabulario por categoría derivado del backup (canon GPT de producción).
+
+    Devuelve {category_id: {key: [(pid, value), ...]}} para poder hacer
+    leave-one-out por producto (el producto "nuevo" no aporta a su propio
+    contexto, como en producción real).
+    """
+    backup = {int(k): v for k, v in json.loads(
+        (AQUI / "backup_normalizado.json").read_text()).items()}
+    por_cat = {}
+    for cat in categorias:
+        claves = {}
+        for prod in cat["productos"]:
+            for k, v in (backup.get(prod["id"]) or {}).items():
+                claves.setdefault(k, []).append((prod["id"], v))
+        por_cat[cat["category_id"]] = claves
+    return por_cat
+
+
+def seed_para_producto(claves_cat, pid, min_n=1):
+    """keys_context sembrado como si `pid` fuera el producto que llega nuevo."""
+    seed = {}
+    for k, contrib in claves_cat.items():
+        otras = [v for p, v in contrib if p != pid]
+        if len(otras) >= max(min_n, 1):
+            seed[k] = {"n": len(otras), "example": otras[-1],
+                       "shape": derivar_shape(k, otras[-1], claves_cat.keys())}
+    return seed
+
+
+def cargar_seed_view(ruta):
+    """seed_view.json: la vista real category_keys_context bajada de Supabase
+    ({category_id: {key: {n, example, shape, desc}}}) — incluye los desc
+    auténticos emitidos por el LLM de producción."""
+    return {int(k): v for k, v in json.loads(Path(ruta).read_text()).items()}
+
+
+def seed_view_para_producto(vista_cat, claves_del_producto, min_n=1):
+    """Leave-one-out sobre la vista real: descuenta la contribución del
+    producto (membresía según backup). El `example` puede seguir siendo el
+    del producto excluido (la vista no atribuye por producto) — leakage menor
+    aceptado; `desc`/`shape` son los auténticos de producción."""
+    seed = {}
+    for k, meta in vista_cat.items():
+        if not es_obj(meta):
+            continue
+        n = meta.get("n", 1) - (1 if k in claves_del_producto else 0)
+        if n >= max(min_n, 1):
+            entrada = dict(meta)
+            entrada["n"] = n
+            seed[k] = entrada
+    return seed
+
+
+def exportar_normalizado(modelo, tag=""):
     """Escribe normalizado_<modelo>.json: {product_id: specs_normalized},
     misma forma que backup_normalizado.json → comparable 1:1 con el backup
     y entre modelos. Las filas en review van aparte en *_review.json."""
-    _, filas = cargar_hechos(modelo)
+    suf = f"_{tag}" if tag else ""
+    _, filas = cargar_hechos(modelo, tag)
     ok, review = {}, {}
     for fila in filas:
         pid = str(fila["product_id"])
@@ -336,16 +396,16 @@ def exportar_normalizado(modelo):
             review[pid] = {"slug": fila.get("slug"),
                            "error_type": fila.get("error_type"),
                            "category_id": fila.get("category_id")}
-    ruta = AQUI / f"normalizado_{slug_modelo(modelo)}.json"
+    ruta = AQUI / f"normalizado_{slug_modelo(modelo)}{suf}.json"
     ruta.write_text(json.dumps(dict(sorted(ok.items(), key=lambda x: int(x[0]))),
                                ensure_ascii=False, indent=1))
     if review:
-        (AQUI / f"normalizado_{slug_modelo(modelo)}_review.json").write_text(
+        (AQUI / f"normalizado_{slug_modelo(modelo)}{suf}_review.json").write_text(
             json.dumps(review, ensure_ascii=False, indent=1))
     return ruta, len(ok), len(review)
 
 
-def cargar_hechos(modelo):
+def cargar_hechos(modelo, tag=""):
     """Para reanudar: product_ids ya procesados y filas previas por categoría.
 
     Deduplica por producto (gana la última fila). Los errores TRANSITORIOS
@@ -354,7 +414,7 @@ def cargar_hechos(modelo):
     empty_normalization) sí son definitivos.
     """
     por_pid = {}
-    ruta = archivo_resultados(modelo)
+    ruta = archivo_resultados(modelo, tag)
     if ruta.exists():
         for linea in ruta.read_text().splitlines():
             try:
@@ -369,7 +429,8 @@ def cargar_hechos(modelo):
 
 
 def correr_categoria(host, modelo, system, categoria, hechos, filas_previas,
-                     limit, timeout, escribir):
+                     limit, timeout, escribir, productos_filtro=None,
+                     seed_fn=None, tag=""):
     ctx = ContextoCategoria()
     # reconstruir contexto desde corrida previa (en orden) para reanudar fiel
     for fila in filas_previas:
@@ -378,13 +439,21 @@ def correr_categoria(host, modelo, system, categoria, hechos, filas_previas,
                            fila.get("keys_context_llm"))
     procesados = 0
     for prod in categoria["productos"]:
+        if productos_filtro and prod["id"] not in productos_filtro:
+            continue
         if limit and procesados >= limit:
             break
         if prod["id"] in hechos:
             continue
         procesados += 1
         specs = flatten_specs(prod["specs"])
-        entrada = build_llm_input(categoria["category_name"], specs, ctx.claves)
+        if seed_fn is not None:
+            # exp. incremental: contexto = canon existente SIN este producto
+            # (leave-one-out); cada producto es independiente, sin evolución
+            contexto_entrada = seed_fn(prod["id"])
+        else:
+            contexto_entrada = ctx.claves
+        entrada = build_llm_input(categoria["category_name"], specs, contexto_entrada)
         t0 = time.time()
         try:
             texto, stats = agente(host, modelo, system, entrada, timeout)
@@ -393,11 +462,15 @@ def correr_categoria(host, modelo, system, categoria, hechos, filas_previas,
         except Exception as e:
             res = {"status": "review", "error_type": "excepcion", "error_detail": str(e)}
             stats = {}
-        fila = {"modelo": modelo, "category_id": categoria["category_id"],
+        fila = {"ts": time.strftime("%F %T"),
+                "modelo": modelo, "category_id": categoria["category_id"],
                 "category_name": categoria["category_name"],
                 "product_id": prod["id"], "slug": prod["slug"],
                 "n_specs_crudas": len(specs),
                 "wall_s": round(time.time() - t0, 1), **stats, **res}
+        if seed_fn is not None:
+            fila["seed_claves"] = len(contexto_entrada)
+            fila["tag"] = tag
         if res["status"] == "ok":
             nuevas = ctx.actualizar(prod["id"], res["specs_normalized"],
                                     res.get("keys_context_llm"))
@@ -411,8 +484,9 @@ def correr_categoria(host, modelo, system, categoria, hechos, filas_previas,
             f"ctx={len(ctx.claves)} | iter={stats.get('iteraciones', '-')} "
             f"calc={stats.get('llamadas_calculator', '-')}")
     # snapshot final del diccionario de la categoría
+    suf = f"_{tag}" if tag else ""
     ruta_ctx = AQUI / (f"contexto_{re.sub(r'[^a-z0-9]+', '-', modelo.lower())}"
-                       f"_cat{categoria['category_id']}.json")
+                       f"_cat{categoria['category_id']}{suf}.json")
     ruta_ctx.write_text(json.dumps(
         {"claves": ctx.claves, "historial": ctx.historial},
         ensure_ascii=False, indent=1))
@@ -432,15 +506,39 @@ def cmd_correr(args):
     if args.categorias:
         quiero = {int(x) for x in args.categorias.split(",")}
         categorias = [c for c in categorias if c["category_id"] in quiero]
+    global NUM_CTX
+    NUM_CTX = args.num_ctx
+    productos_filtro = ({int(x) for x in args.productos.split(",")}
+                        if args.productos else None)
+    backup_claves = {}
+    if args.seed_view or args.seed_backup:
+        backup_claves = {int(k): set(v) for k, v in json.loads(
+            (AQUI / "backup_normalizado.json").read_text()).items()}
+
+    def seed_fn_para(cat):
+        cid = cat["category_id"]
+        if args.seed_view:
+            vista = cargar_seed_view(AQUI / "seed_view.json").get(cid, {})
+            return lambda pid: seed_view_para_producto(
+                vista, backup_claves.get(pid, set()), args.seed_min_n)
+        if args.seed_backup:
+            claves_cat = construir_seed_backup([cat])[cid]
+            return lambda pid: seed_para_producto(claves_cat, pid, args.seed_min_n)
+        return None
+
+    modo = ("SEMBRADO vista real (leave-one-out)" if args.seed_view
+            else "SEMBRADO backup (leave-one-out)" if args.seed_backup
+            else "cold start (evolutivo)")
     log(f"Host: {host} | modelos: {args.modelos} | categorías: "
-        f"{[c['category_id'] for c in categorias]} | limit/cat: {args.limit or '∞'}")
+        f"{[c['category_id'] for c in categorias]} | limit/cat: {args.limit or '∞'} | "
+        f"contexto: {modo} | tag: {args.tag or '-'}")
     for modelo in args.modelos.split(","):
         modelo = modelo.strip()
-        hechos, filas_previas = cargar_hechos(modelo)
+        hechos, filas_previas = cargar_hechos(modelo, args.tag)
         if hechos:
             log(f"[{modelo}] reanudando: {len(hechos)} productos ya procesados")
         lock = threading.Lock()
-        ruta = archivo_resultados(modelo)
+        ruta = archivo_resultados(modelo, args.tag)
 
         def escribir(fila):
             with lock:
@@ -451,11 +549,12 @@ def cmd_correr(args):
         with ThreadPoolExecutor(max_workers=args.paralelo) as pool:
             futuros = [pool.submit(correr_categoria, host, modelo, system, c,
                                    hechos, filas_previas, args.limit,
-                                   args.timeout, escribir)
+                                   args.timeout, escribir, productos_filtro,
+                                   seed_fn_para(c), args.tag)
                        for c in categorias]
             for f in futuros:
                 f.result()
-        ruta_norm, n_ok, n_rev = exportar_normalizado(modelo)
+        ruta_norm, n_ok, n_rev = exportar_normalizado(modelo, args.tag)
         log(f"[{modelo}] listo en {round((time.time() - t0) / 60, 1)} min "
             f"→ {ruta.name} | exportado {ruta_norm.name} (ok={n_ok}, review={n_rev})")
 
@@ -480,13 +579,14 @@ def cmd_comparar(args):
     resumen_modelos = {}
     for modelo in args.modelos.split(","):
         modelo = modelo.strip()
-        _, filas = cargar_hechos(modelo)
+        _, filas = cargar_hechos(modelo, args.tag)
         if not filas:
             log(f"[{modelo}] sin resultados aún")
             continue
-        exportar_normalizado(modelo)  # regenera normalizado_<modelo>.json (aun parcial)
+        exportar_normalizado(modelo, args.tag)  # regenera normalizado (aun parcial)
         agg = {"productos": 0, "ok": 0, "review": 0, "claves_backup": 0,
-               "claves_sim": 0, "comunes": 0, "valor_igual": 0}
+               "claves_sim": 0, "comunes": 0, "valor_igual": 0,
+               "comunes_num": 0, "igual_num": 0}
         detalles = []
         for fila in filas:
             pid = fila["product_id"]
@@ -501,6 +601,11 @@ def cmd_comparar(args):
             sim = fila["specs_normalized"]
             comunes = set(obj) & set(sim)
             iguales = sum(1 for k in comunes if valores_iguales(obj[k], sim[k]))
+            # eje aritmético: solo claves NUMÉRICAS comunes (error silencioso)
+            nums = [k for k in comunes
+                    if isinstance(obj[k], (int, float)) and not isinstance(obj[k], bool)]
+            agg["comunes_num"] += len(nums)
+            agg["igual_num"] += sum(1 for k in nums if valores_iguales(obj[k], sim[k]))
             agg["claves_backup"] += len(obj)
             agg["claves_sim"] += len(sim)
             agg["comunes"] += len(comunes)
@@ -513,11 +618,13 @@ def cmd_comparar(args):
                 f"solo_sim={sorted(set(sim) - set(obj))[:8]}"))
         cob = agg["comunes"] / agg["claves_backup"] * 100 if agg["claves_backup"] else 0
         exact = agg["valor_igual"] / agg["comunes"] * 100 if agg["comunes"] else 0
+        exact_num = agg["igual_num"] / agg["comunes_num"] * 100 if agg["comunes_num"] else 0
         resumen_modelos[modelo] = (agg, cob, exact)
-        lineas += [f"## {modelo}", "",
+        lineas += [f"## {modelo}" + (f" (tag: {args.tag})" if args.tag else ""), "",
                    f"- Productos: {agg['productos']} (ok={agg['ok']}, review={agg['review']})",
                    f"- Cobertura de claves del backup: {agg['comunes']}/{agg['claves_backup']} = **{cob:.1f}%**",
                    f"- Valores idénticos en claves comunes: {agg['valor_igual']}/{agg['comunes']} = **{exact:.1f}%**",
+                   f"- **Eje aritmético** (claves numéricas comunes): {agg['igual_num']}/{agg['comunes_num']} = **{exact_num:.1f}%**",
                    f"- Claves emitidas vs backup: {agg['claves_sim']} vs {agg['claves_backup']}", "",
                    "| producto | slug | cobertura | exactitud | solo backup | solo sim |",
                    "|---|---|---|---|---|---|"]
@@ -528,7 +635,7 @@ def cmd_comparar(args):
     modelos = [m.strip() for m in args.modelos.split(",")]
     normalizados = {}
     for m in modelos:
-        _, filas = cargar_hechos(m)
+        _, filas = cargar_hechos(m, args.tag)
         normalizados[m] = {f["product_id"]: f["specs_normalized"]
                            for f in filas if f.get("status") == "ok"}
     for i in range(len(modelos)):
@@ -557,11 +664,14 @@ def cmd_comparar(args):
                        f"- Acuerdo de valores en claves comunes: {tot_igual}/{tot_comunes} = **{acuerdo:.1f}%**", "",
                        f"| producto | claves comunes | valores distintos | solo {a} | solo {b} |",
                        "|---|---|---|---|---|"] + divergencias + [""]
-    ruta = AQUI / "comparacion_normalizacion.md"
+    suf = f"_{args.tag}" if args.tag else ""
+    ruta = AQUI / f"comparacion_normalizacion{suf}.md"
     ruta.write_text("\n".join(lineas))
     log(f"✓ {ruta.name}")
     for m, (agg, cob, exact) in resumen_modelos.items():
-        log(f"  {m}: ok={agg['ok']}/{agg['productos']} | cobertura {cob:.1f}% | exactitud {exact:.1f}%")
+        exact_num = agg["igual_num"] / agg["comunes_num"] * 100 if agg["comunes_num"] else 0
+        log(f"  {m}: ok={agg['ok']}/{agg['productos']} | cobertura {cob:.1f}% | "
+            f"exactitud {exact:.1f}% | aritmética {exact_num:.1f}%")
 
 
 def main():
@@ -579,9 +689,24 @@ def main():
                    help="segundos por llamada; incluye la espera en cola del "
                         "servidor (NUM_PARALLEL=1): granite sin caché ~30min/"
                         "producto × cola de 4 exige margen amplio")
+    c.add_argument("--productos", help="ids de producto separados por coma (subset)")
+    c.add_argument("--seed-backup", action="store_true",
+                   help="exp. incremental: keys_context sembrado desde el backup "
+                        "(leave-one-out por producto) en vez de cold start")
+    c.add_argument("--seed-view", action="store_true",
+                   help="exp. incremental: keys_context sembrado desde seed_view.json "
+                        "(vista real category_keys_context con desc auténticos)")
+    c.add_argument("--seed-min-n", type=int, default=2,
+                   help="canon: solo claves compartidas por >=N productos (controla "
+                        "el tamaño del contexto; 1 = todo el vocabulario)")
+    c.add_argument("--num-ctx", type=int, default=24576,
+                   help="ventana de contexto por petición (32768 recomendado con seed)")
+    c.add_argument("--tag", default="",
+                   help="sufijo para archivos de resultados (ej. exp2) — no mezcla corridas")
     c.set_defaults(fn=cmd_correr)
     d = sub.add_parser("comparar")
     d.add_argument("--modelos", default="qwen2.5:3b,granite4:micro-h")
+    d.add_argument("--tag", default="")
     d.set_defaults(fn=cmd_comparar)
     args = ap.parse_args()
     args.fn(args)

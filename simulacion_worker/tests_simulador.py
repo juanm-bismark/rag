@@ -72,4 +72,14 @@ assert ctx.claves["weight_g"]["n"] == 2 and ctx.claves["weight_g"]["example"] ==
 assert ctx.claves["weight_g"]["desc"] == "device weight"
 assert len(ctx.historial) == 2
 
+# --- seed de vista real (exp. 2): leave-one-out + min_n + conserva desc ---
+vista = {"weight_g": {"n": 5, "example": 320, "shape": "scalar", "desc": "device weight"},
+         "rara": {"n": 1, "example": 9, "shape": "scalar"},
+         "leds": {"n": 2, "example": ["power"], "shape": "enum", "desc": "status leds"}}
+s = sim.seed_view_para_producto(vista, {"weight_g", "leds"}, min_n=2)
+assert "weight_g" in s and s["weight_g"]["n"] == 4 and s["weight_g"]["desc"] == "device weight"
+assert "rara" not in s      # n=1 < min_n
+assert "leds" not in s      # 2-1=1 < min_n (el producto la aportaba)
+assert set(sim.seed_view_para_producto(vista, set(), min_n=1)) == {"weight_g", "rara", "leds"}
+
 print("✓ todos los tests unitarios OK")

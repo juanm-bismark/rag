@@ -1,0 +1,4090 @@
+{
+ "77": {
+  "usb": {
+   "n": 2,
+   "desc": "usb interface type",
+   "shape": "enum",
+   "example": [
+    "mini-usb 2.0"
+   ],
+   "value_type": "enum"
+  },
+  "leds": {
+   "n": 7,
+   "desc": "indicator leds",
+   "shape": "enum",
+   "example": [
+    "gprs",
+    "lte cat1",
+    "gps"
+   ],
+   "value_type": "enum"
+  },
+  "has_3g": {
+   "n": 1,
+   "desc": "3g support",
+   "shape": "boolean",
+   "example": false,
+   "value_type": "boolean"
+  },
+  "has_lte": {
+   "n": 1,
+   "desc": "lte support",
+   "shape": "boolean",
+   "example": false,
+   "value_type": "boolean"
+  },
+  "has_wifi": {
+   "n": 1,
+   "desc": "wifi support",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "weight_g": {
+   "n": 10,
+   "desc": "device weight",
+   "shape": "scalar",
+   "example": 123,
+   "value_type": "number"
+  },
+  "width_mm": {
+   "n": 11,
+   "desc": "device width",
+   "shape": "scalar",
+   "example": [
+    55,
+    53.2
+   ],
+   "value_type": "number"
+  },
+  "can_count": {
+   "n": 2,
+   "desc": "can bus count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "has_rs232": {
+   "n": 3,
+   "desc": "rs232 support",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "height_mm": {
+   "n": 11,
+   "desc": "device height",
+   "shape": "scalar",
+   "example": [
+    23,
+    20.8
+   ],
+   "value_type": "number"
+  },
+  "length_mm": {
+   "n": 11,
+   "desc": "device length",
+   "shape": "scalar",
+   "example": [
+    94,
+    61.2
+   ],
+   "value_type": "number"
+  },
+  "connectors": {
+   "n": 4,
+   "desc": "physical connectors",
+   "shape": "enum",
+   "example": [
+    "5-wire cable"
+   ],
+   "value_type": "enum"
+  },
+  "sim_holder": {
+   "n": 3,
+   "desc": "sim holder",
+   "shape": "enum",
+   "example": [
+    "push push"
+   ],
+   "value_type": "enum"
+  },
+  "modem_model": {
+   "n": 1,
+   "desc": "modem model",
+   "shape": "enum",
+   "example": [
+    "eg915u-l"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_systems": {
+   "n": 8,
+   "desc": "supported gnss systems",
+   "shape": "enum",
+   "example": [
+    "gps",
+    "glonass"
+   ],
+   "value_type": "enum"
+  },
+  "sbas_systems": {
+   "n": 7,
+   "desc": "sbas systems",
+   "shape": "enum",
+   "example": [
+    "waas",
+    "egnos",
+    "masa"
+   ],
+   "value_type": "enum"
+  },
+  "antenna_types": {
+   "n": 9,
+   "desc": "antenna types",
+   "shape": "enum",
+   "example": [
+    "internal cellular",
+    "internal gps"
+   ],
+   "value_type": "enum"
+  },
+  "body_material": {
+   "n": 2,
+   "desc": "body material",
+   "shape": "enum",
+   "example": [
+    "plastic"
+   ],
+   "value_type": "enum"
+  },
+  "has_bluetooth": {
+   "n": 2,
+   "desc": "bluetooth support",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "lte_fdd_bands": {
+   "n": 5,
+   "desc": "lte fdd bands",
+   "shape": "enum",
+   "example": [
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b7",
+    "b8",
+    "b28",
+    "b66"
+   ],
+   "value_type": "enum"
+  },
+  "m2m_protocols": {
+   "n": 7,
+   "desc": "m2m protocols",
+   "shape": "enum",
+   "example": [
+    "suntech unified protocol"
+   ],
+   "value_type": "enum"
+  },
+  "sim_card_type": {
+   "n": 8,
+   "desc": "sim card type",
+   "shape": "enum",
+   "example": [
+    "nano-sim 4ff"
+   ],
+   "value_type": "enum"
+  },
+  "certifications": {
+   "n": 3,
+   "desc": "regulatory certifications",
+   "shape": "enum",
+   "example": [
+    "MX-NYCE",
+    "MX-IFETEL"
+   ],
+   "value_type": "enum"
+  },
+  "has_easy_logic": {
+   "n": 2,
+   "desc": "easy logic",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_geofencing": {
+   "n": 2,
+   "desc": "geofencing",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "lifetime_years": {
+   "n": 2,
+   "desc": "device lifetime years",
+   "shape": "scalar",
+   "example": 10,
+   "value_type": "number"
+  },
+  "lte_cat1_bands": {
+   "n": 4,
+   "desc": "lte cat1 bands",
+   "shape": "enum",
+   "example": [
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b7",
+    "b8",
+    "b28",
+    "b66"
+   ],
+   "value_type": "enum"
+  },
+  "warranty_years": {
+   "n": 2,
+   "desc": "warranty period",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "has_can_scanner": {
+   "n": 2,
+   "desc": "can scanner",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_eco_driving": {
+   "n": 3,
+   "desc": "eco driving",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "input_voltage_v": {
+   "n": 2,
+   "desc": "input voltage",
+   "shape": "scalar",
+   "example": 5,
+   "value_type": "number"
+  },
+  "sim_slots_count": {
+   "n": 2,
+   "desc": "sim slots count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "sleep_current_a": {
+   "n": 2,
+   "desc": "sleep current",
+   "shape": "scalar",
+   "example": 0.0031,
+   "value_type": "number"
+  },
+  "active_current_a": {
+   "n": 2,
+   "desc": "active current",
+   "shape": "scalar",
+   "example": 0.0375,
+   "value_type": "number"
+  },
+  "battery_chemistry": {
+   "n": 7,
+   "desc": "battery chemistry",
+   "shape": "enum",
+   "example": [
+    "li-ion"
+   ],
+   "value_type": "enum"
+  },
+  "battery_voltage_v": {
+   "n": 7,
+   "desc": "battery nominal voltage",
+   "shape": "scalar",
+   "example": 3.7,
+   "value_type": "number"
+  },
+  "cellular_2g_bands": {
+   "n": 9,
+   "desc": "2g bands",
+   "shape": "enum",
+   "example": [
+    "gsm 850",
+    "gsm 900",
+    "gsm 1800",
+    "gsm 1900"
+   ],
+   "value_type": "enum"
+  },
+  "cellular_3g_bands": {
+   "n": 1,
+   "desc": "3g bands",
+   "shape": "enum",
+   "example": [
+    "umts 900",
+    "umts 2100"
+   ],
+   "value_type": "enum"
+  },
+  "cellular_standard": {
+   "n": 1,
+   "desc": "cellular standard",
+   "shape": "enum",
+   "example": [
+    "gsm"
+   ],
+   "value_type": "enum"
+  },
+  "has_accelerometer": {
+   "n": 7,
+   "desc": "accelerometer present",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_driver_alerts": {
+   "n": 6,
+   "desc": "driver alert features",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "vehicle_protocols": {
+   "n": 4,
+   "desc": "vehicle protocols",
+   "shape": "enum",
+   "example": [
+    "obd-ii"
+   ],
+   "value_type": "enum"
+  },
+  "_signal_type_notes": {
+   "n": 2,
+   "desc": "input signal type",
+   "shape": "narrative",
+   "example": [
+    "analog discrete frequency pulse"
+   ],
+   "value_type": "enum"
+  },
+  "has_auto_reporting": {
+   "n": 2,
+   "desc": "auto reporting",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_ignition_input": {
+   "n": 4,
+   "desc": "ignition input present",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_modbus_support": {
+   "n": 2,
+   "desc": "modbus support",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "ingress_protection": {
+   "n": 5,
+   "desc": "ingress protection",
+   "shape": "enum",
+   "example": [
+    "ip65"
+   ],
+   "value_type": "enum"
+  },
+  "analog_inputs_count": {
+   "n": 1,
+   "desc": "analog input count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "can_bus_speeds_mbps": {
+   "n": 1,
+   "desc": "can bus speeds",
+   "shape": "scalar",
+   "example": [
+    0.25,
+    0.5
+   ],
+   "value_type": "number_array"
+  },
+  "can_identifier_bits": {
+   "n": 2,
+   "desc": "can identifier bits",
+   "shape": "scalar",
+   "example": [
+    29,
+    11
+   ],
+   "value_type": "number_array"
+  },
+  "digital_output_type": {
+   "n": 2,
+   "desc": "digital output type",
+   "shape": "enum",
+   "example": [
+    "transistor"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_update_rate_hz": {
+   "n": 4,
+   "desc": "gnss update rate",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "input_voltage_max_v": {
+   "n": 9,
+   "desc": "maximum input voltage",
+   "shape": "range",
+   "example": 33,
+   "value_type": "number"
+  },
+  "input_voltage_min_v": {
+   "n": 9,
+   "desc": "minimum input voltage",
+   "shape": "range",
+   "example": 8,
+   "value_type": "number"
+  },
+  "position_accuracy_m": {
+   "n": 9,
+   "desc": "position accuracy",
+   "shape": "scalar",
+   "example": 3,
+   "value_type": "number"
+  },
+  "sleep_current_max_a": {
+   "n": 3,
+   "desc": "maximum sleep current",
+   "shape": "scalar",
+   "example": 0.005,
+   "value_type": "number"
+  },
+  "active_current_max_a": {
+   "n": 3,
+   "desc": "maximum active current",
+   "shape": "range",
+   "example": 0.05,
+   "value_type": "number"
+  },
+  "active_current_min_a": {
+   "n": 3,
+   "desc": "minimum active current",
+   "shape": "range",
+   "example": 0.04,
+   "value_type": "number"
+  },
+  "battery_capacity_mah": {
+   "n": 9,
+   "desc": "battery capacity",
+   "shape": "scalar",
+   "example": 220,
+   "value_type": "number"
+  },
+  "digital_inputs_count": {
+   "n": 4,
+   "desc": "digital input count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "gps_l1_frequency_mhz": {
+   "n": 7,
+   "desc": "gps l1 frequency",
+   "shape": "scalar",
+   "example": 1575.42,
+   "value_type": "number"
+  },
+  "hot_start_time_max_s": {
+   "n": 8,
+   "desc": "hot start max time",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "lte_cat1_uplink_mbps": {
+   "n": 6,
+   "desc": "lte cat1 uplink speed",
+   "shape": "scalar",
+   "example": 5,
+   "value_type": "number"
+  },
+  "cold_start_time_max_s": {
+   "n": 9,
+   "desc": "cold start max time",
+   "shape": "scalar",
+   "example": 35,
+   "value_type": "number"
+  },
+  "digital_outputs_count": {
+   "n": 4,
+   "desc": "digital output count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "pull_up_voltage_max_v": {
+   "n": 2,
+   "desc": "pull-up max voltage",
+   "shape": "scalar",
+   "example": 2.7,
+   "value_type": "number"
+  },
+  "warm_start_time_max_s": {
+   "n": 2,
+   "desc": "warm start max time",
+   "shape": "scalar",
+   "example": 30,
+   "value_type": "number"
+  },
+  "_firmware_update_notes": {
+   "n": 2,
+   "desc": "firmware update notes",
+   "shape": "narrative",
+   "example": [
+    "OTA via ST600M/ST4300"
+   ],
+   "value_type": "enum"
+  },
+  "accelerometer_features": {
+   "n": 6,
+   "desc": "accelerometer features",
+   "shape": "enum",
+   "example": [
+    "3-axis",
+    "dpa",
+    "shock alert",
+    "collision alert"
+   ],
+   "value_type": "enum"
+  },
+  "digital_input_features": {
+   "n": 2,
+   "desc": "digital input features",
+   "shape": "enum",
+   "example": [
+    "sos button",
+    "on-off button"
+   ],
+   "value_type": "enum"
+  },
+  "has_ingress_protection": {
+   "n": 1,
+   "desc": "ingress protection",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "input_frequency_max_hz": {
+   "n": 2,
+   "desc": "max input frequency",
+   "shape": "scalar",
+   "example": 4000,
+   "value_type": "number"
+  },
+  "lte_cat1_downlink_mbps": {
+   "n": 6,
+   "desc": "lte cat1 downlink speed",
+   "shape": "scalar",
+   "example": 10,
+   "value_type": "number"
+  },
+  "pull_up_resistance_ohm": {
+   "n": 2,
+   "desc": "pull-up resistance",
+   "shape": "scalar",
+   "example": 10000,
+   "value_type": "number"
+  },
+  "storage_altitude_max_m": {
+   "n": 2,
+   "desc": "maximum storage altitude",
+   "shape": "range",
+   "example": 10000,
+   "value_type": "number"
+  },
+  "storage_altitude_min_m": {
+   "n": 2,
+   "desc": "minimum storage altitude",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "communication_protocols": {
+   "n": 7,
+   "desc": "communication protocols",
+   "shape": "enum",
+   "example": [
+    "tcp",
+    "udp",
+    "sms"
+   ],
+   "value_type": "enum"
+  },
+  "has_ota_firmware_update": {
+   "n": 1,
+   "desc": "ota firmware update support",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_voice_communication": {
+   "n": 3,
+   "desc": "voice communication",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "deep_sleep_current_max_a": {
+   "n": 3,
+   "desc": "maximum deep sleep current",
+   "shape": "scalar",
+   "example": 0.003,
+   "value_type": "number"
+  },
+  "geofences_circular_count": {
+   "n": 3,
+   "desc": "circular geofences count",
+   "shape": "scalar",
+   "example": 999,
+   "value_type": "number"
+  },
+  "glonass_l1_frequency_mhz": {
+   "n": 7,
+   "desc": "glonass l1 frequency",
+   "shape": "scalar",
+   "example": 1601.71,
+   "value_type": "number"
+  },
+  "has_remote_configuration": {
+   "n": 2,
+   "desc": "remote configuration",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "operating_altitude_max_m": {
+   "n": 2,
+   "desc": "maximum operating altitude",
+   "shape": "range",
+   "example": 2000,
+   "value_type": "number"
+  },
+  "operating_altitude_min_m": {
+   "n": 2,
+   "desc": "minimum operating altitude",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "position_accuracy_sbas_m": {
+   "n": 2,
+   "desc": "sbas position accuracy",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "receiver_sensitivity_dbm": {
+   "n": 2,
+   "desc": "receiver sensitivity",
+   "shape": "scalar",
+   "example": -164,
+   "value_type": "number"
+  },
+  "transistor_outputs_count": {
+   "n": 2,
+   "desc": "transistor outputs count",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "analog_input_resolution_v": {
+   "n": 2,
+   "desc": "analog input resolution",
+   "shape": "scalar",
+   "example": 0.001,
+   "value_type": "number"
+  },
+  "geofences_polygonal_count": {
+   "n": 3,
+   "desc": "polygonal geofences count",
+   "shape": "scalar",
+   "example": 30,
+   "value_type": "number"
+  },
+  "storage_temperature_max_c": {
+   "n": 2,
+   "desc": "maximum storage temperature",
+   "shape": "range",
+   "example": 85,
+   "value_type": "number"
+  },
+  "storage_temperature_min_c": {
+   "n": 2,
+   "desc": "minimum storage temperature",
+   "shape": "range",
+   "example": -40,
+   "value_type": "number"
+  },
+  "analog_input_voltage_max_v": {
+   "n": 2,
+   "desc": "analog input max voltage",
+   "shape": "range",
+   "example": 33,
+   "value_type": "number"
+  },
+  "analog_input_voltage_min_v": {
+   "n": 2,
+   "desc": "analog input min voltage",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "digital_inputs_rs485_count": {
+   "n": 2,
+   "desc": "rs485 digital inputs count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "has_galileosky_compression": {
+   "n": 2,
+   "desc": "galileosky compression",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "digital_inputs_1_wire_count": {
+   "n": 3,
+   "desc": "1-wire inputs count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "operating_temperature_max_c": {
+   "n": 11,
+   "desc": "maximum operating temperature",
+   "shape": "range",
+   "example": 85,
+   "value_type": "number"
+  },
+  "operating_temperature_min_c": {
+   "n": 11,
+   "desc": "minimum operating temperature",
+   "shape": "range",
+   "example": -30,
+   "value_type": "number"
+  },
+  "power_consumption_average_w": {
+   "n": 2,
+   "desc": "average power consumption",
+   "shape": "scalar",
+   "example": 0.54,
+   "value_type": "number"
+  },
+  "digital_output_current_max_a": {
+   "n": 2,
+   "desc": "digital output max current",
+   "shape": "scalar",
+   "example": 0.2,
+   "value_type": "number"
+  },
+  "digital_output_voltage_max_v": {
+   "n": 2,
+   "desc": "digital output max voltage",
+   "shape": "scalar",
+   "example": 30,
+   "value_type": "number"
+  },
+  "has_gsm_interference_detection": {
+   "n": 2,
+   "desc": "gsm interference detection",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "memory_capacity_points_max_count": {
+   "n": 9,
+   "desc": "memory capacity max points",
+   "shape": "scalar",
+   "example": 10000,
+   "value_type": "number"
+  },
+  "has_dual_server_data_transmission": {
+   "n": 2,
+   "desc": "dual server transmission",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "receiver_sensitivity_tracking_dbm": {
+   "n": 7,
+   "desc": "tracking sensitivity",
+   "shape": "scalar",
+   "example": -167,
+   "value_type": "number"
+  },
+  "has_galileosky_variable_length_tag": {
+   "n": 2,
+   "desc": "galileosky variable tag",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "battery_internal_lifetime_max_years": {
+   "n": 2,
+   "desc": "battery internal lifetime years",
+   "shape": "scalar",
+   "example": 3,
+   "value_type": "number"
+  },
+  "receiver_sensitivity_acquisition_dbm": {
+   "n": 7,
+   "desc": "acquisition sensitivity",
+   "shape": "scalar",
+   "example": -149,
+   "value_type": "number"
+  },
+  "operating_humidity_0_35_c_max_percent": {
+   "n": 2,
+   "desc": "max humidity 0-35 c",
+   "shape": "range",
+   "example": 90,
+   "value_type": "number"
+  },
+  "operating_humidity_0_35_c_min_percent": {
+   "n": 2,
+   "desc": "min humidity 0-35 c",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "analog_discrete_and_pulse_inputs_count": {
+   "n": 2,
+   "desc": "analog discrete pulse inputs count",
+   "shape": "scalar",
+   "example": 6,
+   "value_type": "number"
+  },
+  "battery_internal_lifetime_cycles_count": {
+   "n": 1,
+   "desc": "battery cycles",
+   "shape": "scalar",
+   "example": 500,
+   "value_type": "number"
+  },
+  "operating_humidity_35_55_c_max_percent": {
+   "n": 2,
+   "desc": "max humidity 35-55 c",
+   "shape": "range",
+   "example": 70,
+   "value_type": "number"
+  },
+  "operating_humidity_35_55_c_min_percent": {
+   "n": 2,
+   "desc": "min humidity 35-55 c",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "receiver_sensitivity_reacquisition_dbm": {
+   "n": 7,
+   "desc": "reacquisition sensitivity",
+   "shape": "scalar",
+   "example": -161,
+   "value_type": "number"
+  },
+  "memory_capacity_points_per_gb_max_count": {
+   "n": 1,
+   "desc": "memory points per gb max",
+   "shape": "scalar",
+   "example": 2500000,
+   "value_type": "number"
+  },
+  "has_reverse_connection_and_surge_protection": {
+   "n": 4,
+   "desc": "reverse and surge protection",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  }
+ },
+ "516": {
+  "vpn": {
+   "n": 15,
+   "desc": "vpn protocols and features",
+   "shape": "enum",
+   "example": [
+    "ipsec",
+    "openvpn",
+    "gre"
+   ],
+   "value_type": "enum"
+  },
+  "leds": {
+   "n": 16,
+   "desc": "led indicators",
+   "shape": "enum",
+   "example": [
+    "run",
+    "signal",
+    "usr",
+    "mdm"
+   ],
+   "value_type": "enum"
+  },
+  "power": {
+   "n": 4,
+   "desc": "power management features",
+   "shape": "enum",
+   "example": [
+    "low-voltage disconnect",
+    "transient voltage protection including 5 v engine start and +200 v load dump",
+    "power on sense with delayed shutdown",
+    "configurable functions and ports to optimize power consumption"
+   ],
+   "value_type": "enum"
+  },
+  "ram_gb": {
+   "n": 7,
+   "desc": "device ram",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "ram_mb": {
+   "n": 1,
+   "desc": "device ram",
+   "shape": "scalar",
+   "example": [
+    1024,
+    512
+   ],
+   "value_type": "number_array"
+  },
+  "serial": {
+   "n": 1,
+   "desc": "serial protocols/features",
+   "shape": "enum",
+   "example": [
+    "reverse telnet"
+   ],
+   "value_type": "enum"
+  },
+  "flash_gb": {
+   "n": 5,
+   "desc": "flash memory",
+   "shape": "scalar",
+   "example": 8,
+   "value_type": "number"
+  },
+  "flash_mb": {
+   "n": 3,
+   "desc": "flash memory",
+   "shape": "scalar",
+   "example": 128,
+   "value_type": "number"
+  },
+  "has_esim": {
+   "n": 3,
+   "desc": "has eSIM",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "mounting": {
+   "n": 22,
+   "desc": "mounting options",
+   "shape": "enum",
+   "example": [
+    "desktop",
+    "wall mount",
+    "35 mm din rail mount"
+   ],
+   "value_type": "enum"
+  },
+  "npu_tops": {
+   "n": 1,
+   "desc": "neural processing unit performance in tops",
+   "shape": "scalar",
+   "example": 2.3,
+   "value_type": "number"
+  },
+  "ram_type": {
+   "n": 2,
+   "desc": "ram memory type",
+   "shape": "enum",
+   "example": [
+    "ddr3"
+   ],
+   "value_type": "enum"
+  },
+  "security": {
+   "n": 6,
+   "desc": "security and authentication features",
+   "shape": "enum",
+   "example": [
+    "preshared",
+    "rsa",
+    "certificates",
+    "md5",
+    "sha-2",
+    "des 56 bits",
+    "3des 168 bits",
+    "aes 128 bits",
+    "aes 192 bits",
+    "aes 256 bits",
+    "csr",
+    "scep",
+    "x.509v3",
+    "pkix",
+    "ldap-revocation",
+    "mac filtering",
+    "static access lists",
+    "dynamic access lists"
+   ],
+   "value_type": "enum"
+  },
+  "weight_g": {
+   "n": 21,
+   "desc": "device weight",
+   "shape": "scalar",
+   "example": 567,
+   "value_type": "number"
+  },
+  "width_mm": {
+   "n": 28,
+   "desc": "device width",
+   "shape": "scalar",
+   "example": 105,
+   "value_type": "number"
+  },
+  "wifi_qos": {
+   "n": 4,
+   "desc": "wifi qos features",
+   "shape": "enum",
+   "example": [
+    "wmm"
+   ],
+   "value_type": "enum"
+  },
+  "cpu_model": {
+   "n": 2,
+   "desc": "cpu model",
+   "shape": "enum",
+   "example": [
+    "arm cortex-a7"
+   ],
+   "value_type": "enum"
+  },
+  "height_mm": {
+   "n": 28,
+   "desc": "device height",
+   "shape": "scalar",
+   "example": 128,
+   "value_type": "number"
+  },
+  "leds_rear": {
+   "n": 1,
+   "desc": "rear panel led indicators",
+   "shape": "enum",
+   "example": [
+    "2x per lan port",
+    "2x per wan port"
+   ],
+   "value_type": "enum"
+  },
+  "length_mm": {
+   "n": 28,
+   "desc": "device length",
+   "shape": "scalar",
+   "example": 49,
+   "value_type": "number"
+  },
+  "wifi_mimo": {
+   "n": 12,
+   "desc": "wifi mimo configuration",
+   "shape": "enum",
+   "example": [
+    "2x2 mimo"
+   ],
+   "value_type": "enum"
+  },
+  "_gps_notes": {
+   "n": 5,
+   "desc": "gps additional notes",
+   "shape": "narrative",
+   "example": [
+    "30-channel GPS receiver with GLONASS",
+    "Hot start 1 s; tracking sensitivity -160 dBm; supports NMEA 0183 v3.0, TAIP, RAP, XORA",
+    "Multiple redundant servers; reliable store and forward"
+   ],
+   "value_type": "enum"
+  },
+  "_rtc_notes": {
+   "n": 1,
+   "desc": "rtc backup notes",
+   "shape": "narrative",
+   "example": [
+    "External RTC; backup energy storage capacitor can maintain power for 2 days"
+   ],
+   "value_type": "enum"
+  },
+  "flash_type": {
+   "n": 2,
+   "desc": "flash memory type",
+   "shape": "enum",
+   "example": [
+    "emmc"
+   ],
+   "value_type": "enum"
+  },
+  "leds_front": {
+   "n": 1,
+   "desc": "front panel led indicators",
+   "shape": "enum",
+   "example": [
+    "cloud",
+    "lte",
+    "wlan 5g",
+    "wlan 2.4g",
+    "sys"
+   ],
+   "value_type": "enum"
+  },
+  "sdk_ram_gb": {
+   "n": 1,
+   "desc": "sdk ram in gb",
+   "shape": "scalar",
+   "example": 1.5,
+   "value_type": "number"
+  },
+  "sdk_ram_mb": {
+   "n": 4,
+   "desc": "sdk ram available",
+   "shape": "scalar",
+   "example": 768,
+   "value_type": "number"
+  },
+  "wifi_modes": {
+   "n": 13,
+   "desc": "wifi operating modes",
+   "shape": "enum",
+   "example": [
+    "ap",
+    "client"
+   ],
+   "value_type": "enum"
+  },
+  "_wwan_notes": {
+   "n": 2,
+   "desc": "wwan additional notes",
+   "shape": "narrative",
+   "example": [
+    "integrated hardware modules for europe and latam"
+   ],
+   "value_type": "enum"
+  },
+  "accessories": {
+   "n": 3,
+   "desc": "included accessories",
+   "shape": "enum",
+   "example": [
+    "2 lte/umts omnidirectional antennas",
+    "1 ethernet cable 2m",
+    "2 wifi antennas",
+    "1 console cable"
+   ],
+   "value_type": "enum"
+  },
+  "ip_services": {
+   "n": 3,
+   "desc": "ip services supported",
+   "shape": "enum",
+   "example": [
+    "dhcp server",
+    "dhcp client",
+    "dns",
+    "ftp",
+    "sftp",
+    "ssh server v1/2",
+    "telnet",
+    "ntp client",
+    "syslog",
+    "scp",
+    "tftp server",
+    "dhcp relay",
+    "dyndns"
+   ],
+   "value_type": "enum"
+  },
+  "usb_version": {
+   "n": 2,
+   "desc": "usb version",
+   "shape": "enum",
+   "example": [
+    "2.0"
+   ],
+   "value_type": "enum"
+  },
+  "event_engine": {
+   "n": 1,
+   "desc": "event engine features",
+   "shape": "enum",
+   "example": [
+    "custom event triggers and reports",
+    "configurable interface no programming",
+    "event types: digital input, network parameters, data usage, timer, power, device temperature",
+    "report types: snmp trap",
+    "event actions: unit relay output"
+   ],
+   "value_type": "enum"
+  },
+  "has_dual_ios": {
+   "n": 2,
+   "desc": "has dual ios",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "input_output": {
+   "n": 10,
+   "desc": "digital and analog i/o features",
+   "shape": "enum",
+   "example": [
+    "wet contact"
+   ],
+   "value_type": "enum"
+  },
+  "ip_protocols": {
+   "n": 18,
+   "desc": "ip protocols supported",
+   "shape": "enum",
+   "example": [
+    "arp",
+    "mtu discovery",
+    "nat",
+    "ecmp",
+    "bfd",
+    "netflow(ipfix)"
+   ],
+   "value_type": "enum"
+  },
+  "md_led_count": {
+   "n": 1,
+   "desc": "number of md indicator leds",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "qos_features": {
+   "n": 9,
+   "desc": "qos features",
+   "shape": "enum",
+   "example": [
+    "traffic marking by acls",
+    "ip precedence",
+    "diffserv",
+    "cos",
+    "bandwidth prioritization",
+    "bandwidth limitation"
+   ],
+   "value_type": "enum"
+  },
+  "qos_policies": {
+   "n": 4,
+   "desc": "qos policies supported",
+   "shape": "enum",
+   "example": [
+    "pq",
+    "llq",
+    "wfq",
+    "cbwfq",
+    "wred"
+   ],
+   "value_type": "enum"
+  },
+  "sdk_flash_gb": {
+   "n": 2,
+   "desc": "sdk flash memory in gb",
+   "shape": "scalar",
+   "example": 6,
+   "value_type": "number"
+  },
+  "sdk_flash_mb": {
+   "n": 3,
+   "desc": "sdk flash available",
+   "shape": "scalar",
+   "example": 16,
+   "value_type": "number"
+  },
+  "sdn_features": {
+   "n": 1,
+   "desc": "sdn features",
+   "shape": "enum",
+   "example": [
+    "ztp",
+    "ipfix",
+    "telemetry",
+    "netconf"
+   ],
+   "value_type": "enum"
+  },
+  "serial_esd_v": {
+   "n": 2,
+   "desc": "serial esd protection voltage",
+   "shape": "scalar",
+   "example": 15000,
+   "value_type": "number"
+  },
+  "vpn_features": {
+   "n": 3,
+   "desc": "vpn protocols and features",
+   "shape": "enum",
+   "example": [
+    "ipsec",
+    "pki",
+    "mpls",
+    "vpls",
+    "vpws",
+    "l3vpn",
+    "oam",
+    "6pe",
+    "vrf",
+    "dvpn",
+    "vxlan"
+   ],
+   "value_type": "enum"
+  },
+  "wan_cellular": {
+   "n": 5,
+   "desc": "supported cellular operators",
+   "shape": "enum",
+   "example": [
+    "at&t"
+   ],
+   "value_type": "enum"
+  },
+  "weight_max_g": {
+   "n": 2,
+   "desc": "maximum device weight",
+   "shape": "scalar",
+   "example": 3000,
+   "value_type": "number"
+  },
+  "_event_engine": {
+   "n": 4,
+   "desc": "event engine notes",
+   "shape": "narrative",
+   "example": [
+    "Custom event triggers and reports",
+    "Configurable interface, no programming",
+    "Event types: digital input, network parameters, data usage, timer, power, device temperature and voltage",
+    "Report types: RAP, SMS, email, SNMP trap, TCP (binary, XML, CSV)",
+    "Event actions: unit relay output"
+   ],
+   "value_type": "enum"
+  },
+  "cpu_speed_mhz": {
+   "n": 4,
+   "desc": "cpu speed",
+   "shape": "scalar",
+   "example": 792,
+   "value_type": "number"
+  },
+  "gps_protocols": {
+   "n": 6,
+   "desc": "gps protocols and reports",
+   "shape": "enum",
+   "example": [
+    "nmea-0183 v4.10"
+   ],
+   "value_type": "enum"
+  },
+  "ipv6_features": {
+   "n": 7,
+   "desc": "ipv6 features and protocols",
+   "shape": "enum",
+   "example": [
+    "dual stack",
+    "ip6oipv4",
+    "ipv4oipv6",
+    "gre",
+    "6rd",
+    "dhcp",
+    "icmpv6",
+    "slaac"
+   ],
+   "value_type": "enum"
+  },
+  "mpls_features": {
+   "n": 1,
+   "desc": "mpls features",
+   "shape": "enum",
+   "example": [
+    "ldp",
+    "mpls l3vpn",
+    "mpls l2vpn",
+    "mplst te",
+    "ip frr",
+    "ldp frr",
+    "te frr"
+   ],
+   "value_type": "enum"
+  },
+  "run_led_count": {
+   "n": 2,
+   "desc": "number of run indicator leds",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "serial_format": {
+   "n": 4,
+   "desc": "serial framing formats",
+   "shape": "enum",
+   "example": [
+    "n81"
+   ],
+   "value_type": "enum"
+  },
+  "storage_slots": {
+   "n": 3,
+   "desc": "storage slot types",
+   "shape": "enum",
+   "example": [
+    "sd"
+   ],
+   "value_type": "enum"
+  },
+  "usr_led_count": {
+   "n": 1,
+   "desc": "number of user indicator leds",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "voip_features": {
+   "n": 3,
+   "desc": "voip features",
+   "shape": "enum",
+   "example": [
+    "survival services: calls",
+    "retention",
+    "transfers"
+   ],
+   "value_type": "enum"
+  },
+  "wan_protocols": {
+   "n": 3,
+   "desc": "wan protocols",
+   "shape": "enum",
+   "example": [
+    "ddr",
+    "ndis",
+    "pppoe",
+    "bridge group",
+    "edp",
+    "hdlc",
+    "fr"
+   ],
+   "value_type": "enum"
+  },
+  "watchdog_type": {
+   "n": 2,
+   "desc": "watchdog type",
+   "shape": "enum",
+   "example": [
+    "external"
+   ],
+   "value_type": "enum"
+  },
+  "width_wifi_mm": {
+   "n": 3,
+   "desc": "device width wifi variant",
+   "shape": "scalar",
+   "example": 197,
+   "value_type": "number"
+  },
+  "wifi_features": {
+   "n": 7,
+   "desc": "wifi features",
+   "shape": "enum",
+   "example": [
+    "multi-ssid"
+   ],
+   "value_type": "enum"
+  },
+  "wifi_security": {
+   "n": 14,
+   "desc": "wifi security protocols",
+   "shape": "enum",
+   "example": [
+    "wep 64 bit",
+    "wep 128 bit",
+    "wpa",
+    "wpa2",
+    "aes-ccmp"
+   ],
+   "value_type": "enum"
+  },
+  "_storage_notes": {
+   "n": 1,
+   "desc": "storage slot notes",
+   "shape": "narrative",
+   "example": [
+    "HDD slot accessible from exterior; SD slot for low-capacity logs; available for future applications"
+   ],
+   "value_type": "enum"
+  },
+  "certifications": {
+   "n": 16,
+   "desc": "regulatory approval marks",
+   "shape": "enum",
+   "example": [
+    "GLOBAL-RoHS"
+   ],
+   "value_type": "enum"
+  },
+  "cpu_core_count": {
+   "n": 1,
+   "desc": "number of cpu cores",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "height_wifi_mm": {
+   "n": 3,
+   "desc": "device height wifi variant",
+   "shape": "scalar",
+   "example": 45,
+   "value_type": "number"
+  },
+  "host_interface": {
+   "n": 6,
+   "desc": "host interface types",
+   "shape": "enum",
+   "example": [
+    "usb 2.0 mini-b"
+   ],
+   "value_type": "enum"
+  },
+  "length_wifi_mm": {
+   "n": 3,
+   "desc": "device length wifi variant",
+   "shape": "scalar",
+   "example": 310,
+   "value_type": "number"
+  },
+  "mtbf_min_hours": {
+   "n": 1,
+   "desc": "minimum mean time between failures",
+   "shape": "scalar",
+   "example": 100000,
+   "value_type": "number"
+  },
+  "rssi_led_count": {
+   "n": 8,
+   "desc": "rssi led count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "sdwan_features": {
+   "n": 4,
+   "desc": "sdwan edge features",
+   "shape": "enum",
+   "example": [
+    "hybrid networks support with routing & qos by user application",
+    "controller based sdwan network intelligence",
+    "zero touch provisioning"
+   ],
+   "value_type": "enum"
+  },
+  "voip_protocols": {
+   "n": 3,
+   "desc": "voip protocols supported",
+   "shape": "enum",
+   "example": [
+    "sip udp",
+    "sip tcp",
+    "sip tls",
+    "h323",
+    "ua-noe",
+    "srtp",
+    "sccp"
+   ],
+   "value_type": "enum"
+  },
+  "warranty_years": {
+   "n": 2,
+   "desc": "warranty duration years",
+   "shape": "scalar",
+   "example": 3,
+   "value_type": "number"
+  },
+  "wifi_standards": {
+   "n": 16,
+   "desc": "supported wifi standards",
+   "shape": "enum",
+   "example": [
+    "802.11a",
+    "802.11b",
+    "802.11g",
+    "802.11n",
+    "802.11ac"
+   ],
+   "value_type": "enum"
+  },
+  "app_center_apps": {
+   "n": 5,
+   "desc": "app center apps",
+   "shape": "enum",
+   "example": [
+    "l2tp",
+    "pptp",
+    "dmvpn",
+    "vrrp",
+    "qos",
+    "wlan multi ap",
+    "snmp"
+   ],
+   "value_type": "enum"
+  },
+  "network_routing": {
+   "n": 9,
+   "desc": "network and routing features",
+   "shape": "enum",
+   "example": [
+    "multi-vrf"
+   ],
+   "value_type": "enum"
+  },
+  "power_connector": {
+   "n": 12,
+   "desc": "power connector type",
+   "shape": "enum",
+   "example": [
+    "2 pin 3.5 mm lockable terminal block"
+   ],
+   "value_type": "enum"
+  },
+  "sfp_slots_count": {
+   "n": 2,
+   "desc": "number of sfp slots",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "sim_slots_count": {
+   "n": 12,
+   "desc": "sim slots count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "standby_power_w": {
+   "n": 11,
+   "desc": "standby power consumption",
+   "shape": "scalar",
+   "example": 3,
+   "value_type": "number"
+  },
+  "wifi_encryption": {
+   "n": 6,
+   "desc": "wifi encryption types",
+   "shape": "enum",
+   "example": [
+    "aes",
+    "tkip"
+   ],
+   "value_type": "enum"
+  },
+  "_interface_notes": {
+   "n": 2,
+   "desc": "interface notes",
+   "shape": "narrative",
+   "example": [
+    "switch up to 6 ports (rj45)"
+   ],
+   "value_type": "enum"
+  },
+  "network_features": {
+   "n": 9,
+   "desc": "lan services and features",
+   "shape": "enum",
+   "example": [
+    "vlan",
+    "802.1x",
+    "auto negotiation"
+   ],
+   "value_type": "enum"
+  },
+  "operating_system": {
+   "n": 2,
+   "desc": "device operating system",
+   "shape": "enum",
+   "example": [
+    "robustos pro (based on debian 11 bullseye)"
+   ],
+   "value_type": "enum"
+  },
+  "serial_esd_air_v": {
+   "n": 3,
+   "desc": "esd air voltage",
+   "shape": "scalar",
+   "example": 15000,
+   "value_type": "number"
+  },
+  "serial_protocols": {
+   "n": 14,
+   "desc": "serial protocols",
+   "shape": "enum",
+   "example": [
+    "transparent",
+    "tcp client/server",
+    "udp",
+    "modbus rtu gateway"
+   ],
+   "value_type": "enum"
+  },
+  "usb_host_power_a": {
+   "n": 1,
+   "desc": "usb host power current",
+   "shape": "scalar",
+   "example": 0.9,
+   "value_type": "number"
+  },
+  "usb_host_power_v": {
+   "n": 2,
+   "desc": "usb host power voltage",
+   "shape": "scalar",
+   "example": 5,
+   "value_type": "number"
+  },
+  "wan_module_types": {
+   "n": 2,
+   "desc": "supported wan module types",
+   "shape": "enum",
+   "example": [
+    "fiber"
+   ],
+   "value_type": "enum"
+  },
+  "width_no_wifi_mm": {
+   "n": 2,
+   "desc": "device width no-wifi variant",
+   "shape": "scalar",
+   "example": [
+    140,
+    180
+   ],
+   "value_type": "number"
+  },
+  "cellular_category": {
+   "n": 1,
+   "desc": "cellular category",
+   "shape": "enum",
+   "example": [
+    "cat4"
+   ],
+   "value_type": "enum"
+  },
+  "embedded_features": {
+   "n": 10,
+   "desc": "built-in features",
+   "shape": "enum",
+   "example": [
+    "rtc",
+    "watchdog",
+    "timer"
+   ],
+   "value_type": "enum"
+  },
+  "ethernet_features": {
+   "n": 9,
+   "desc": "ethernet features",
+   "shape": "enum",
+   "example": [
+    "auto negotiation",
+    "mdi/mdix"
+   ],
+   "value_type": "enum"
+  },
+  "firewall_features": {
+   "n": 14,
+   "desc": "firewall features",
+   "shape": "enum",
+   "example": [
+    "dmz",
+    "anti-dos",
+    "filtering (ip/domain name/mac address)",
+    "port mapping",
+    "access control"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_technologies": {
+   "n": 3,
+   "desc": "gnss technologies",
+   "shape": "enum",
+   "example": [
+    "gps"
+   ],
+   "value_type": "enum"
+  },
+  "height_no_wifi_mm": {
+   "n": 2,
+   "desc": "device height no-wifi variant",
+   "shape": "scalar",
+   "example": [
+    44,
+    45
+   ],
+   "value_type": "number"
+  },
+  "length_no_wifi_mm": {
+   "n": 2,
+   "desc": "device length no-wifi variant",
+   "shape": "scalar",
+   "example": [
+    252.9,
+    310
+   ],
+   "value_type": "number"
+  },
+  "lora_tx_power_dbm": {
+   "n": 1,
+   "desc": "lora transmit power",
+   "shape": "scalar",
+   "example": 24.5,
+   "value_type": "number"
+  },
+  "lorawan_protocols": {
+   "n": 1,
+   "desc": "lorawan protocol versions",
+   "shape": "enum",
+   "example": [
+    "v1.0 class a",
+    "v1.0 class c",
+    "v1.0.2 class a",
+    "v1.0.2 class c"
+   ],
+   "value_type": "enum"
+  },
+  "network_protocols": {
+   "n": 3,
+   "desc": "supported network protocols",
+   "shape": "enum",
+   "example": [
+    "ppp",
+    "pppoe",
+    "tcp",
+    "udp",
+    "dhcp",
+    "icmp",
+    "nat",
+    "http",
+    "dns",
+    "ntp",
+    "smtp",
+    "telnet",
+    "vlan",
+    "https",
+    "arp",
+    "ssh2",
+    "ddns"
+   ],
+   "value_type": "enum"
+  },
+  "power_supply_type": {
+   "n": 4,
+   "desc": "power supply type",
+   "shape": "enum",
+   "example": [
+    "ac"
+   ],
+   "value_type": "enum"
+  },
+  "routing_protocols": {
+   "n": 6,
+   "desc": "routing protocols",
+   "shape": "enum",
+   "example": [
+    "policy based routing static/dynamic",
+    "ripv1/2",
+    "ospfv3",
+    "bgp4",
+    "load balancing",
+    "virtual router forwarding (multi-vrf)"
+   ],
+   "value_type": "enum"
+  },
+  "security_features": {
+   "n": 4,
+   "desc": "security and authentication features",
+   "shape": "enum",
+   "example": [
+    "preshared authentication",
+    "rsa",
+    "certificates",
+    "md5",
+    "sha-1",
+    "mac filtering",
+    "static access lists",
+    "dynamic access lists"
+   ],
+   "value_type": "enum"
+  },
+  "serial_port_types": {
+   "n": 11,
+   "desc": "serial port types",
+   "shape": "enum",
+   "example": [
+    "rs-232",
+    "rs-485"
+   ],
+   "value_type": "enum"
+  },
+  "wwan_technologies": {
+   "n": 8,
+   "desc": "cellular technologies",
+   "shape": "enum",
+   "example": [
+    "2g",
+    "4g"
+   ],
+   "value_type": "enum"
+  },
+  "console_port_count": {
+   "n": 3,
+   "desc": "console port count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "enclosure_material": {
+   "n": 11,
+   "desc": "enclosure material",
+   "shape": "enum",
+   "example": [
+    "metal"
+   ],
+   "value_type": "enum"
+  },
+  "ethernet_standards": {
+   "n": 11,
+   "desc": "ethernet interface standards",
+   "shape": "enum",
+   "example": [
+    "10base-t",
+    "100base-t",
+    "1000base-t",
+    "1000base-x",
+    "sfp msa compliant"
+   ],
+   "value_type": "enum"
+  },
+  "gps_antennas_count": {
+   "n": 2,
+   "desc": "gps antenna count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "ingress_protection": {
+   "n": 17,
+   "desc": "ingress protection rating",
+   "shape": "enum",
+   "example": [
+    "ip30"
+   ],
+   "value_type": "enum"
+  },
+  "reset_button_count": {
+   "n": 10,
+   "desc": "reset button count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "serial_can_signals": {
+   "n": 2,
+   "desc": "can signal definitions",
+   "shape": "enum",
+   "example": [
+    "h",
+    "l",
+    "gnd"
+   ],
+   "value_type": "enum"
+  },
+  "usb_connector_type": {
+   "n": 3,
+   "desc": "usb connector type",
+   "shape": "enum",
+   "example": [
+    "type a"
+   ],
+   "value_type": "enum"
+  },
+  "analog_inputs_count": {
+   "n": 2,
+   "desc": "analog inputs count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "bluetooth_standards": {
+   "n": 3,
+   "desc": "supported bluetooth standards",
+   "shape": "enum",
+   "example": [
+    "bluetooth 2.1",
+    "bluetooth 3.0 + edr",
+    "bluetooth 5.2"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_antennas_count": {
+   "n": 1,
+   "desc": "number of gnss antennas",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "input_voltage_max_v": {
+   "n": 20,
+   "desc": "maximum input voltage",
+   "shape": "range",
+   "example": 60,
+   "value_type": "number"
+  },
+  "input_voltage_min_v": {
+   "n": 20,
+   "desc": "minimum input voltage",
+   "shape": "range",
+   "example": 9,
+   "value_type": "number"
+  },
+  "lora_antennas_count": {
+   "n": 1,
+   "desc": "number of lora antennas",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "lora_channels_count": {
+   "n": 1,
+   "desc": "lora channel count",
+   "shape": "scalar",
+   "example": 8,
+   "value_type": "number"
+  },
+  "management_features": {
+   "n": 7,
+   "desc": "management features",
+   "shape": "enum",
+   "example": [
+    "cli configuration",
+    "storage in plain text file",
+    "centralized management tool via https(cloud net manager)"
+   ],
+   "value_type": "enum"
+  },
+  "microsd_slots_count": {
+   "n": 1,
+   "desc": "number of microsd slots",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "multicast_protocols": {
+   "n": 7,
+   "desc": "multicast protocols",
+   "shape": "enum",
+   "example": [
+    "igmp v1",
+    "igmp v2",
+    "igmp v3",
+    "pim-sm",
+    "pim-ssm"
+   ],
+   "value_type": "enum"
+  },
+  "sfp_interface_types": {
+   "n": 3,
+   "desc": "sfp interface types",
+   "shape": "enum",
+   "example": [
+    "10gbase-r",
+    "sfp+"
+   ],
+   "value_type": "enum"
+  },
+  "standby_power_max_w": {
+   "n": 2,
+   "desc": "maximum standby power",
+   "shape": "range",
+   "example": 2.4,
+   "value_type": "number"
+  },
+  "standby_power_min_w": {
+   "n": 2,
+   "desc": "minimum standby power",
+   "shape": "range",
+   "example": 2.4,
+   "value_type": "number"
+  },
+  "voip_device_support": {
+   "n": 2,
+   "desc": "voip device support",
+   "shape": "enum",
+   "example": [
+    "sip terminals",
+    "ua-noe terminals",
+    "h323 terminals",
+    "sccp terminals"
+   ],
+   "value_type": "enum"
+  },
+  "vpn_tunneling_modes": {
+   "n": 4,
+   "desc": "vpn tunneling modes",
+   "shape": "enum",
+   "example": [
+    "transport",
+    "tunnel",
+    "dmvpn"
+   ],
+   "value_type": "enum"
+  },
+  "wifi_antennas_count": {
+   "n": 8,
+   "desc": "wifi antenna count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "wwan_antennas_count": {
+   "n": 3,
+   "desc": "number of cellular antennas",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "_environmental_notes": {
+   "n": 2,
+   "desc": "environmental notes",
+   "shape": "narrative",
+   "example": [
+    "5-90% non-condensing"
+   ],
+   "value_type": "enum"
+  },
+  "_wifi_security_notes": {
+   "n": 1,
+   "desc": "wifi security related notes",
+   "shape": "narrative",
+   "example": [
+    "wep 64 and 128 bit encryption with h/w tkip processing",
+    "wpa/wpa2 (wi-fi protected access)",
+    "hardware aes-ccmp implementation as part of 802.11i security standard"
+   ],
+   "value_type": "enum"
+  },
+  "digital_inputs_count": {
+   "n": 9,
+   "desc": "digital input count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "digital_io_connector": {
+   "n": 3,
+   "desc": "digital i/o connector type",
+   "shape": "enum",
+   "example": [
+    "8 pin 3.5 mm lockable terminal block (di/do)"
+   ],
+   "value_type": "enum"
+  },
+  "digital_io_isolation": {
+   "n": 1,
+   "desc": "digital i/o isolation types",
+   "shape": "enum",
+   "example": [
+    "bidirectional optocoupler (di)",
+    "unidirectional optocoupler (do)"
+   ],
+   "value_type": "enum"
+  },
+  "expansion_slot_types": {
+   "n": 1,
+   "desc": "expansion slot types",
+   "shape": "enum",
+   "example": [
+    "rm2b"
+   ],
+   "value_type": "enum"
+  },
+  "lora_sensitivity_dbm": {
+   "n": 1,
+   "desc": "lora receive sensitivity",
+   "shape": "scalar",
+   "example": -142,
+   "value_type": "number"
+  },
+  "management_protocols": {
+   "n": 4,
+   "desc": "management protocols",
+   "shape": "enum",
+   "example": [
+    "aaa compatible radius",
+    "tacacs+",
+    "snmpv1",
+    "snmpv2c",
+    "snmpv3"
+   ],
+   "value_type": "enum"
+  },
+  "regulatory_standards": {
+   "n": 16,
+   "desc": "regulatory standards",
+   "shape": "enum",
+   "example": [
+    "en 55032 emission conducida class b",
+    "en 55032 emission radiada class b",
+    "en 61000-4-2 (esd) level 4",
+    "en 61000-4-3 (rs) level 3",
+    "en 61000-4-4 (eft) level 4",
+    "en 61000-4-5 (sobresion) level 3",
+    "en 61000-4-6 (cs) level 2",
+    "en 61000-4-8 (pfm) level 4",
+    "en 61000-4-11 (inmersion)"
+   ],
+   "value_type": "enum"
+  },
+  "reliability_features": {
+   "n": 6,
+   "desc": "reliability features",
+   "shape": "enum",
+   "example": [
+    "ipsla service probes (delay, packet loss, jitter)",
+    "vrrp"
+   ],
+   "value_type": "enum"
+  },
+  "serial_esd_contact_v": {
+   "n": 3,
+   "desc": "esd contact voltage",
+   "shape": "scalar",
+   "example": 8000,
+   "value_type": "number"
+  },
+  "serial_rs232_signals": {
+   "n": 8,
+   "desc": "rs-232 signal names",
+   "shape": "enum",
+   "example": [
+    "txd",
+    "rxd",
+    "gnd"
+   ],
+   "value_type": "enum"
+  },
+  "serial_rs422_signals": {
+   "n": 1,
+   "desc": "rs-422 signal names",
+   "shape": "enum",
+   "example": [
+    "a(rx data+)",
+    "b(rx data-)",
+    "y(tx data+)",
+    "z(tx data-)",
+    "gnd"
+   ],
+   "value_type": "enum"
+  },
+  "serial_rs485_signals": {
+   "n": 8,
+   "desc": "rs-485 signal names",
+   "shape": "enum",
+   "example": [
+    "data+ (a)",
+    "data- (b)",
+    "ground (gnd)"
+   ],
+   "value_type": "enum"
+  },
+  "sfp_plus_ports_count": {
+   "n": 1,
+   "desc": "number of sfp+ ports",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "support_and_warranty": {
+   "n": 5,
+   "desc": "support and warranty details",
+   "shape": "enum",
+   "example": [
+    "airlink management service (alms)",
+    "24/7 direct technical support",
+    "standard 3 year warranty",
+    "optional 2 year warranty extension"
+   ],
+   "value_type": "enum"
+  },
+  "usb_host_ports_count": {
+   "n": 9,
+   "desc": "usb host ports count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "usb_host_power_max_a": {
+   "n": 2,
+   "desc": "maximum usb host power current in amperes",
+   "shape": "scalar",
+   "example": 0.5,
+   "value_type": "number"
+  },
+  "wan_performance_mpps": {
+   "n": 1,
+   "desc": "wan performance in mpps",
+   "shape": "scalar",
+   "example": 0.8,
+   "value_type": "number"
+  },
+  "wifi_supported_bands": {
+   "n": 11,
+   "desc": "supported wifi bands",
+   "shape": "enum",
+   "example": [
+    "2.4 ghz",
+    "5 ghz"
+   ],
+   "value_type": "enum"
+  },
+  "wwan_max_uplink_mbps": {
+   "n": 4,
+   "desc": "maximum cellular uplink mbps",
+   "shape": "scalar",
+   "example": 50,
+   "value_type": "number"
+  },
+  "application_framework": {
+   "n": 9,
+   "desc": "application framework and scripting",
+   "shape": "enum",
+   "example": [
+    "language",
+    "robustlink"
+   ],
+   "value_type": "enum"
+  },
+  "cloud_manager_service": {
+   "n": 2,
+   "desc": "cloud manager services",
+   "shape": "enum",
+   "example": [
+    "robustlink",
+    "robustvpn",
+    "operation console"
+   ],
+   "value_type": "enum"
+  },
+  "console_port_features": {
+   "n": 3,
+   "desc": "console port features",
+   "shape": "enum",
+   "example": [
+    "proprietary pinout",
+    "adapter included"
+   ],
+   "value_type": "enum"
+  },
+  "digital_outputs_count": {
+   "n": 5,
+   "desc": "digital output count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "encryption_algorithms": {
+   "n": 4,
+   "desc": "encryption algorithms",
+   "shape": "enum",
+   "example": [
+    "des 56 bits",
+    "3des 168 bits",
+    "aes 128 bits",
+    "aes 192 bits",
+    "aes 256 bits"
+   ],
+   "value_type": "enum"
+  },
+  "expansion_slots_count": {
+   "n": 2,
+   "desc": "expansion slots count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "gps_antenna_connector": {
+   "n": 7,
+   "desc": "gps antenna connector",
+   "shape": "enum",
+   "example": [
+    "sma-k 50 ohm"
+   ],
+   "value_type": "enum"
+  },
+  "has_debian_repository": {
+   "n": 2,
+   "desc": "has debian repository",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_high_availability": {
+   "n": 2,
+   "desc": "has high availability",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "management_interfaces": {
+   "n": 19,
+   "desc": "management interfaces",
+   "shape": "enum",
+   "example": [
+    "web",
+    "cli",
+    "sms"
+   ],
+   "value_type": "enum"
+  },
+  "serial_port_connector": {
+   "n": 12,
+   "desc": "serial connector type",
+   "shape": "enum",
+   "example": [
+    "6 pin 3.5 mm lockable terminal block"
+   ],
+   "value_type": "enum"
+  },
+  "standby_current_max_a": {
+   "n": 1,
+   "desc": "maximum standby current",
+   "shape": "range",
+   "example": 0.07,
+   "value_type": "number"
+  },
+  "standby_current_min_a": {
+   "n": 1,
+   "desc": "minimum standby current",
+   "shape": "range",
+   "example": 0.05,
+   "value_type": "number"
+  },
+  "vpn_tunnels_max_count": {
+   "n": 4,
+   "desc": "maximum concurrent vpn tunnels",
+   "shape": "scalar",
+   "example": 5,
+   "value_type": "number"
+  },
+  "wifi_tx_power_max_dbm": {
+   "n": 3,
+   "desc": "maximum wifi transmit power",
+   "shape": "scalar",
+   "example": 16,
+   "value_type": "number"
+  },
+  "wwan_idle_power_lte_w": {
+   "n": 2,
+   "desc": "lte idle power",
+   "shape": "scalar",
+   "example": 0.9,
+   "value_type": "number"
+  },
+  "_management_interfaces": {
+   "n": 1,
+   "desc": "management features notes",
+   "shape": "narrative",
+   "example": [
+    "Secure cloud-based mobile network and asset management application available in cloud or licensed enterprise datacenter",
+    "Fleet-wide firmware delivery; router configuration and template management; over-the-air router commissioning and local ethernet connection",
+    "Over-the-air radio module and software firmware updates; configurable monitoring and alerts; remote provisioning and airtime activation where applicable"
+   ],
+   "value_type": "enum"
+  },
+  "absolute_max_current_a": {
+   "n": 3,
+   "desc": "absolute maximum current",
+   "shape": "scalar",
+   "example": 0.1,
+   "value_type": "number"
+  },
+  "analog_input_connector": {
+   "n": 1,
+   "desc": "analog input connector",
+   "shape": "enum",
+   "example": [
+    "2 x 3 pin female 3.5 mm"
+   ],
+   "value_type": "enum"
+  },
+  "console_port_connector": {
+   "n": 4,
+   "desc": "console port connector type",
+   "shape": "enum",
+   "example": [
+    "rj45"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_antenna_connector": {
+   "n": 2,
+   "desc": "gnss antenna connector type",
+   "shape": "enum",
+   "example": [
+    "sma-k"
+   ],
+   "value_type": "enum"
+  },
+  "gnss_antennas_4g_count": {
+   "n": 1,
+   "desc": "number of 4g gnss antennas",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "ipv4_routing_protocols": {
+   "n": 4,
+   "desc": "ipv4 routing protocols",
+   "shape": "enum",
+   "example": [
+    "static routing",
+    "dynamic routing",
+    "rip",
+    "ospf",
+    "bgp",
+    "policy based routing (pbr)"
+   ],
+   "value_type": "enum"
+  },
+  "ipv6_routing_protocols": {
+   "n": 6,
+   "desc": "ipv6 routing protocols",
+   "shape": "enum",
+   "example": [
+    "static routing",
+    "dynamic routing",
+    "ripng",
+    "ospfv3"
+   ],
+   "value_type": "enum"
+  },
+  "lora_antenna_connector": {
+   "n": 1,
+   "desc": "lora antenna connector",
+   "shape": "enum",
+   "example": [
+    "sma female 50 ohm"
+   ],
+   "value_type": "enum"
+  },
+  "wifi_5ghz_band_max_mhz": {
+   "n": 3,
+   "desc": "5 ghz band maximum frequency",
+   "shape": "range",
+   "example": 5825,
+   "value_type": "number"
+  },
+  "wifi_5ghz_band_min_mhz": {
+   "n": 3,
+   "desc": "5 ghz band minimum frequency",
+   "shape": "range",
+   "example": 5150,
+   "value_type": "number"
+  },
+  "wifi_antenna_connector": {
+   "n": 10,
+   "desc": "wifi antenna connector",
+   "shape": "enum",
+   "example": [
+    "rp-sma-k"
+   ],
+   "value_type": "enum"
+  },
+  "wwan_antenna_connector": {
+   "n": 20,
+   "desc": "wwan antenna connector",
+   "shape": "enum",
+   "example": [
+    "sma-k"
+   ],
+   "value_type": "enum"
+  },
+  "wwan_antennas_4g_count": {
+   "n": 1,
+   "desc": "number of 4g cellular antennas",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "wwan_antennas_5g_count": {
+   "n": 1,
+   "desc": "number of 5g cellular antennas",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "wwan_max_downlink_mbps": {
+   "n": 4,
+   "desc": "maximum cellular downlink mbps",
+   "shape": "scalar",
+   "example": 150,
+   "value_type": "number"
+  },
+  "digital_input_connector": {
+   "n": 5,
+   "desc": "digital input connector",
+   "shape": "enum",
+   "example": [
+    "1 x 4 pin female 3.5 mm"
+   ],
+   "value_type": "enum"
+  },
+  "has_active_gnss_antenna": {
+   "n": 3,
+   "desc": "has active gnss antenna",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "input_voltage_options_v": {
+   "n": 2,
+   "desc": "input voltage options in volts",
+   "shape": "scalar",
+   "example": [
+    12,
+    24,
+    48
+   ],
+   "value_type": "number_array"
+  },
+  "leds_per_port_functions": {
+   "n": 1,
+   "desc": "led functions per port",
+   "shape": "enum",
+   "example": [
+    "link",
+    "speed",
+    "activity"
+   ],
+   "value_type": "enum"
+  },
+  "power_consumption_max_w": {
+   "n": 6,
+   "desc": "maximum power consumption",
+   "shape": "scalar",
+   "example": 12,
+   "value_type": "number"
+  },
+  "usb_host_max_speed_mbps": {
+   "n": 4,
+   "desc": "usb host max speed",
+   "shape": "scalar",
+   "example": 480,
+   "value_type": "number"
+  },
+  "vpn_tunneling_protocols": {
+   "n": 7,
+   "desc": "vpn tunneling protocols",
+   "shape": "enum",
+   "example": [
+    "ipsec",
+    "openvpn",
+    "gre",
+    "l2tp",
+    "pptp",
+    "dmvpn"
+   ],
+   "value_type": "enum"
+  },
+  "wwan_antennas_max_count": {
+   "n": 1,
+   "desc": "maximum number of cellular antennas",
+   "shape": "range",
+   "example": 4,
+   "value_type": "number"
+  },
+  "wwan_antennas_min_count": {
+   "n": 1,
+   "desc": "minimum number of cellular antennas",
+   "shape": "range",
+   "example": 2,
+   "value_type": "number"
+  },
+  "bluetooth_antennas_count": {
+   "n": 3,
+   "desc": "number of bluetooth antennas",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "data_link_peak_current_a": {
+   "n": 1,
+   "desc": "data link peak current",
+   "shape": "scalar",
+   "example": 0.5,
+   "value_type": "number"
+  },
+  "ethernet_lan_ports_count": {
+   "n": 20,
+   "desc": "number of lan ethernet ports",
+   "shape": "scalar",
+   "example": 6,
+   "value_type": "number"
+  },
+  "ethernet_poe_ports_count": {
+   "n": 2,
+   "desc": "number of poe ports",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "ethernet_wan_ports_count": {
+   "n": 12,
+   "desc": "wan ethernet ports count",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "lora_433mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "433 MHz band maximum",
+   "shape": "range",
+   "example": 434,
+   "value_type": "number"
+  },
+  "lora_433mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "433 MHz band minimum",
+   "shape": "range",
+   "example": 433,
+   "value_type": "number"
+  },
+  "lora_863mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "863 MHz band maximum",
+   "shape": "range",
+   "example": 870,
+   "value_type": "number"
+  },
+  "lora_863mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "863 MHz band minimum",
+   "shape": "range",
+   "example": 863,
+   "value_type": "number"
+  },
+  "serial_rs232_ports_count": {
+   "n": 4,
+   "desc": "rs-232 ports count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "serial_rs485_ports_count": {
+   "n": 4,
+   "desc": "rs-485 ports count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "warranty_extension_years": {
+   "n": 2,
+   "desc": "optional warranty extension years",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "wifi_2_4ghz_band_max_mhz": {
+   "n": 3,
+   "desc": "2.4 ghz band maximum frequency",
+   "shape": "range",
+   "example": 2472,
+   "value_type": "number"
+  },
+  "wifi_2_4ghz_band_min_mhz": {
+   "n": 3,
+   "desc": "2.4 ghz band minimum frequency",
+   "shape": "range",
+   "example": 2412,
+   "value_type": "number"
+  },
+  "wifi_tx_power_80211b_dbm": {
+   "n": 2,
+   "desc": "tx power 802.11b",
+   "shape": "scalar",
+   "example": 19,
+   "value_type": "number"
+  },
+  "wifi_tx_power_80211g_dbm": {
+   "n": 2,
+   "desc": "tx power 802.11g",
+   "shape": "scalar",
+   "example": 19,
+   "value_type": "number"
+  },
+  "_operating_humidity_notes": {
+   "n": 2,
+   "desc": "operating humidity notes",
+   "shape": "narrative",
+   "example": [
+    "non-condensing"
+   ],
+   "value_type": "enum"
+  },
+  "cellular_roaming_features": {
+   "n": 2,
+   "desc": "cellular roaming features",
+   "shape": "enum",
+   "example": [
+    "smart roaming v2"
+   ],
+   "value_type": "enum"
+  },
+  "digital_signal_definition": {
+   "n": 3,
+   "desc": "digital signal definitions",
+   "shape": "enum",
+   "example": [
+    "di1+",
+    "di1-",
+    "di2+",
+    "di2-",
+    "do1+",
+    "do1-",
+    "do2+",
+    "do2-"
+   ],
+   "value_type": "enum"
+  },
+  "industrial_certifications": {
+   "n": 2,
+   "desc": "industrial certifications and approvals",
+   "shape": "enum",
+   "example": [
+    "fcc",
+    "ic",
+    "ptcrb",
+    "ce",
+    "rcm",
+    "gcf",
+    "r & tte",
+    "iecee cb scheme",
+    "e-mark",
+    "rohs",
+    "reach",
+    "raee"
+   ],
+   "value_type": "enum"
+  },
+  "sdk_programming_languages": {
+   "n": 5,
+   "desc": "sdk programming languages",
+   "shape": "enum",
+   "example": [
+    "c",
+    "c++",
+    "python",
+    "java",
+    "node.js"
+   ],
+   "value_type": "enum"
+  },
+  "serial_baud_rate_max_mbps": {
+   "n": 8,
+   "desc": "maximum serial baud rate",
+   "shape": "range",
+   "example": 0.1152,
+   "value_type": "number"
+  },
+  "serial_baud_rate_min_mbps": {
+   "n": 8,
+   "desc": "minimum serial baud rate",
+   "shape": "range",
+   "example": 0.0003,
+   "value_type": "number"
+  },
+  "sfp_supported_speeds_mbps": {
+   "n": 9,
+   "desc": "sfp supported speeds",
+   "shape": "scalar",
+   "example": 1000,
+   "value_type": "number"
+  },
+  "storage_temperature_max_c": {
+   "n": 16,
+   "desc": "maximum storage temperature",
+   "shape": "range",
+   "example": 85,
+   "value_type": "number"
+  },
+  "storage_temperature_min_c": {
+   "n": 16,
+   "desc": "minimum storage temperature",
+   "shape": "range",
+   "example": -40,
+   "value_type": "number"
+  },
+  "wifi_interfaces_max_count": {
+   "n": 4,
+   "desc": "maximum wifi clients count",
+   "shape": "scalar",
+   "example": 10,
+   "value_type": "number"
+  },
+  "wwan_interfaces_max_count": {
+   "n": 1,
+   "desc": "maximum wwan interfaces",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "airlink_management_service": {
+   "n": 3,
+   "desc": "airlink cloud management features",
+   "shape": "enum",
+   "example": [
+    "airlink management service (alms)"
+   ],
+   "value_type": "enum"
+  },
+  "analog_input_current_max_a": {
+   "n": 2,
+   "desc": "analog input maximum current",
+   "shape": "range",
+   "example": 0.02,
+   "value_type": "number"
+  },
+  "analog_input_current_min_a": {
+   "n": 1,
+   "desc": "analog input minimum current",
+   "shape": "range",
+   "example": 0.004,
+   "value_type": "number"
+  },
+  "analog_input_voltage_max_v": {
+   "n": 4,
+   "desc": "analog input maximum voltage",
+   "shape": "range",
+   "example": 24,
+   "value_type": "number"
+  },
+  "analog_input_voltage_min_v": {
+   "n": 4,
+   "desc": "analog input minimum voltage",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "has_overvoltage_protection": {
+   "n": 2,
+   "desc": "has overvoltage protection",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "has_redundant_power_supply": {
+   "n": 1,
+   "desc": "has redundant power supply",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "lora_communication_range_m": {
+   "n": 1,
+   "desc": "lora communication range",
+   "shape": "scalar",
+   "example": 15000,
+   "value_type": "number"
+  },
+  "power_supply_voltage_max_v": {
+   "n": 4,
+   "desc": "maximum power supply voltage",
+   "shape": "range",
+   "example": 264,
+   "value_type": "number"
+  },
+  "power_supply_voltage_min_v": {
+   "n": 4,
+   "desc": "minimum power supply voltage",
+   "shape": "range",
+   "example": 90,
+   "value_type": "number"
+  },
+  "serial_can_baud_rates_mbps": {
+   "n": 1,
+   "desc": "can baud rates",
+   "shape": "scalar",
+   "example": [
+    0.025,
+    0.25,
+    0.5,
+    1
+   ],
+   "value_type": "number_array"
+  },
+  "bluetooth_antenna_connector": {
+   "n": 3,
+   "desc": "bluetooth antenna connector type",
+   "shape": "enum",
+   "example": [
+    "rp-sma-k"
+   ],
+   "value_type": "enum"
+  },
+  "digital_input_max_current_a": {
+   "n": 1,
+   "desc": "digital input maximum current",
+   "shape": "scalar",
+   "example": 0.3,
+   "value_type": "number"
+  },
+  "ethernet_lan_port_connector": {
+   "n": 8,
+   "desc": "lan port connector type",
+   "shape": "enum",
+   "example": [
+    "rj45"
+   ],
+   "value_type": "enum"
+  },
+  "ethernet_wan_port_connector": {
+   "n": 6,
+   "desc": "wan port connector type",
+   "shape": "enum",
+   "example": [
+    "rj45",
+    "sfp"
+   ],
+   "value_type": "enum"
+  },
+  "gps_altitude_accuracy_max_m": {
+   "n": 1,
+   "desc": "altitude accuracy maximum",
+   "shape": "scalar",
+   "example": 4,
+   "value_type": "number"
+  },
+  "gps_time_to_first_fix_hot_s": {
+   "n": 4,
+   "desc": "gps time to first fix hot",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "operating_temperature_max_c": {
+   "n": 24,
+   "desc": "maximum operating temperature",
+   "shape": "range",
+   "example": 70,
+   "value_type": "number"
+  },
+  "operating_temperature_min_c": {
+   "n": 24,
+   "desc": "minimum operating temperature",
+   "shape": "range",
+   "example": -40,
+   "value_type": "number"
+  },
+  "wifi_channel_bandwidths_mhz": {
+   "n": 1,
+   "desc": "wifi channel bandwidths",
+   "shape": "scalar",
+   "example": [
+    20,
+    40,
+    80,
+    160
+   ],
+   "value_type": "number_array"
+  },
+  "digital_input_isolation_dc_v": {
+   "n": 3,
+   "desc": "digital input isolation dc",
+   "shape": "scalar",
+   "example": 3000,
+   "value_type": "number"
+  },
+  "ethernet_wan_ports_max_count": {
+   "n": 3,
+   "desc": "maximum number of wan ports",
+   "shape": "range",
+   "example": 2,
+   "value_type": "number"
+  },
+  "ethernet_wan_ports_min_count": {
+   "n": 3,
+   "desc": "minimum number of wan ports",
+   "shape": "range",
+   "example": 2,
+   "value_type": "number"
+  },
+  "gps_time_to_first_fix_cold_s": {
+   "n": 1,
+   "desc": "gps time to first fix cold",
+   "shape": "scalar",
+   "example": 32,
+   "value_type": "number"
+  },
+  "gps_time_to_first_fix_warm_s": {
+   "n": 1,
+   "desc": "gps time to first fix warm",
+   "shape": "scalar",
+   "example": 29,
+   "value_type": "number"
+  },
+  "gps_tracking_sensitivity_dbm": {
+   "n": 4,
+   "desc": "gps tracking sensitivity",
+   "shape": "scalar",
+   "example": -160,
+   "value_type": "number"
+  },
+  "lora_470_510mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "470-510 MHz band maximum",
+   "shape": "range",
+   "example": 510,
+   "value_type": "number"
+  },
+  "lora_470_510mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "470-510 MHz band minimum",
+   "shape": "range",
+   "example": 470,
+   "value_type": "number"
+  },
+  "lora_902_928mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "902-928 MHz band maximum",
+   "shape": "range",
+   "example": 928,
+   "value_type": "number"
+  },
+  "lora_902_928mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "902-928 MHz band minimum",
+   "shape": "range",
+   "example": 902,
+   "value_type": "number"
+  },
+  "lora_915_927mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "915-927 MHz band maximum",
+   "shape": "range",
+   "example": 927,
+   "value_type": "number"
+  },
+  "lora_915_927mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "915-927 MHz band minimum",
+   "shape": "range",
+   "example": 915,
+   "value_type": "number"
+  },
+  "lora_920_928mhz_band_max_mhz": {
+   "n": 1,
+   "desc": "920-928 MHz band maximum",
+   "shape": "range",
+   "example": 928,
+   "value_type": "number"
+  },
+  "lora_920_928mhz_band_min_mhz": {
+   "n": 1,
+   "desc": "920-928 MHz band minimum",
+   "shape": "range",
+   "example": 920,
+   "value_type": "number"
+  },
+  "power_consumption_data_max_w": {
+   "n": 8,
+   "desc": "data-link peak power",
+   "shape": "scalar",
+   "example": 6,
+   "value_type": "number"
+  },
+  "serial_baud_rate_default_bps": {
+   "n": 3,
+   "desc": "default serial baud rate bps",
+   "shape": "scalar",
+   "example": 115200,
+   "value_type": "number"
+  },
+  "sim_slot_voltage_supported_v": {
+   "n": 7,
+   "desc": "sim slot supported voltages",
+   "shape": "scalar",
+   "example": [
+    3,
+    1.8
+   ],
+   "value_type": "number_array"
+  },
+  "wifi_5ghz_max_data_rate_mbps": {
+   "n": 2,
+   "desc": "maximum 5 ghz wifi data rate",
+   "shape": "scalar",
+   "example": 866.7,
+   "value_type": "number"
+  },
+  "digital_input_isolation_rms_v": {
+   "n": 1,
+   "desc": "digital input isolation rms",
+   "shape": "scalar",
+   "example": 2000,
+   "value_type": "number"
+  },
+  "ethernet_lan_port_speeds_mbps": {
+   "n": 19,
+   "desc": "lan port speeds",
+   "shape": "scalar",
+   "example": [
+    10,
+    100
+   ],
+   "value_type": "number_array"
+  },
+  "ethernet_magnetic_isolation_v": {
+   "n": 9,
+   "desc": "magnetic isolation voltage",
+   "shape": "scalar",
+   "example": 1000,
+   "value_type": "number"
+  },
+  "ethernet_wan_port_speeds_mbps": {
+   "n": 8,
+   "desc": "wan port speeds",
+   "shape": "scalar",
+   "example": [
+    10,
+    100,
+    1000
+   ],
+   "value_type": "number_array"
+  },
+  "gps_horizontal_accuracy_max_m": {
+   "n": 3,
+   "desc": "gps horizontal accuracy",
+   "shape": "scalar",
+   "example": 2.5,
+   "value_type": "number"
+  },
+  "power_supply_frequency_max_hz": {
+   "n": 7,
+   "desc": "maximum power supply frequency",
+   "shape": "range",
+   "example": 63,
+   "value_type": "number"
+  },
+  "power_supply_frequency_min_hz": {
+   "n": 7,
+   "desc": "minimum power supply frequency",
+   "shape": "range",
+   "example": 47,
+   "value_type": "number"
+  },
+  "qos_max_traffic_classes_count": {
+   "n": 1,
+   "desc": "maximum traffic classes for qos",
+   "shape": "scalar",
+   "example": 32,
+   "value_type": "number"
+  },
+  "security_certificate_features": {
+   "n": 3,
+   "desc": "security certificate features",
+   "shape": "enum",
+   "example": [
+    "preshared",
+    "rsa",
+    "certificates",
+    "md5",
+    "sha-2",
+    "csr",
+    "scep",
+    "x.509v3",
+    "pkix",
+    "ldap revocation"
+   ],
+   "value_type": "enum"
+  },
+  "analog_input_signal_definition": {
+   "n": 1,
+   "desc": "analog input signal names",
+   "shape": "enum",
+   "example": [
+    "ai",
+    "agnd"
+   ],
+   "value_type": "enum"
+  },
+  "digital_input_on_voltage_max_v": {
+   "n": 4,
+   "desc": "digital input maximum voltage",
+   "shape": "range",
+   "example": 30,
+   "value_type": "number"
+  },
+  "digital_input_on_voltage_min_v": {
+   "n": 4,
+   "desc": "digital input minimum voltage",
+   "shape": "range",
+   "example": 3,
+   "value_type": "number"
+  },
+  "height_including_connectors_mm": {
+   "n": 3,
+   "desc": "height including connectors",
+   "shape": "scalar",
+   "example": 102,
+   "value_type": "number"
+  },
+  "operating_humidity_max_percent": {
+   "n": 18,
+   "desc": "maximum operating humidity",
+   "shape": "range",
+   "example": 95,
+   "value_type": "number"
+  },
+  "operating_humidity_min_percent": {
+   "n": 14,
+   "desc": "minimum operating humidity",
+   "shape": "range",
+   "example": 5,
+   "value_type": "number"
+  },
+  "sfp_plus_supported_speeds_mbps": {
+   "n": 1,
+   "desc": "sfp+ supported speeds",
+   "shape": "scalar",
+   "example": 10000,
+   "value_type": "number"
+  },
+  "wifi_2_4ghz_max_data_rate_mbps": {
+   "n": 7,
+   "desc": "2.4 ghz max data rate",
+   "shape": "scalar",
+   "example": 300,
+   "value_type": "number"
+  },
+  "wifi_rx_sensitivity_80211b_dbm": {
+   "n": 2,
+   "desc": "rx sensitivity 802.11b",
+   "shape": "scalar",
+   "example": -93,
+   "value_type": "number"
+  },
+  "wifi_rx_sensitivity_80211g_dbm": {
+   "n": 2,
+   "desc": "rx sensitivity 802.11g",
+   "shape": "scalar",
+   "example": -90,
+   "value_type": "number"
+  },
+  "wifi_tx_power_80211n_20mhz_dbm": {
+   "n": 2,
+   "desc": "tx power 802.11n 20 MHz",
+   "shape": "scalar",
+   "example": 18,
+   "value_type": "number"
+  },
+  "wifi_tx_power_80211n_40mhz_dbm": {
+   "n": 2,
+   "desc": "tx power 802.11n 40 MHz",
+   "shape": "scalar",
+   "example": 17,
+   "value_type": "number"
+  },
+  "wwan_antennas_per_module_count": {
+   "n": 12,
+   "desc": "wwan antennas per module",
+   "shape": "scalar",
+   "example": [
+    2,
+    1
+   ],
+   "value_type": "number"
+  },
+  "digital_input_off_voltage_max_v": {
+   "n": 1,
+   "desc": "maximum off voltage",
+   "shape": "range",
+   "example": 1,
+   "value_type": "number"
+  },
+  "digital_input_off_voltage_min_v": {
+   "n": 1,
+   "desc": "minimum off voltage",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "has_reverse_polarity_protection": {
+   "n": 2,
+   "desc": "has reverse polarity protection",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "lora_demodulation_bandwidth_mhz": {
+   "n": 1,
+   "desc": "demodulation bandwidth",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "serial_configurable_ports_count": {
+   "n": 2,
+   "desc": "number of configurable serial ports",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "serial_rs232_baud_rate_max_mbps": {
+   "n": 1,
+   "desc": "maximum rs-232 baud rate",
+   "shape": "range",
+   "example": 0.1152,
+   "value_type": "number"
+  },
+  "serial_rs232_baud_rate_min_mbps": {
+   "n": 1,
+   "desc": "minimum rs-232 baud rate",
+   "shape": "range",
+   "example": 0.0003,
+   "value_type": "number"
+  },
+  "serial_rs422_baud_rate_max_mbps": {
+   "n": 1,
+   "desc": "maximum rs-422 baud rate",
+   "shape": "range",
+   "example": 0.1152,
+   "value_type": "number"
+  },
+  "serial_rs422_baud_rate_min_mbps": {
+   "n": 1,
+   "desc": "minimum rs-422 baud rate",
+   "shape": "range",
+   "example": 0.0003,
+   "value_type": "number"
+  },
+  "serial_rs485_baud_rate_max_mbps": {
+   "n": 1,
+   "desc": "maximum rs-485 baud rate",
+   "shape": "range",
+   "example": 0.1152,
+   "value_type": "number"
+  },
+  "serial_rs485_baud_rate_min_mbps": {
+   "n": 1,
+   "desc": "minimum rs-485 baud rate",
+   "shape": "range",
+   "example": 0.0003,
+   "value_type": "number"
+  },
+  "gps_tracking_sensitivity_min_dbm": {
+   "n": 1,
+   "desc": "gps tracking sensitivity",
+   "shape": "scalar",
+   "example": -148,
+   "value_type": "number"
+  },
+  "operating_temperature_wifi_max_c": {
+   "n": 2,
+   "desc": "maximum operating temperature wifi",
+   "shape": "range",
+   "example": 45,
+   "value_type": "number"
+  },
+  "operating_temperature_wifi_min_c": {
+   "n": 2,
+   "desc": "minimum operating temperature wifi",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  },
+  "digital_output_sink_current_max_a": {
+   "n": 4,
+   "desc": "digital output sink current max",
+   "shape": "scalar",
+   "example": 0.1,
+   "value_type": "number"
+  },
+  "glonass_horizontal_accuracy_max_m": {
+   "n": 1,
+   "desc": "glonass horizontal accuracy",
+   "shape": "scalar",
+   "example": 2.6,
+   "value_type": "number"
+  },
+  "input_voltage_power_on_sense_max_v": {
+   "n": 1,
+   "desc": "max voltage with power sense",
+   "shape": "range",
+   "example": 30,
+   "value_type": "number"
+  },
+  "input_voltage_power_on_sense_min_v": {
+   "n": 1,
+   "desc": "min voltage with power sense",
+   "shape": "range",
+   "example": 10,
+   "value_type": "number"
+  },
+  "qos_max_queues_per_interface_count": {
+   "n": 3,
+   "desc": "maximum queues per interface for qos",
+   "shape": "scalar",
+   "example": 16,
+   "value_type": "number"
+  },
+  "recommended_power_supply_current_a": {
+   "n": 2,
+   "desc": "recommended power supply current in amperes",
+   "shape": "scalar",
+   "example": 1.5,
+   "value_type": "number"
+  },
+  "recommended_power_supply_voltage_v": {
+   "n": 2,
+   "desc": "recommended power supply voltage in volts",
+   "shape": "scalar",
+   "example": 12,
+   "value_type": "number"
+  },
+  "digital_output_open_collector_count": {
+   "n": 2,
+   "desc": "digital output open collector count",
+   "shape": "scalar",
+   "example": 1,
+   "value_type": "number"
+  },
+  "gps_acquisition_sensitivity_min_dbm": {
+   "n": 1,
+   "desc": "gps acquisition sensitivity",
+   "shape": "scalar",
+   "example": -148,
+   "value_type": "number"
+  },
+  "ipv6_transition_tunneling_protocols": {
+   "n": 3,
+   "desc": "ipv6 transition tunneling protocols",
+   "shape": "enum",
+   "example": [
+    "ipv6 over ipv4",
+    "6to4",
+    "isatap"
+   ],
+   "value_type": "enum"
+  },
+  "digital_input_absolute_max_voltage_v": {
+   "n": 6,
+   "desc": "digital input absolute max voltage",
+   "shape": "scalar",
+   "example": 30,
+   "value_type": "number"
+  },
+  "wifi_rx_sensitivity_80211n_20mhz_dbm": {
+   "n": 2,
+   "desc": "rx sensitivity 802.11n 20 MHz",
+   "shape": "scalar",
+   "example": -88,
+   "value_type": "number"
+  },
+  "wifi_rx_sensitivity_80211n_40mhz_dbm": {
+   "n": 2,
+   "desc": "rx sensitivity 802.11n 40 MHz",
+   "shape": "scalar",
+   "example": -85,
+   "value_type": "number"
+  },
+  "digital_output_absolute_max_voltage_v": {
+   "n": 6,
+   "desc": "digital output absolute max voltage",
+   "shape": "scalar",
+   "example": 30,
+   "value_type": "number"
+  },
+  "glonass_acquisition_sensitivity_min_dbm": {
+   "n": 1,
+   "desc": "glonass acquisition sensitivity",
+   "shape": "scalar",
+   "example": -145,
+   "value_type": "number"
+  },
+  "operating_atmospheric_pressure_max_mbar": {
+   "n": 3,
+   "desc": "maximum operating atmospheric pressure",
+   "shape": "scalar",
+   "example": 1060,
+   "value_type": "number"
+  },
+  "operating_atmospheric_pressure_min_mbar": {
+   "n": 3,
+   "desc": "minimum operating atmospheric pressure",
+   "shape": "scalar",
+   "example": 700,
+   "value_type": "number"
+  },
+  "gps_horizontal_accuracy_50_percent_max_m": {
+   "n": 3,
+   "desc": "horizontal accuracy 50% max",
+   "shape": "scalar",
+   "example": 2,
+   "value_type": "number"
+  },
+  "gps_horizontal_accuracy_90_percent_max_m": {
+   "n": 3,
+   "desc": "horizontal accuracy 90% max",
+   "shape": "scalar",
+   "example": 5,
+   "value_type": "number"
+  }
+ },
+ "1554": {
+  "gain_dbi": {
+   "n": 5,
+   "desc": "antenna gain",
+   "shape": "scalar",
+   "example": 7,
+   "value_type": "number"
+  },
+  "vswr_max": {
+   "n": 6,
+   "desc": "maximum vswr",
+   "shape": "scalar",
+   "example": 5.1,
+   "value_type": "number"
+  },
+  "weight_g": {
+   "n": 5,
+   "desc": "device weight",
+   "shape": "scalar",
+   "example": 110,
+   "value_type": "number"
+  },
+  "width_mm": {
+   "n": 1,
+   "desc": "device width",
+   "shape": "scalar",
+   "example": 195,
+   "value_type": "number"
+  },
+  "connector": {
+   "n": 6,
+   "desc": "antenna connector type",
+   "shape": "enum",
+   "example": [
+    "sma male"
+   ],
+   "value_type": "enum"
+  },
+  "height_mm": {
+   "n": 1,
+   "desc": "device height",
+   "shape": "scalar",
+   "example": 75,
+   "value_type": "number"
+  },
+  "length_mm": {
+   "n": 6,
+   "desc": "device and cable length",
+   "shape": "scalar",
+   "example": [
+    285,
+    1500
+   ],
+   "value_type": "number_array"
+  },
+  "cable_type": {
+   "n": 5,
+   "desc": "cable type",
+   "shape": "enum",
+   "example": [
+    "rg195"
+   ],
+   "value_type": "enum"
+  },
+  "diameter_mm": {
+   "n": 5,
+   "desc": "antenna diameter",
+   "shape": "scalar",
+   "example": 45,
+   "value_type": "number"
+  },
+  "gain_max_dbi": {
+   "n": 1,
+   "desc": "maximum antenna gain",
+   "shape": "scalar",
+   "example": 3.9,
+   "value_type": "number"
+  },
+  "polarization": {
+   "n": 5,
+   "desc": "antenna polarization",
+   "shape": "enum",
+   "example": [
+    "linear"
+   ],
+   "value_type": "enum"
+  },
+  "impedance_ohm": {
+   "n": 6,
+   "desc": "feed impedance",
+   "shape": "scalar",
+   "example": 50,
+   "value_type": "number"
+  },
+  "certifications": {
+   "n": 1,
+   "desc": "regulatory approvals and directives",
+   "shape": "enum",
+   "example": [
+    "GLOBAL-RoHS"
+   ],
+   "value_type": "enum"
+  },
+  "elements_count": {
+   "n": 1,
+   "desc": "number of elements",
+   "shape": "scalar",
+   "example": 62,
+   "value_type": "number"
+  },
+  "beamwidth_max_deg": {
+   "n": 1,
+   "desc": "maximum beamwidth",
+   "shape": "scalar",
+   "example": 52,
+   "value_type": "number"
+  },
+  "beamwidth_min_deg": {
+   "n": 1,
+   "desc": "minimum beamwidth",
+   "shape": "scalar",
+   "example": 48,
+   "value_type": "number"
+  },
+  "frequency_max_mhz": {
+   "n": 1,
+   "desc": "maximum operating frequency",
+   "shape": "range",
+   "example": 2700,
+   "value_type": "number"
+  },
+  "frequency_min_mhz": {
+   "n": 1,
+   "desc": "minimum operating frequency",
+   "shape": "range",
+   "example": 700,
+   "value_type": "number"
+  },
+  "has_mounting_mast": {
+   "n": 1,
+   "desc": "mounting mast included",
+   "shape": "boolean",
+   "example": false,
+   "value_type": "boolean"
+  },
+  "input_power_max_w": {
+   "n": 4,
+   "desc": "maximum input power",
+   "shape": "scalar",
+   "example": 50,
+   "value_type": "number"
+  },
+  "packaging_width_mm": {
+   "n": 1,
+   "desc": "packaging width",
+   "shape": "scalar",
+   "example": 230,
+   "value_type": "number"
+  },
+  "packaging_height_mm": {
+   "n": 1,
+   "desc": "packaging height",
+   "shape": "scalar",
+   "example": 100,
+   "value_type": "number"
+  },
+  "packaging_length_mm": {
+   "n": 1,
+   "desc": "packaging length",
+   "shape": "scalar",
+   "example": 1250,
+   "value_type": "number"
+  },
+  "front_to_back_min_db": {
+   "n": 1,
+   "desc": "minimum front-to-back ratio",
+   "shape": "scalar",
+   "example": 26,
+   "value_type": "number"
+  },
+  "cellular_band_1_max_mhz": {
+   "n": 5,
+   "desc": "cellular band 1 maximum frequency",
+   "shape": "range",
+   "example": 960,
+   "value_type": "number"
+  },
+  "cellular_band_1_min_mhz": {
+   "n": 5,
+   "desc": "cellular band 1 minimum frequency",
+   "shape": "range",
+   "example": 700,
+   "value_type": "number"
+  },
+  "cellular_band_2_max_mhz": {
+   "n": 4,
+   "desc": "cellular band 2 maximum frequency",
+   "shape": "range",
+   "example": 2690,
+   "value_type": "number"
+  },
+  "cellular_band_2_min_mhz": {
+   "n": 4,
+   "desc": "cellular band 2 minimum frequency",
+   "shape": "range",
+   "example": 1710,
+   "value_type": "number"
+  },
+  "cellular_band_3_max_mhz": {
+   "n": 3,
+   "desc": "cellular band 3 maximum frequency",
+   "shape": "range",
+   "example": 5000,
+   "value_type": "number"
+  },
+  "cellular_band_3_min_mhz": {
+   "n": 3,
+   "desc": "cellular band 3 minimum frequency",
+   "shape": "range",
+   "example": 3300,
+   "value_type": "number"
+  },
+  "cellular_band_4_max_mhz": {
+   "n": 2,
+   "desc": "cellular band 4 maximum frequency",
+   "shape": "range",
+   "example": 1900,
+   "value_type": "number"
+  },
+  "cellular_band_4_min_mhz": {
+   "n": 2,
+   "desc": "cellular band 4 minimum frequency",
+   "shape": "range",
+   "example": 1900,
+   "value_type": "number"
+  },
+  "cellular_band_5_max_mhz": {
+   "n": 3,
+   "desc": "cellular band 5 maximum frequency",
+   "shape": "range",
+   "example": 2100,
+   "value_type": "number"
+  },
+  "cellular_band_5_min_mhz": {
+   "n": 3,
+   "desc": "cellular band 5 minimum frequency",
+   "shape": "range",
+   "example": 2100,
+   "value_type": "number"
+  },
+  "cellular_band_6_max_mhz": {
+   "n": 1,
+   "desc": "cellular band 6 maximum frequency",
+   "shape": "range",
+   "example": 2300,
+   "value_type": "number"
+  },
+  "cellular_band_6_min_mhz": {
+   "n": 1,
+   "desc": "cellular band 6 minimum frequency",
+   "shape": "range",
+   "example": 2300,
+   "value_type": "number"
+  },
+  "cellular_band_7_max_mhz": {
+   "n": 1,
+   "desc": "cellular band 7 maximum frequency",
+   "shape": "range",
+   "example": 2600,
+   "value_type": "number"
+  },
+  "cellular_band_7_min_mhz": {
+   "n": 1,
+   "desc": "cellular band 7 minimum frequency",
+   "shape": "range",
+   "example": 2600,
+   "value_type": "number"
+  },
+  "operating_temperature_max_c": {
+   "n": 5,
+   "desc": "maximum operating temperature",
+   "shape": "range",
+   "example": 85,
+   "value_type": "number"
+  },
+  "operating_temperature_min_c": {
+   "n": 5,
+   "desc": "minimum operating temperature",
+   "shape": "range",
+   "example": -20,
+   "value_type": "number"
+  }
+ },
+ "1599": {
+  "has_ddm": {
+   "n": 9,
+   "desc": "digital diagnostic monitoring",
+   "shape": "boolean",
+   "example": true,
+   "value_type": "boolean"
+  },
+  "connector": {
+   "n": 9,
+   "desc": "fiber connector type",
+   "shape": "enum",
+   "example": [
+    "single lc"
+   ],
+   "value_type": "enum"
+  },
+  "standards": {
+   "n": 1,
+   "desc": "supported standards",
+   "shape": "enum",
+   "example": [
+    "gpon oc++"
+   ],
+   "value_type": "enum"
+  },
+  "cable_type": {
+   "n": 9,
+   "desc": "cable type",
+   "shape": "enum",
+   "example": [
+    "singlemode fiber"
+   ],
+   "value_type": "enum"
+  },
+  "form_factor": {
+   "n": 8,
+   "desc": "form factor",
+   "shape": "enum",
+   "example": [
+    "sfp"
+   ],
+   "value_type": "enum"
+  },
+  "wavelength_nm": {
+   "n": 6,
+   "desc": "optical wavelength",
+   "shape": "scalar",
+   "example": 1550,
+   "value_type": "number"
+  },
+  "data_rate_mbps": {
+   "n": 8,
+   "desc": "data rate",
+   "shape": "scalar",
+   "example": 1000,
+   "value_type": "number"
+  },
+  "max_distance_m": {
+   "n": 9,
+   "desc": "maximum transmission distance",
+   "shape": "scalar",
+   "example": 20000,
+   "value_type": "number"
+  },
+  "wavelength_rx_nm": {
+   "n": 2,
+   "desc": "rx optical wavelength",
+   "shape": "scalar",
+   "example": 1490,
+   "value_type": "number"
+  },
+  "wavelength_tx_nm": {
+   "n": 2,
+   "desc": "tx optical wavelength",
+   "shape": "scalar",
+   "example": 1310,
+   "value_type": "number"
+  },
+  "data_rate_rx_mbps": {
+   "n": 1,
+   "desc": "receive data rate",
+   "shape": "scalar",
+   "example": 1250,
+   "value_type": "number"
+  },
+  "data_rate_tx_mbps": {
+   "n": 1,
+   "desc": "transmit data rate",
+   "shape": "scalar",
+   "example": 2500,
+   "value_type": "number"
+  },
+  "ethernet_standards": {
+   "n": 8,
+   "desc": "supported ethernet standards",
+   "shape": "enum",
+   "example": [
+    "1000base-bx"
+   ],
+   "value_type": "enum"
+  },
+  "operating_temperature_max_c": {
+   "n": 9,
+   "desc": "maximum operating temperature",
+   "shape": "range",
+   "example": 70,
+   "value_type": "number"
+  },
+  "operating_temperature_min_c": {
+   "n": 9,
+   "desc": "minimum operating temperature",
+   "shape": "range",
+   "example": 0,
+   "value_type": "number"
+  }
+ }
+}

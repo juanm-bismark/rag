@@ -137,6 +137,55 @@ dos flujos a la vez).
 - Contención externa: otros procesos del servidor (p. ej. tele2_monitoring)
   compiten por CPU y pueden duplicar los tiempos por rachas.
 
+## Experimento 2 — incremental con vocabulario sembrado (SOLO granite)
+
+**Contexto**: la corrida 1 (cold start) midió el peor caso — `keys_context`
+vacío hizo que cada modelo acuñara su propio canon (~8% de cobertura del
+backup, 22,7% de acuerdo entre modelos). El modo real de producción es
+INCREMENTAL: el producto nuevo llega a un vocabulario de categoría ya rico.
+qwen2.5:3b queda fuera (descalificado por validez: 28% ok en corrida 1).
+
+**Hipótesis (pre-registrada)**: el cold start explica la mayor parte de la
+no-convergencia; con el canon sembrado, granite converge al vocabulario
+existente (el hallazgo 4 — precisión alta cuando acierta el nombre — lo
+predice).
+
+**Criterios de éxito (fijados ANTES de correr):**
+
+| Eje | Métrica | Umbral |
+|---|---|---|
+| Convergencia | mediana por producto de cobertura de claves del backup | ≥50% → viable · 30-50% → gris (evaluar prompt-lite) · <30% → fallo definitivo, frontier |
+| **Aritmética (independiente)** | % valores idénticos en claves NUMÉRICAS comunes | ≥85% → aceptable · menos → frontier aunque converja |
+
+Ambos ejes deben pasar. Es posible converger y fallar aritmética → resultado
+igual de valioso: "el local converge pero no puedo confiar en sus números".
+
+**Diseño**: 10 productos, 4 categorías con riqueza de siembra variada, seed =
+vista real `category_keys_context` de producción (con `desc` auténticos del
+LLM, bajada a `seed_view.json`) con ajuste leave-one-out (el producto "nuevo"
+no aporta a su propio contexto) y canon `--seed-min-n 2` (claves compartidas
+por ≥2 productos, para caber en la ventana). Cada producto es independiente
+(sin evolución del diccionario — mide convergencia pura al canon).
+
+Productos: 516 (canon 312 claves): 9987, 15206, 17915, 22602 (stress 47
+specs) · 77 (multi-marca): 18264, 18816, 18853 · 1554 (antenas, débiles en
+corrida 1): 14874, 14885 · 1599 (SFP casi-gemelos, caso fácil): 16884.
+
+```bash
+# corrida (en el servidor; ~6-8 h a ~40 min/producto de granite)
+python3 simulador_worker.py correr \
+  --modelos granite4:micro-h \
+  --seed-view --seed-min-n 2 --num-ctx 32768 --tag exp2 \
+  --productos 9987,15206,17915,22602,18264,18816,18853,14874,14885,16884 \
+  --paralelo 2
+
+# informe (vs backup, con eje aritmético separado)
+python3 simulador_worker.py comparar --modelos granite4:micro-h --tag exp2
+```
+
+Salidas con sufijo `_exp2` (no mezclan con la corrida 1). `--seed-backup` es
+la alternativa sin Supabase (canon reconstruido del backup, sin `desc`).
+
 ## Referencias
 
 - Benchmark que eligió los modelos: `../benchmark_modelos_ollama.md` y
