@@ -213,6 +213,35 @@ grandes, prompt ~25,6K tok):
    LOS NÚMEROS DE LOS EJEMPLOS §7/§ex5 DEL PROMPT (real: 94×55×23 mm, 103 g).
    El modelo copió las instrucciones como si fueran datos del producto.
 
+**Nota de auditoría del veredicto** (para el yo-del-futuro que quiera
+re-litigar): la convergencia quedó a 1,8 puntos de la zona gris (28,2 vs 30),
+que habría mandado a probar prompt-lite. Es irrelevante: la regla
+pre-registrada era "ambos ejes deben pasar" y la aritmética falló por 17
+puntos con errores de clase no-mitigable (Kelvin, fuga de ejemplos). El
+veredicto está **sobre-determinado**: cada eje, por separado, manda a
+frontier. De los 3 desenlaces pre-escritos se obtuvo el tercero ("ni
+converge") con el agravante del segundo ("números no confiables").
+
+Cobertura por producto (la bimodalidad, evidencia del hallazgo 1):
+
+| producto | seed | cobertura |
+|---|---|---|
+| antena-magnetica-3dbi | 22 | **100%** (16/16) |
+| eon-sfp-gsx-1g-10km | 12 | **100%** (10/10) |
+| antena-magnetica-7dbi | 20 | **77%** (20/26) |
+| lynkworld-lw4g-5e | 106 | 29% (11/38) |
+| suntech-st8310-4g | 104 | 27% (14/51) |
+| robustel-r1520-4l | 227 | 14% (10/71) |
+| galileosky-10-4g | 62 | 11% (8/72) |
+| robustel-r2110 | 224 | 10% (8/77) |
+
+Discrepancias numéricas literales (evidencia del hallazgo 2 — backup vs granite):
+`operating_temperature_max_c` 70 → **343.15** (Kelvin) · `_min_c` -40 → 233.15 ·
+`cellular_band_*` 824/900/1800 → 1710/2690/5000 (bandas cruzadas) ·
+`battery_capacity_mah` 140 → 8000 · st8310: `length/width/height/weight`
+94/55/23/103 → **750/120/120/1200 (los ejemplos §7/§ex5 del prompt)** ·
+`digital_input_isolation_dc_v` 3750 → 3000.
+
 Matriz final del stack (toda respaldada por datos propios): chat → API
 frontier · agente en cola → granite4:micro-h local · batch simple → qwen2.5:3b
 local · **normalización (cualquier modo) → API frontier**.
