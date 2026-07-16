@@ -186,6 +186,37 @@ python3 simulador_worker.py comparar --modelos granite4:micro-h --tag exp2
 Salidas con sufijo `_exp2` (no mezclan con la corrida 1). `--seed-backup` es
 la alternativa sin Supabase (canon reconstruido del backup, sin `desc`).
 
+### VEREDICTO (corrida 2026-07-14/15, contra los criterios pre-registrados)
+
+| Eje | Resultado | Umbral | Veredicto |
+|---|---|---|---|
+| Convergencia (mediana/producto) | **28,2%** | ≥50 viable / <30 fallo | **FALLO** (bimodal: ver abajo) |
+| Aritmética (claves numéricas) | **67,7%** (44/65) | ≥85% | **FALLO** |
+
+**Ambos ejes fallan → normalización (también incremental) → API frontier. Definitivo.**
+
+Hallazgos de la corrida (8/10 ok; los 2 invalid_json = los 2 productos más
+grandes, prompt ~25,6K tok):
+
+1. **La siembra SÍ funciona… hasta que el seed satura la atención.** Cobertura
+   bimodal: categorías con seed chico convergen casi perfecto (SFP 100%,
+   antenas 100% y 77%) pero con seed de 104-227 claves colapsa a 10-14%
+   (r2110, r1520, galileosky). La dilución de reglas de la corrida 1 reaparece
+   como dilución de seed: un 3B no explota un canon de 200 claves en contexto.
+   La categoría más grande del catálogo (516) es justo donde falla.
+2. **Aritmética: corrupción silenciosa confirmada y grave.** Con calc=0-2 por
+   producto (disciplina Calculator inexistente): temperatura convertida a
+   KELVIN (`operating_temperature_max_c: 343.15` = 70°C en K), bandas
+   celulares cruzadas (824↔1710↔3300), `battery_capacity_mah: 8000` vs 140.
+3. **Fuga de ejemplos del prompt a los datos** (hallazgo forense): suntech
+   st8310 salió con `length=750, width=120, height=120, weight_g=1200` — son
+   LOS NÚMEROS DE LOS EJEMPLOS §7/§ex5 DEL PROMPT (real: 94×55×23 mm, 103 g).
+   El modelo copió las instrucciones como si fueran datos del producto.
+
+Matriz final del stack (toda respaldada por datos propios): chat → API
+frontier · agente en cola → granite4:micro-h local · batch simple → qwen2.5:3b
+local · **normalización (cualquier modo) → API frontier**.
+
 ## Referencias
 
 - Benchmark que eligió los modelos: `../benchmark_modelos_ollama.md` y
