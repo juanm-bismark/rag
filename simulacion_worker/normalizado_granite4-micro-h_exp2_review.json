@@ -1,0 +1,12 @@
+{
+ "17915": {
+  "slug": "teldat-m10-smart",
+  "error_type": "invalid_json",
+  "category_id": 516
+ },
+ "22602": {
+  "slug": "robustel-eg5120",
+  "error_type": "invalid_json",
+  "category_id": 516
+ }
+}

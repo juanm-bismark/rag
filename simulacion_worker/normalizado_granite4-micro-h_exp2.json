@@ -1,0 +1,244 @@
+{
+ "9987": {
+  "antenna_count": 2,
+  "connector_type": "sma-k",
+  "sim_count": 2,
+  "ethernet_lan_ports_count": 3,
+  "wan_port_type": "eth-8023at-pd",
+  "magnetic_isolation_voltage_v": 1000,
+  "antenna_count_wifi": 2,
+  "connector_type_wifi": "rp-sma-k",
+  "wifi_standards": [
+   "802.11a",
+   "802.11b",
+   "802.11g",
+   "802.11n",
+   "802.11ac"
+  ],
+  "wifi_2_4ghz_band_min_mhz": 2412,
+  "wifi_2_4ghz_band_max_mhz": 2472,
+  "bluetooth_antenna_count": 1,
+  "connector_type_bluetooth": "rp-sma-k",
+  "bluetooth_standards": [
+   "ble-5.0",
+   "ble-4.2",
+   "ble-4.0"
+  ],
+  "gps_antenna_count": 1,
+  "gnss_technologies": [
+   "gps"
+  ],
+  "gps_horizontal_accuracy_max_m": 2.5,
+  "digital_io_connector_type": "rs-232/485",
+  "serial_ports_count": 2,
+  "serial_ports_connector_type": "rs-232/485",
+  "esd_protection_voltage_max_v": 15000,
+  "digital_input_isolation_dc_v": 3000,
+  "power_consumption_max_w": 12,
+  "ingress_protection_rating": "ip30",
+  "regulatory_standards": [
+   "global-rohs",
+   "global-fcc",
+   "cl-subtel",
+   "mx-ifetel",
+   "au-rcm",
+   "e-mark-pending"
+  ],
+  "environmental_certifications": [
+   "rohs",
+   "whee"
+  ]
+ },
+ "14874": {
+  "gain_dbi": 7,
+  "vswr_max": 2.0,
+  "weight_g": 35,
+  "connector": "sma_macho",
+  "length_mm": [
+   1500,
+   2850
+  ],
+  "cable_type": "rg174",
+  "diameter_mm": 34,
+  "polarization": "linear",
+  "impedance_ohm": 50,
+  "input_power_max_w": 50,
+  "cellular_band_1_min_mhz": 1710,
+  "cellular_band_1_max_mhz": 960,
+  "cellular_band_2_min_mhz": 3300,
+  "cellular_band_2_max_mhz": 2170,
+  "cellular_band_3_min_mhz": 5000,
+  "cellular_band_3_max_mhz": 900,
+  "cellular_band_4_min_mhz": 1900,
+  "cellular_band_4_max_mhz": 1900,
+  "cellular_band_5_min_mhz": 2100,
+  "cellular_band_5_max_mhz": 2100,
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 70
+ },
+ "14885": {
+  "gain_dbi": 7,
+  "vswr_max": 2,
+  "weight_g": 110,
+  "connector": "sma male",
+  "length_mm": 3000,
+  "cable_type": "rg58",
+  "diameter_mm": 70,
+  "polarization": "vertical",
+  "impedance_ohm": 50,
+  "input_power_max_w": 50,
+  "cellular_band_1_min_mhz": 700,
+  "cellular_band_1_max_mhz": 960,
+  "cellular_band_2_min_mhz": 1710,
+  "cellular_band_2_max_mhz": 2690,
+  "cellular_band_3_min_mhz": 3300,
+  "cellular_band_3_max_mhz": 5000,
+  "cellular_band_5_min_mhz": 2100,
+  "cellular_band_5_max_mhz": 2100,
+  "operating_temperature_min_c": 233.15,
+  "operating_temperature_max_c": 343.15
+ },
+ "15206": {
+  "certifications": [
+   "GLOBAL-RoHS",
+   "GLOBAL-FCC",
+   "GLOBAL-REACH",
+   "GLOBAL-CE"
+  ],
+  "weight_g": 250,
+  "dimensions_mm": [
+   105,
+   90,
+   46
+  ],
+  "operating_temperature_min_c": -40,
+  "operating_temperature_max_c": 70,
+  "input_voltage_min_v": 9,
+  "input_voltage_max_v": 36,
+  "power_supply_frequency_min_hz": 47,
+  "power_supply_frequency_max_hz": 63,
+  "vpn_features": [
+   "ipsec",
+   "openvpn",
+   "gre"
+  ],
+  "leds": [
+   "run",
+   "mdm",
+   "usr",
+   "rssi",
+   "wifi"
+  ],
+  "power": [
+   "low-voltage disconnect",
+   "transient voltage protection including 5 v engine start and +200 v load dump",
+   "power on sense with delayed shutdown",
+   "configurable functions and ports to optimize power consumption"
+  ],
+  "ram_gb": 1,
+  "flash_gb": 8,
+  "has_esim": true,
+  "mounting": "desktop",
+  "input_output": [
+   "digital_input",
+   "analog_input"
+  ]
+ },
+ "16884": {
+  "form_factor": "sfp",
+  "data_rate_mbps": 1250,
+  "ethernet_standards": "1000base-lx",
+  "connector": "dual-lc",
+  "wavelength_nm": 1310,
+  "max_distance_m": 10000,
+  "cable_type": "singlemode_fiber",
+  "has_ddm": true,
+  "operating_temperature_min_c": 0,
+  "operating_temperature_max_c": 70
+ },
+ "18264": {
+  "antenna_types": [
+   "external",
+   "internal"
+  ],
+  "receiver_sensitivity_tracking_dbm": -164,
+  "position_accuracy_m": 2.5,
+  "hot_start_time_max_s": 2,
+  "warm_start_time_max_s": 1,
+  "cellular_2g_bands": [
+   "GSM 900",
+   "GSM 1800"
+  ],
+  "lte_cat1_bands": [
+   "B1",
+   "B3",
+   "B7",
+   "B8",
+   "B20"
+  ],
+  "sim_card_type": "2",
+  "input_voltage_min_v": 8,
+  "input_voltage_max_v": 33,
+  "battery_capacity_mah": 600,
+  "position_accuracy_sbas_m": 2,
+  "gnss_update_rate_hz": 1
+ },
+ "18816": {
+  "weight_g": 1200,
+  "length_mm": 750,
+  "width_mm": 120,
+  "height_mm": 120,
+  "input_voltage_v": 12,
+  "power_consumption_average_w": 0.54,
+  "active_current_a": 0.0375,
+  "sleep_current_a": 0.0031,
+  "battery_capacity_mah": 220,
+  "operating_temperature_min_c": -30,
+  "operating_temperature_max_c": 85,
+  "position_accuracy_m": 2.5,
+  "lte_cat1_uplink_mbps": 5,
+  "lte_cat1_downlink_mbps": 10,
+  "input_voltage_min_v": 8,
+  "input_voltage_max_v": 33,
+  "certifications": [
+   "GLOBAL-CE",
+   "GLOBAL-FCC"
+  ],
+  "gnss_systems": [
+   "gps",
+   "glonass"
+  ]
+ },
+ "18853": {
+  "lte_fdd_bands": [
+   "b1",
+   "b2",
+   "b3",
+   "b4",
+   "b5",
+   "b7",
+   "b8",
+   "b28",
+   "b66"
+  ],
+  "has_accelerometer": true,
+  "connectors": "5-wire cable",
+  "_signal_type_notes": "Estado de red 4G y GPS",
+  "antenna_types": [
+   "internal cellular",
+   "internal gps"
+  ],
+  "m2m_protocols": [
+   "suntech unified protocol"
+  ],
+  "communication_protocols": [
+   "tcp",
+   "sms"
+  ],
+  "battery_capacity_mah": 8000,
+  "length_mm": 78,
+  "width_mm": 32.6,
+  "height_mm": 11.6,
+  "operating_temperature_min_c": -40
+ }
+}

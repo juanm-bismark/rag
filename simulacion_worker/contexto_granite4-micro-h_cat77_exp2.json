@@ -1,0 +1,295 @@
+{
+ "claves": {
+  "antenna_types": {
+   "n": 2,
+   "example": [
+    "internal cellular",
+    "internal gps"
+   ],
+   "shape": "enum",
+   "desc": "Antenna types supported by the device"
+  },
+  "receiver_sensitivity_tracking_dbm": {
+   "n": 1,
+   "example": -164,
+   "shape": "scalar",
+   "desc": "Receiver sensitivity (tracking mode) in dBm"
+  },
+  "position_accuracy_m": {
+   "n": 2,
+   "example": 2.5,
+   "shape": "scalar",
+   "desc": "position accuracy (m)"
+  },
+  "hot_start_time_max_s": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "Maximum time to start after power‑on (cold boot)"
+  },
+  "warm_start_time_max_s": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "Maximum time to start while already powered on"
+  },
+  "cellular_2g_bands": {
+   "n": 1,
+   "example": [
+    "GSM 900",
+    "GSM 1800"
+   ],
+   "shape": "enum",
+   "desc": "Supported 2G frequency bands"
+  },
+  "lte_cat1_bands": {
+   "n": 1,
+   "example": [
+    "B1",
+    "B3",
+    "B7",
+    "B8",
+    "B20"
+   ],
+   "shape": "enum",
+   "desc": "Supported 3G (LTE Cat‑1) bands"
+  },
+  "sim_card_type": {
+   "n": 1,
+   "example": "2",
+   "shape": "scalar",
+   "desc": "Number of integrated SIM slots"
+  },
+  "input_voltage_min_v": {
+   "n": 2,
+   "example": 8,
+   "shape": "range",
+   "desc": "minimum input voltage"
+  },
+  "input_voltage_max_v": {
+   "n": 2,
+   "example": 33,
+   "shape": "range",
+   "desc": "maximum input voltage"
+  },
+  "battery_capacity_mah": {
+   "n": 3,
+   "example": 8000,
+   "shape": "scalar",
+   "desc": "battery capacity (mAh)"
+  },
+  "position_accuracy_sbas_m": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "SBS position accuracy (m)"
+  },
+  "gnss_update_rate_hz": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "Maximum GNSS update rate supported"
+  },
+  "weight_g": {
+   "n": 1,
+   "example": 1200,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "length_mm": {
+   "n": 2,
+   "example": 78,
+   "shape": "scalar",
+   "desc": "device length"
+  },
+  "width_mm": {
+   "n": 2,
+   "example": 32.6,
+   "shape": "scalar",
+   "desc": "device width"
+  },
+  "height_mm": {
+   "n": 2,
+   "example": 11.6,
+   "shape": "scalar",
+   "desc": "device height"
+  },
+  "input_voltage_v": {
+   "n": 1,
+   "example": 12,
+   "shape": "scalar",
+   "desc": "input voltage"
+  },
+  "power_consumption_average_w": {
+   "n": 1,
+   "example": 0.54,
+   "shape": "scalar",
+   "desc": "average power consumption"
+  },
+  "active_current_a": {
+   "n": 1,
+   "example": 0.0375,
+   "shape": "scalar",
+   "desc": "active current"
+  },
+  "sleep_current_a": {
+   "n": 1,
+   "example": 0.0031,
+   "shape": "scalar",
+   "desc": "sleep current"
+  },
+  "operating_temperature_min_c": {
+   "n": 2,
+   "example": -40,
+   "shape": "scalar",
+   "desc": "minimum operating temperature"
+  },
+  "operating_temperature_max_c": {
+   "n": 1,
+   "example": 85,
+   "shape": "range",
+   "desc": "maximum operating temperature"
+  },
+  "lte_cat1_uplink_mbps": {
+   "n": 1,
+   "example": 5,
+   "shape": "scalar",
+   "desc": "LTE Cat 1 uplink speed (Mbps)"
+  },
+  "lte_cat1_downlink_mbps": {
+   "n": 1,
+   "example": 10,
+   "shape": "scalar",
+   "desc": "LTE Cat 1 downlink speed (Mbps)"
+  },
+  "certifications": {
+   "n": 1,
+   "example": [
+    "GLOBAL-CE",
+    "GLOBAL-FCC"
+   ],
+   "shape": "enum"
+  },
+  "gnss_systems": {
+   "n": 1,
+   "example": [
+    "gps",
+    "glonass"
+   ],
+   "shape": "enum"
+  },
+  "lte_fdd_bands": {
+   "n": 1,
+   "example": [
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b7",
+    "b8",
+    "b28",
+    "b66"
+   ],
+   "shape": "enum"
+  },
+  "has_accelerometer": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean"
+  },
+  "connectors": {
+   "n": 1,
+   "example": "5-wire cable",
+   "shape": "scalar"
+  },
+  "_signal_type_notes": {
+   "n": 1,
+   "example": "Estado de red 4G y GPS",
+   "shape": "scalar"
+  },
+  "m2m_protocols": {
+   "n": 1,
+   "example": [
+    "suntech unified protocol"
+   ],
+   "shape": "enum"
+  },
+  "communication_protocols": {
+   "n": 1,
+   "example": [
+    "tcp",
+    "sms"
+   ],
+   "shape": "enum"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 18264,
+   "claves_nuevas": [
+    "antenna_types",
+    "receiver_sensitivity_tracking_dbm",
+    "position_accuracy_m",
+    "hot_start_time_max_s",
+    "warm_start_time_max_s",
+    "cellular_2g_bands",
+    "lte_cat1_bands",
+    "sim_card_type",
+    "input_voltage_min_v",
+    "input_voltage_max_v",
+    "battery_capacity_mah",
+    "position_accuracy_sbas_m",
+    "gnss_update_rate_hz"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 13
+  },
+  {
+   "product_id": 18816,
+   "claves_nuevas": [
+    "weight_g",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "input_voltage_v",
+    "power_consumption_average_w",
+    "active_current_a",
+    "sleep_current_a",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "lte_cat1_uplink_mbps",
+    "lte_cat1_downlink_mbps",
+    "certifications",
+    "gnss_systems"
+   ],
+   "claves_actualizadas": [
+    "battery_capacity_mah",
+    "position_accuracy_m",
+    "input_voltage_min_v",
+    "input_voltage_max_v"
+   ],
+   "total_claves": 27
+  },
+  {
+   "product_id": 18853,
+   "claves_nuevas": [
+    "lte_fdd_bands",
+    "has_accelerometer",
+    "connectors",
+    "_signal_type_notes",
+    "m2m_protocols",
+    "communication_protocols"
+   ],
+   "claves_actualizadas": [
+    "antenna_types",
+    "battery_capacity_mah",
+    "length_mm",
+    "width_mm",
+    "height_mm",
+    "operating_temperature_min_c"
+   ],
+   "total_claves": 33
+  }
+ ]
+}

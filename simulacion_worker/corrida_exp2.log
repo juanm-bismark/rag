@@ -1,0 +1,13 @@
+nohup: ignoring input
+[2026-07-14 15:09:08] Host: http://localhost:11434 | modelos: granite4:micro-h | categorías: [516, 77, 1599, 1554, 1626, 518, 1630, 1641] | limit/cat: ∞ | contexto: SEMBRADO vista real (leave-one-out) | tag: exp2
+[2026-07-14 17:24:26] [granite4:micro-h] cat 516 robustel-r2110: ok | 8117.8s | claves=26 | ctx=26 | iter=1 calc=0
+[2026-07-14 18:13:24] [granite4:micro-h] cat 77 galileosky-10-4g: ok | 11056.5s | claves=13 | ctx=13 | iter=2 calc=1
+[2026-07-14 19:41:49] [granite4:micro-h] cat 516 robustel-r1520-4l: ok | 8243.6s | claves=17 | ctx=43 | iter=1 calc=0
+[2026-07-14 20:34:52] [granite4:micro-h] cat 77 suntech-st8310-4g: ok | 8487.8s | claves=18 | ctx=27 | iter=1 calc=0
+[2026-07-14 22:00:06] [granite4:micro-h] cat 516 teldat-m10-smart: review | 8296.5s | claves=- | ctx=43 | iter=1 calc=0
+[2026-07-14 22:49:00] [granite4:micro-h] cat 77 lynkworld-lw4g-5e: ok | 8048.2s | claves=12 | ctx=33 | iter=1 calc=0
+[2026-07-15 00:25:37] [granite4:micro-h] cat 516 robustel-eg5120: review | 8731.0s | claves=- | ctx=43 | iter=1 calc=0
+[2026-07-15 01:08:13] [granite4:micro-h] cat 1599 eon-transceptor-sfp-gsx-1g-10km: ok | 8352.2s | claves=10 | ctx=10 | iter=2 calc=1
+[2026-07-15 01:53:02] [granite4:micro-h] cat 1554 antena-magnetica-3dbi-1-5-y-3mts: ok | 5245.1s | claves=22 | ctx=22 | iter=3 calc=2
+[2026-07-15 02:38:05] [granite4:micro-h] cat 1554 antena-magnetica-7-dbi-3-mts: ok | 2703.6s | claves=20 | ctx=22 | iter=7 calc=6
+[2026-07-15 02:38:05] [granite4:micro-h] listo en 689.0 min → resultados_granite4-micro-h_exp2.jsonl | exportado normalizado_granite4-micro-h_exp2.json (ok=8, review=2)

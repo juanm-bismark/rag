@@ -1,0 +1,194 @@
+{
+ "claves": {
+  "gain_dbi": {
+   "n": 2,
+   "example": 7,
+   "shape": "scalar",
+   "desc": "antenna gain"
+  },
+  "vswr_max": {
+   "n": 2,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "maximum vswr"
+  },
+  "weight_g": {
+   "n": 2,
+   "example": 110,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "connector": {
+   "n": 2,
+   "example": "sma male",
+   "shape": "scalar",
+   "desc": "antenna connector type"
+  },
+  "length_mm": {
+   "n": 2,
+   "example": 3000,
+   "shape": "scalar",
+   "desc": "device and cable length"
+  },
+  "cable_type": {
+   "n": 2,
+   "example": "rg58",
+   "shape": "scalar",
+   "desc": "cable type"
+  },
+  "diameter_mm": {
+   "n": 2,
+   "example": 70,
+   "shape": "scalar",
+   "desc": "antenna diameter"
+  },
+  "polarization": {
+   "n": 2,
+   "example": "vertical",
+   "shape": "scalar",
+   "desc": "antenna polarization"
+  },
+  "impedance_ohm": {
+   "n": 2,
+   "example": 50,
+   "shape": "scalar",
+   "desc": "feed impedance"
+  },
+  "input_power_max_w": {
+   "n": 2,
+   "example": 50,
+   "shape": "scalar",
+   "desc": "maximum input power"
+  },
+  "cellular_band_1_min_mhz": {
+   "n": 2,
+   "example": 700,
+   "shape": "range",
+   "desc": "cellular band 1 minimum frequency"
+  },
+  "cellular_band_1_max_mhz": {
+   "n": 2,
+   "example": 960,
+   "shape": "range",
+   "desc": "cellular band 1 maximum frequency"
+  },
+  "cellular_band_2_min_mhz": {
+   "n": 2,
+   "example": 1710,
+   "shape": "range",
+   "desc": "cellular band 2 minimum frequency"
+  },
+  "cellular_band_2_max_mhz": {
+   "n": 2,
+   "example": 2690,
+   "shape": "range",
+   "desc": "cellular band 2 maximum frequency"
+  },
+  "cellular_band_3_min_mhz": {
+   "n": 2,
+   "example": 3300,
+   "shape": "range",
+   "desc": "cellular band 3 minimum frequency"
+  },
+  "cellular_band_3_max_mhz": {
+   "n": 2,
+   "example": 5000,
+   "shape": "range",
+   "desc": "cellular band 3 maximum frequency"
+  },
+  "cellular_band_4_min_mhz": {
+   "n": 1,
+   "example": 1900,
+   "shape": "range",
+   "desc": "min frequency of cellular band 4 (MHz)"
+  },
+  "cellular_band_4_max_mhz": {
+   "n": 1,
+   "example": 1900,
+   "shape": "range",
+   "desc": "max frequency of cellular band 4 (MHz)"
+  },
+  "cellular_band_5_min_mhz": {
+   "n": 2,
+   "example": 2100,
+   "shape": "range",
+   "desc": "cellular band 5 minimum frequency"
+  },
+  "cellular_band_5_max_mhz": {
+   "n": 2,
+   "example": 2100,
+   "shape": "range",
+   "desc": "cellular band 5 maximum frequency"
+  },
+  "operating_temperature_min_c": {
+   "n": 2,
+   "example": 233.15,
+   "shape": "range",
+   "desc": "minimum operating temperature"
+  },
+  "operating_temperature_max_c": {
+   "n": 2,
+   "example": 343.15,
+   "shape": "range",
+   "desc": "maximum operating temperature"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 14874,
+   "claves_nuevas": [
+    "gain_dbi",
+    "vswr_max",
+    "weight_g",
+    "connector",
+    "length_mm",
+    "cable_type",
+    "diameter_mm",
+    "polarization",
+    "impedance_ohm",
+    "input_power_max_w",
+    "cellular_band_1_min_mhz",
+    "cellular_band_1_max_mhz",
+    "cellular_band_2_min_mhz",
+    "cellular_band_2_max_mhz",
+    "cellular_band_3_min_mhz",
+    "cellular_band_3_max_mhz",
+    "cellular_band_4_min_mhz",
+    "cellular_band_4_max_mhz",
+    "cellular_band_5_min_mhz",
+    "cellular_band_5_max_mhz",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 22
+  },
+  {
+   "product_id": 14885,
+   "claves_nuevas": [],
+   "claves_actualizadas": [
+    "gain_dbi",
+    "vswr_max",
+    "weight_g",
+    "connector",
+    "length_mm",
+    "cable_type",
+    "diameter_mm",
+    "polarization",
+    "impedance_ohm",
+    "input_power_max_w",
+    "cellular_band_1_min_mhz",
+    "cellular_band_1_max_mhz",
+    "cellular_band_2_min_mhz",
+    "cellular_band_2_max_mhz",
+    "cellular_band_3_min_mhz",
+    "cellular_band_3_max_mhz",
+    "cellular_band_5_min_mhz",
+    "cellular_band_5_max_mhz",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "total_claves": 22
+  }
+ ]
+}

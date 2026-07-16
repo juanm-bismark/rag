@@ -1,0 +1,368 @@
+{
+ "claves": {
+  "antenna_count": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "number of antennas"
+  },
+  "connector_type": {
+   "n": 1,
+   "example": "sma-k",
+   "shape": "scalar",
+   "desc": "connector type"
+  },
+  "sim_count": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "SIM count"
+  },
+  "ethernet_lan_ports_count": {
+   "n": 1,
+   "example": 3,
+   "shape": "scalar",
+   "desc": "number of LAN ethernet ports"
+  },
+  "wan_port_type": {
+   "n": 1,
+   "example": "eth-8023at-pd",
+   "shape": "scalar",
+   "desc": "WAN port type (e.g., 802.3at PD)"
+  },
+  "magnetic_isolation_voltage_v": {
+   "n": 1,
+   "example": 1000,
+   "shape": "scalar",
+   "desc": "maximum magnetic isolation voltage"
+  },
+  "antenna_count_wifi": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "number of WiFi antennas"
+  },
+  "connector_type_wifi": {
+   "n": 1,
+   "example": "rp-sma-k",
+   "shape": "scalar",
+   "desc": "WiFi connector type"
+  },
+  "wifi_standards": {
+   "n": 1,
+   "example": [
+    "802.11a",
+    "802.11b",
+    "802.11g",
+    "802.11n",
+    "802.11ac"
+   ],
+   "shape": "enum",
+   "desc": "supported WiFi standards (list)"
+  },
+  "wifi_2_4ghz_band_min_mhz": {
+   "n": 1,
+   "example": 2412,
+   "shape": "range",
+   "desc": "minimum frequency of 2.4 GHz band"
+  },
+  "wifi_2_4ghz_band_max_mhz": {
+   "n": 1,
+   "example": 2472,
+   "shape": "range",
+   "desc": "maximum frequency of 2.4 GHz band"
+  },
+  "bluetooth_antenna_count": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "number of Bluetooth antennas"
+  },
+  "connector_type_bluetooth": {
+   "n": 1,
+   "example": "rp-sma-k",
+   "shape": "scalar",
+   "desc": "Bluetooth connector type"
+  },
+  "bluetooth_standards": {
+   "n": 1,
+   "example": [
+    "ble-5.0",
+    "ble-4.2",
+    "ble-4.0"
+   ],
+   "shape": "enum",
+   "desc": "supported Bluetooth standards (list)"
+  },
+  "gps_antenna_count": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "number of GPS antennas"
+  },
+  "gnss_technologies": {
+   "n": 1,
+   "example": [
+    "gps"
+   ],
+   "shape": "enum",
+   "desc": "GNSS technologies supported"
+  },
+  "gps_horizontal_accuracy_max_m": {
+   "n": 1,
+   "example": 2.5,
+   "shape": "scalar",
+   "desc": "maximum horizontal accuracy for GNSS"
+  },
+  "digital_io_connector_type": {
+   "n": 1,
+   "example": "rs-232/485",
+   "shape": "scalar",
+   "desc": "type of digital I/O connector"
+  },
+  "serial_ports_count": {
+   "n": 1,
+   "example": 2,
+   "shape": "scalar",
+   "desc": "total number of serial ports"
+  },
+  "serial_ports_connector_type": {
+   "n": 1,
+   "example": "rs-232/485",
+   "shape": "scalar",
+   "desc": "connector type for serial ports"
+  },
+  "esd_protection_voltage_max_v": {
+   "n": 1,
+   "example": 15000,
+   "shape": "scalar",
+   "desc": "maximum ESD voltage"
+  },
+  "digital_input_isolation_dc_v": {
+   "n": 1,
+   "example": 3000,
+   "shape": "scalar",
+   "desc": "digital input isolation voltage"
+  },
+  "power_consumption_max_w": {
+   "n": 1,
+   "example": 12,
+   "shape": "scalar",
+   "desc": "maximum power consumption in watts"
+  },
+  "ingress_protection_rating": {
+   "n": 1,
+   "example": "ip30",
+   "shape": "scalar",
+   "desc": "IP protection rating"
+  },
+  "regulatory_standards": {
+   "n": 1,
+   "example": [
+    "global-rohs",
+    "global-fcc",
+    "cl-subtel",
+    "mx-ifetel",
+    "au-rcm",
+    "e-mark-pending"
+   ],
+   "shape": "enum",
+   "desc": "list of regulatory approval marks"
+  },
+  "environmental_certifications": {
+   "n": 1,
+   "example": [
+    "rohs",
+    "whee"
+   ],
+   "shape": "enum",
+   "desc": "environmental certifications (RoHS, WEEE)"
+  },
+  "certifications": {
+   "n": 1,
+   "example": [
+    "GLOBAL-RoHS",
+    "GLOBAL-FCC",
+    "GLOBAL-REACH",
+    "GLOBAL-CE"
+   ],
+   "shape": "enum"
+  },
+  "weight_g": {
+   "n": 1,
+   "example": 250,
+   "shape": "scalar",
+   "desc": "device weight"
+  },
+  "dimensions_mm": {
+   "n": 1,
+   "example": [
+    105,
+    90,
+    46
+   ],
+   "shape": "numeric_array",
+   "desc": "device length/width/height in mm"
+  },
+  "operating_temperature_min_c": {
+   "n": 1,
+   "example": -40,
+   "shape": "range",
+   "desc": "minimum operating temperature (°C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 1,
+   "example": 70,
+   "shape": "range",
+   "desc": "maximum operating temperature (°C)"
+  },
+  "input_voltage_min_v": {
+   "n": 1,
+   "example": 9,
+   "shape": "range",
+   "desc": "minimum input voltage (V)"
+  },
+  "input_voltage_max_v": {
+   "n": 1,
+   "example": 36,
+   "shape": "range",
+   "desc": "maximum input voltage (V)"
+  },
+  "power_supply_frequency_min_hz": {
+   "n": 1,
+   "example": 47,
+   "shape": "range",
+   "desc": "minimum power supply frequency (Hz)"
+  },
+  "power_supply_frequency_max_hz": {
+   "n": 1,
+   "example": 63,
+   "shape": "range",
+   "desc": "maximum power supply frequency (Hz)"
+  },
+  "vpn_features": {
+   "n": 1,
+   "example": [
+    "ipsec",
+    "openvpn",
+    "gre"
+   ],
+   "shape": "enum",
+   "desc": "VPN protocols supported"
+  },
+  "leds": {
+   "n": 1,
+   "example": [
+    "run",
+    "mdm",
+    "usr",
+    "rssi",
+    "wifi"
+   ],
+   "shape": "enum",
+   "desc": "LED indicator types"
+  },
+  "power": {
+   "n": 1,
+   "example": [
+    "low-voltage disconnect",
+    "transient voltage protection including 5 v engine start and +200 v load dump",
+    "power on sense with delayed shutdown",
+    "configurable functions and ports to optimize power consumption"
+   ],
+   "shape": "enum",
+   "desc": "power management features"
+  },
+  "ram_gb": {
+   "n": 1,
+   "example": 1,
+   "shape": "scalar",
+   "desc": "device RAM in GB"
+  },
+  "flash_gb": {
+   "n": 1,
+   "example": 8,
+   "shape": "scalar",
+   "desc": "device flash memory in GB"
+  },
+  "has_esim": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "eSIM support"
+  },
+  "mounting": {
+   "n": 1,
+   "example": "desktop",
+   "shape": "scalar",
+   "desc": "mounting options"
+  },
+  "input_output": {
+   "n": 1,
+   "example": [
+    "digital_input",
+    "analog_input"
+   ],
+   "shape": "enum"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 9987,
+   "claves_nuevas": [
+    "antenna_count",
+    "connector_type",
+    "sim_count",
+    "ethernet_lan_ports_count",
+    "wan_port_type",
+    "magnetic_isolation_voltage_v",
+    "antenna_count_wifi",
+    "connector_type_wifi",
+    "wifi_standards",
+    "wifi_2_4ghz_band_min_mhz",
+    "wifi_2_4ghz_band_max_mhz",
+    "bluetooth_antenna_count",
+    "connector_type_bluetooth",
+    "bluetooth_standards",
+    "gps_antenna_count",
+    "gnss_technologies",
+    "gps_horizontal_accuracy_max_m",
+    "digital_io_connector_type",
+    "serial_ports_count",
+    "serial_ports_connector_type",
+    "esd_protection_voltage_max_v",
+    "digital_input_isolation_dc_v",
+    "power_consumption_max_w",
+    "ingress_protection_rating",
+    "regulatory_standards",
+    "environmental_certifications"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 26
+  },
+  {
+   "product_id": 15206,
+   "claves_nuevas": [
+    "certifications",
+    "weight_g",
+    "dimensions_mm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c",
+    "input_voltage_min_v",
+    "input_voltage_max_v",
+    "power_supply_frequency_min_hz",
+    "power_supply_frequency_max_hz",
+    "vpn_features",
+    "leds",
+    "power",
+    "ram_gb",
+    "flash_gb",
+    "has_esim",
+    "mounting",
+    "input_output"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 43
+  }
+ ]
+}

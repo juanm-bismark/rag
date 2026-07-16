@@ -1,0 +1,83 @@
+{
+ "claves": {
+  "form_factor": {
+   "n": 1,
+   "example": "sfp",
+   "shape": "scalar",
+   "desc": "form factor"
+  },
+  "data_rate_mbps": {
+   "n": 1,
+   "example": 1250,
+   "shape": "scalar",
+   "desc": "data rate (Mbps)"
+  },
+  "ethernet_standards": {
+   "n": 1,
+   "example": "1000base-lx",
+   "shape": "scalar",
+   "desc": "supported ethernet standards"
+  },
+  "connector": {
+   "n": 1,
+   "example": "dual-lc",
+   "shape": "scalar",
+   "desc": "fiber connector type"
+  },
+  "wavelength_nm": {
+   "n": 1,
+   "example": 1310,
+   "shape": "scalar",
+   "desc": "optical wavelength (nm)"
+  },
+  "max_distance_m": {
+   "n": 1,
+   "example": 10000,
+   "shape": "scalar",
+   "desc": "maximum transmission distance (m)"
+  },
+  "cable_type": {
+   "n": 1,
+   "example": "singlemode_fiber",
+   "shape": "scalar",
+   "desc": "cable type"
+  },
+  "has_ddm": {
+   "n": 1,
+   "example": true,
+   "shape": "boolean",
+   "desc": "digital diagnostic monitoring"
+  },
+  "operating_temperature_min_c": {
+   "n": 1,
+   "example": 0,
+   "shape": "range",
+   "desc": "minimum operating temperature (°C)"
+  },
+  "operating_temperature_max_c": {
+   "n": 1,
+   "example": 70,
+   "shape": "range",
+   "desc": "maximum operating temperature (°C)"
+  }
+ },
+ "historial": [
+  {
+   "product_id": 16884,
+   "claves_nuevas": [
+    "form_factor",
+    "data_rate_mbps",
+    "ethernet_standards",
+    "connector",
+    "wavelength_nm",
+    "max_distance_m",
+    "cable_type",
+    "has_ddm",
+    "operating_temperature_min_c",
+    "operating_temperature_max_c"
+   ],
+   "claves_actualizadas": [],
+   "total_claves": 10
+  }
+ ]
+}
